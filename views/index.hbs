@@ -1,0 +1,12 @@
+<div class="jumbotron">
+    <h1>Review anagrams!</h1>
+
+    {{#if user}}
+        <p class="lead">YES! You're logged in {{user.username}}.</p>
+        <p><a class="btn btn-lg btn-success" href="/anagrams" role="button">GO</a></p>
+
+    {{ else }}
+        <p class="lead">Log in to get started!</p>
+        <p><a class="btn btn-lg btn-success" href="/account/login" role="button">CLICK ME PLEASE</a></p>
+    {{/if}}
+</div>

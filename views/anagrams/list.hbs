@@ -1,0 +1,266 @@
+<div class="container-fluid">
+
+    <div data-bind="template: 'recoveryErrors'"></div>
+
+    <script id="recoveryErrors" type="text/html">
+        <!-- ko foreach: recoveryErrors -->
+        <div class="alert alert-danger">
+            <a href="#" class="close" data-bind="click: $parent.clearRecoveryError">&times;</a>
+            Error when recovering from approval error for match <strong data-bind="text: anagramMatch.id"></strong>:<br>
+            <strong>Base error:</strong> <span data-bind="text: error"></span><br>
+            <strong>Recovery error:</strong> <span data-bind="text: recoveryError"></span><br>
+            <a data-bind="attr: { href : anagramMatch.t1Link }">tweet 1 link</a>
+            <a data-bind="attr: { href : anagramMatch.t2Link }">tweet 2 link</a>
+        </div>
+        <!-- /ko -->
+
+        <!-- ko if: recoveryErrors().length -->
+        <div class="container">
+            <button type="button" class="btn btn-warning" data-bind="click: clearAllRecoveryErrors">Clear all recovery
+                errors
+            </button>
+        </div>
+        <br>
+        <!-- /ko -->
+    </script>
+
+    <div class="row col-sm-8 well well-sm">
+        <h5>Match query types:</h5>
+        <div class="col-sm-8">
+            <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-primary">
+                    <input type="radio" name="query" value="topmatches" data-bind="bsChecked: matchQuery" id="option1">
+                    Top matches
+                </label>
+                <label class="btn btn-primary">
+                    <input type="radio" name="query" value="oldesttopmatches" data-bind="bsChecked: matchQuery"
+                           id="option2">
+                    Oldest top matches
+                </label>
+                <label class="btn btn-primary">
+                    <input type="radio" name="query" value="mostrecentmatches" data-bind="bsChecked: matchQuery"
+                           id="option3">
+                    Most recent matches
+                </label>
+            </div>
+        </div>
+        <div class="col-sm-4" data-bind="visible: matchQuery() == 'oldesttopmatches'">
+            <label>Oldest matches IF: </label>
+            <input type="number" min="0" max="1.0" step="0.01" data-bind="value: oldestTopMatchesCutoff"/>
+        </div>
+    </div>
+    <div class="btn-group col-sm-4 well well-sm">
+        <h5>Other stuff:</h5>
+        <a href="ratelimits" class="btn btn-primary" role="button">Rate Limits</a>
+        <a href="statistics" class="btn btn-primary" role="button">Statistics</a>
+    </div>
+
+    <div data-bind="template: 'matchesTable'"></div>
+
+    <script id="matchesTable" type="text/html">
+        <table class="table table-hover table-condensed">
+            <thead>
+            <tr>
+                <th>score</th>
+                <th>tweets</th>
+                <th>reject</th>
+                <th>approve</th>
+            </tr>
+            </thead>
+            <tbody data-bind="template: { foreach: anagramMatches }">
+
+            <tr data-bind="attr: { id: id }">
+                <td data-bind="text: interestingFactor"></td>
+                <td><span data-bind="text: t1OriginalText"></span> <a data-bind="attr: { href : t1Link }">link</a>
+                    <br><br><span
+                            data-bind="text: t2OriginalText"></span> <a data-bind="attr: { href : t2Link }">link</a>
+                </td>
+                <td>
+                    <button type="submit" class="btn btn-danger"
+                            data-bind="click: $parent.rejectMatch, attr: { 'data-match': id }">REJECT
+                    </button>
+                </td>
+                <td>
+                    <button type="submit" class="btn btn-success"
+                            data-bind="click: $parent.approveMatch, attr: { 'data-match': id }">POST
+                    </button>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+    </script>
+
+</div>
+
+<script>
+
+    var vm;
+
+    $(() => {
+
+        let AnagramViewModel = function () {
+
+            let AnagramMatch = function (tweetRow) {
+                this.id = tweetRow.id;
+                this.interestingFactor = tweetRow.interesting.toFixed(2);
+                this.t1OriginalText = tweetRow.t1_originaltext;
+                this.t1StatusId = tweetRow.t1_statusid;
+                this.t1Username = tweetRow.t1_username;
+                this.t2OriginalText = tweetRow.t2_originaltext;
+                this.t2StatusId = tweetRow.t2_statusid;
+                this.t2Username = tweetRow.t2_username;
+                this.t1Link = `http://twitter.com/${this.t1Username}/status/${this.t1StatusId}`;
+                this.t2Link = `http://twitter.com/${this.t2Username}/status/${this.t2StatusId}`;
+                return this;
+            };
+
+            var recoveryErrorIdSeed = 1;
+            let RecoveryError = function (error, recoveryError, anagramMatch) {
+                this.id = recoveryErrorIdSeed++;
+                this.error = error;
+                this.recoveryError = recoveryError;
+                this.anagramMatch = anagramMatch;
+                return this;
+            };
+
+            this.matchQuery = ko.observable("topmatches");
+            this.anagramMatches = ko.observableArray();
+            this.recoveryErrors = ko.observableArray();
+            this.oldestTopMatchesCutoff = ko.observable(0.75);
+
+            this.rejectMatch = anagramMatchToReject => {
+                this.hitEndPoint(`/anagrams/reject/${anagramMatchToReject.id}`, anagramMatchToReject);
+            };
+
+            this.approveMatch = anagramMatchToApprove => {
+                this.hitEndPoint(`/anagrams/approve/${anagramMatchToApprove.id}`, anagramMatchToApprove);
+            };
+
+            this.hitEndPoint = function (endPoint, affectedMatch) {
+                let $buttons = $(`[data-match=${affectedMatch.id}]`);
+                $buttons.prop("disabled", true);
+                $.post(endPoint).done(data => {
+                    if (data.error) {
+
+                        var msg = data.error;
+                        if (data.systemResponse) {
+                            msg += " " + data.systemResponse;
+                        }
+                        $.growl.error({title: '', message: msg});
+
+                        if (data.recoveryError) {
+                            let recoveryError = new RecoveryError(data.error, data.systemResponse, affectedMatch);
+                            this.recoveryErrors.push(recoveryError);
+                        }
+                    }
+                    if (data.successMessage) {
+                        $.growl({title: '', style: 'notice', message: data.successMessage});
+                    }
+                    if (data.remove) {
+                        this.anagramMatches.remove(match => match.id === affectedMatch.id);
+                        this.getMoreMatchesIfListIsRunningLow();
+                    }
+                }).fail((jqxhr, textStatus, error) => {
+                    $.growl.error({title: '', message: error});
+                }).always(() => {
+                    $buttons.prop("disabled", false);
+                });
+            };
+
+            this.clearAllRecoveryErrors = function () {
+                this.recoveryErrors([]);
+            };
+
+            this.clearRecoveryError = (recoveryError) => {
+                this.recoveryErrors.remove((error) => error.id == recoveryError.id);
+            };
+
+            this.getMoreAnagrams = function () {
+                return new Promise((resolve, reject) => {
+                    var params = {};
+                    if (this.matchQuery() == "oldesttopmatches") {
+                        params.cutoff = this.oldestTopMatchesCutoff();
+                    }
+
+                    $.getJSON(`/anagrams/more/${this.matchQuery()}`, params).done(data => {
+                        if (data.anagramMatches) {
+                            var anagramMatches = data.anagramMatches.map(x => new AnagramMatch(x));
+                            return resolve(anagramMatches);
+                        } else if (data.error) {
+                            return reject(data.error);
+                        } else {
+                            return reject("unknown error when retrieving tweets");
+                        }
+                    }).fail((jqxhr, textStatus, error) => {
+                        return reject(error);
+                    });
+                });
+            };
+
+            this.getMoreMatchesIfListIsRunningLow = function () {
+                if (this.anagramMatches().length < 5) {
+                    this.getMoreAnagrams().then(moreAnagramMatches => {
+                        let merged = _.unionWith(this.anagramMatches(), moreAnagramMatches, (x, y) => x.id == y.id);
+                        this.anagramMatches(merged);
+                    }).catch(err => {
+                        $.growl.error({message: err});
+                        console.log(err);
+                    })
+                }
+            };
+
+            this.seedData = function () {
+                this.getMoreAnagrams().then(seedAnagramMatches => {
+                    this.anagramMatches(seedAnagramMatches)
+                }).catch(err => {
+                    $.growl.error({message: err});
+                    console.log(err);
+                });
+            };
+
+            this.clearAllMatches = function () {
+                this.anagramMatches([]);
+            };
+
+            this.seedData();
+
+            this.matchQuery.subscribe(() => {
+                this.clearAllMatches();
+                this.seedData();
+            });
+
+            this.oldestTopMatchesCutoff.subscribe(() => {
+                this.clearAllMatches();
+                this.seedData();
+            });
+
+            return this;
+        };
+
+        vm = new AnagramViewModel();
+        ko.applyBindings(vm);
+    });
+
+    ko.bindingHandlers.bsChecked = {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            var value = valueAccessor();
+            var newValueAccessor = function () {
+                return {
+                    change: function () {
+                        value(element.value);
+                    }
+                }
+            };
+            ko.bindingHandlers.event.init(element, newValueAccessor, allBindingsAccessor, viewModel, bindingContext);
+        },
+        update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+            if ($(element).val() == ko.unwrap(valueAccessor())) {
+                setTimeout(function () {
+                    $(element).closest('.btn').button('toggle');
+                }, 1);
+            }
+        }
+    }
+
+</script>

@@ -1,0 +1,43 @@
+<div class="container-fluid">
+
+    <div class="row">
+        There are <strong>{{formatNumber stats.countOfMatches}}</strong> total matches over approximately
+        <strong>{{formatNumber stats.approximateCountOfTweets}}</strong> tweets. That's about
+        <strong>{{formatNumber stats.tweetsPerMatch maximumFractionDigits="0"}}</strong> tweets per match!
+    </div>
+    <div class="row">
+        There are <strong>{{formatNumber stats.countOfMatchesAboveCutoff}}</strong> matches with an interesting factor
+        above
+        <strong>{{stats.interestingFactorCutoff}}</strong>.
+    </div>
+    <div class="row">
+        The most recent match was created <strong>{{formatRelative stats.dateLastMatchCreated}}</strong> at
+        <strong>{{formatTime stats.dateLastMatchCreated hour="numeric" minute="numeric"}}</strong> on
+        <strong>{{formatTime stats.dateLastMatchCreated day="numeric" month="long" year="numeric" }}</strong>.
+    </div>
+
+    <br>
+    <div class="row">
+        Matches created for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:
+    </div>
+    <div class="row col-md-4">
+        <table class="table table-hover">
+
+            <thead>
+            <tr>
+                <th>Day</th>
+                <th>Matches created</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#each stats.matchesPerDay}}
+                <tr>
+                    <td>{{formatTime day day="numeric" month="long" year="numeric"}}</td>
+                    <td>{{sum}}</td>
+                </tr>
+            {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+</div>
