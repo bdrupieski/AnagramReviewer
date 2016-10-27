@@ -262,6 +262,34 @@ LIMIT 1;
     });
 };
 
+exports.getCountOfAnagramMatchesWithTweetInThisMatchAlreadyRetweeted = function(matchId) {
+    let countOfMatchesWithTweetAlreadyRetweeted = `
+WITH candidateTweets AS (SELECT
+                           t1.id tweet1id,
+                           t2.id tweet2id
+                         FROM anagram_matches
+                           INNER JOIN tweets t1 ON anagram_matches.tweet1_id = t1.id
+                           INNER JOIN tweets t2 ON anagram_matches.tweet2_id = t2.id
+                         WHERE anagram_matches.id = $1::int),
+    candidateTweetIds AS (SELECT tweet1Id AS id
+                          FROM candidateTweets
+                          UNION
+                          SELECT tweet2Id AS id
+                          FROM candidateTweets)
+SELECT count(1)
+FROM anagram_matches
+WHERE anagram_matches.id != $1::int AND anagram_matches.date_retweeted IS NOT NULL AND
+      (anagram_matches.tweet1_id IN (SELECT id
+                                     FROM candidateTweetIds) OR
+       anagram_matches.tweet2_id IN (SELECT id
+                                     FROM candidateTweetIds))
+`;
+
+    return pools.anagramPool.query(countOfMatchesWithTweetAlreadyRetweeted, [matchId]).then(x => {
+        return Number(x.rows[0].count);
+    });
+};
+
 function clamp(x, a, b) {
     return Math.max(a, Math.min(x, b));
 }

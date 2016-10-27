@@ -93,7 +93,13 @@ router.post('/approve/:id', function (req, res) {
 
     var originalTweets, retweet1, retweet2;
 
-    anagramsDb.getTweetsForMatch(matchId).then(tweets => {
+    anagramsDb.getCountOfAnagramMatchesWithTweetInThisMatchAlreadyRetweeted(matchId).then(count => {
+        if (count > 0) {
+            throw "Match contains tweet that's already been retweeted."
+        } else {
+            return anagramsDb.getTweetsForMatch(matchId);
+        }
+    }).then(tweets => {
         return twitter.getTweets(tweets.tweet1.status_id, tweets.tweet2.status_id);
     }).then(tweets => {
         originalTweets = tweets;
