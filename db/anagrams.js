@@ -250,6 +250,34 @@ WHERE interesting_factor > $1::float;
     });
 };
 
+exports.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterThan = function (interestingFactorCutoff = defaultInterestingFactor) {
+
+    interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
+
+    let selectNotRejectedAndNotApprovedAnagramMatchCount = `
+SELECT count(1)
+FROM anagram_matches
+WHERE interesting_factor > $1::float 
+      AND rejected = false      
+      AND anagram_matches.date_retweeted IS NULL;
+`;
+    return pools.anagramPool.query(selectNotRejectedAndNotApprovedAnagramMatchCount, [interestingFactorCutoff]).then(x => {
+        return Number(x.rows[0].count);
+    });
+};
+
+exports.getCountOfRetweetedMatches = function () {
+
+    let selectRetweetedMatchCount = `
+SELECT count(1)
+FROM anagram_matches
+WHERE date_retweeted IS NOT NULL
+`;
+    return pools.anagramPool.query(selectRetweetedMatchCount).then(x => {
+        return Number(x.rows[0].count);
+    });
+};
+
 exports.getDateLastMatchCreated = function () {
     let selectDateLastMatchCreated = `
 SELECT date_created
