@@ -96,6 +96,7 @@ router.post('/reject/:id', function (req, res) {
 router.post('/approve/:id', function (req, res) {
 
     var matchId = req.params.id;
+    var orderAsShown = req.body.orderAsShown === "true";
 
     var originalTweets, retweet1, retweet2;
 
@@ -108,11 +109,18 @@ router.post('/approve/:id', function (req, res) {
     }).then(tweets => {
         return twitter.getTweets(tweets.tweet1.status_id, tweets.tweet2.status_id);
     }).then(tweets => {
+
+        if (!orderAsShown) {
+            var temp = tweets.tweet1;
+            tweets.tweet1 = tweets.tweet2;
+            tweets.tweet2 = temp;
+        }
+
         originalTweets = tweets;
-        return twitter.retweet(originalTweets.tweet1.id_str);
+        return twitter.retweet(originalTweets.tweet2.id_str);
     }).then(retweet => {
         retweet1 = retweet;
-        return twitter.retweet(originalTweets.tweet2.id_str);
+        return twitter.retweet(originalTweets.tweet1.id_str);
     }).then(retweet => {
         retweet2 = retweet;
         return anagramsDb.approveMatch(matchId, retweet1.id_str, retweet2.id_str);
