@@ -127,7 +127,7 @@
             this.matchQuery = ko.observable("topmatches");
             this.anagramMatches = ko.observableArray();
             this.recoveryErrors = ko.observableArray();
-            this.oldestTopMatchesCutoff = ko.observable(0.75);
+            this.oldestTopMatchesCutoff = ko.observable(0.75).extend({ rateLimit: 1000 });
 
             this.rejectMatch = anagramMatchToReject => {
                 this.hitEndPoint(`/anagrams/reject/${anagramMatchToReject.id}`, anagramMatchToReject);
