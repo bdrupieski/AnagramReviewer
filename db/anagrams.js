@@ -278,6 +278,18 @@ WHERE date_retweeted IS NOT NULL
     });
 };
 
+exports.getCountOfRejectedMatches = function () {
+
+    let selectedRejectedMatchCount = `
+SELECT count(1)
+FROM anagram_matches
+WHERE rejected = true
+`;
+    return pools.anagramPool.query(selectedRejectedMatchCount).then(x => {
+        return Number(x.rows[0].count);
+    });
+};
+
 exports.getDateLastMatchCreated = function () {
     let selectDateLastMatchCreated = `
 SELECT date_created

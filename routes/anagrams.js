@@ -40,6 +40,7 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getCountOfMatchesWithInterestingFactorGreaterThan(interestingFactorCutoff),
         anagramsDb.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterThan(interestingFactorCutoff),
         anagramsDb.getCountOfRetweetedMatches(),
+        anagramsDb.getCountOfRejectedMatches(),
         anagramsDb.getDateLastMatchCreated(),
         anagramsDb.getMatchesCreatedPerDay(numberOfLastDaysToGetMatchesCreatedPerDay)
     ]).then(stats => {
@@ -49,9 +50,10 @@ router.get('/statistics', function(req, res) {
             countOfMatchesAboveCutoff: stats[2],
             countOfNotRejectedAndNotApprovedMatchesAboveCutoff: stats[3],
             countOfRetweetedMatches: stats[4],
+            countOfRejectedMatches: stats[5],
             interestingFactorCutoff: interestingFactorCutoff,
-            dateLastMatchCreated: stats[5],
-            matchesPerDay: stats[6],
+            dateLastMatchCreated: stats[6],
+            matchesPerDay: stats[7],
             numberOfDaysToGetMatchesPerDay: numberOfLastDaysToGetMatchesCreatedPerDay
         };
 

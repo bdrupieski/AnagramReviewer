@@ -19,6 +19,9 @@
         <strong>{{formatNumber stats.countOfRetweetedMatches}}</strong> matches have been retweeted.
     </div>
     <div class="row">
+        <strong>{{formatNumber stats.countOfRejectedMatches}}</strong> matches have been rejected.
+    </div>
+    <div class="row">
         The most recent match was created <strong>{{formatRelative stats.dateLastMatchCreated}}</strong> at
         <strong>{{formatTime stats.dateLastMatchCreated hour="numeric" minute="numeric"}}</strong> on
         <strong>{{formatTime stats.dateLastMatchCreated day="numeric" month="long" year="numeric" }}</strong>.
