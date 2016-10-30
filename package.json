@@ -16,6 +16,7 @@
     "express": "~4.13.4",
     "handlebars-intl": "^1.1.2",
     "hbs": "^4.0.1",
+    "lodash": "^4.16.4",
     "morgan": "~1.7.0",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",

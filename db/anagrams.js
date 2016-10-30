@@ -176,7 +176,7 @@ LIMIT 1
     });
 }
 
-function getAnagramMatch(id) {
+exports.getAnagramMatch = function(id) {
     let selectAnagramMatchQuery = `
 SELECT *
 FROM anagram_matches
@@ -189,7 +189,7 @@ LIMIT 1
 }
 
 exports.getTweetsForMatch = function (matchId) {
-    return getAnagramMatch(matchId).then(match => {
+    return exports.getAnagramMatch(matchId).then(match => {
         return Promise.all([getTweet(match.tweet1_id), getTweet(match.tweet2_id)]);
     }).then(tweets => {
         return {
@@ -327,6 +327,39 @@ WHERE anagram_matches.id != $1::int AND anagram_matches.date_retweeted IS NOT NU
 
     return pools.anagramPool.query(countOfMatchesWithTweetAlreadyRetweeted, [matchId]).then(x => {
         return Number(x.rows[0].count);
+    });
+};
+
+exports.getRetweetedStatusIds = function() {
+    let retweetedStatusIds = `
+SELECT
+  anagram_matches.id,
+  t1.status_id AS t1_status_id,
+  t2.status_id AS t2_status_id
+FROM anagram_matches
+  INNER JOIN tweets t1 ON anagram_matches.tweet1_id = t1.id
+  INNER JOIN tweets t2 ON anagram_matches.tweet2_id = t2.id
+WHERE anagram_matches.date_retweeted IS NOT NULL
+`;
+
+    return pools.anagramPool.query(retweetedStatusIds).then(x => {
+        return x.rows;
+    });
+};
+
+exports.setUnretweeted = function(matchId) {
+    let setUnretweetedDate = `
+UPDATE anagram_matches
+SET date_unretweeted = current_timestamp
+WHERE id = $1
+`;
+
+    return pools.anagramPool.query(setUnretweetedDate, [matchId]).then(x => {
+        if (x.rowCount != 1) {
+            throw x;
+        } else {
+            return x;
+        }
     });
 };
 
