@@ -16,6 +16,7 @@ var logger = require('winston');
 var retweetIds;
 
 twitter.getPastTweetsUpTo3200().then(timelineTweets => {
+    console.log(`${timelineTweets.length} timeline tweets`);
     retweetIds = new Set(timelineTweets.map(x => x.retweeted_status.id_str));
     return anagramsDb.getRetweetedStatusIds();
 }).then(matches => {
@@ -68,6 +69,8 @@ twitter.getPastTweetsUpTo3200().then(timelineTweets => {
             return deletions;
         });
     }));
+}).then(deletions => {
+
 }).catch(err => {
     console.log("ERROR");
     console.log(err);
