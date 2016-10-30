@@ -40,13 +40,22 @@
     </nav>
 
     {{#if errorMessage}}
-        <div class="alert alert-danger">{{errorMessage}}</div>
+        <div class="alert alert-danger">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            {{errorMessage}}
+        </div>
     {{/if}}
     {{#if infoMessage}}
-        <div class="alert alert-info">{{infoMessage}}</div>
+        <div class="alert alert-info">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            {{infoMessage}}
+        </div>
     {{/if}}
     {{#if successMessage}}
-        <div class="alert alert-success">{{successMessage}}</div>
+        <div class="alert alert-success">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            {{successMessage}}
+        </div>
     {{/if}}
 
     {{{body}}}

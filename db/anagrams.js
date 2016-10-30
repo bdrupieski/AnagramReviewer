@@ -352,7 +352,7 @@ exports.setUnretweeted = function(matchId) {
     let setUnretweetedDate = `
 UPDATE anagram_matches
 SET date_unretweeted = current_timestamp
-WHERE id = $1
+WHERE id = $1::int
 `;
 
     return pools.anagramPool.query(setUnretweetedDate, [matchId]).then(x => {
@@ -361,6 +361,51 @@ WHERE id = $1
         } else {
             return x;
         }
+    });
+};
+
+exports.setUnretweetedAndClearRetweetStatus = function(matchId) {
+    let setUnretweetedDate = `
+UPDATE anagram_matches
+SET date_unretweeted = current_timestamp,
+  date_retweeted     = NULL,
+  tweet1_retweet_id  = NULL,
+  tweet2_retweet_id  = NULL
+WHERE id = $1::int
+`;
+
+    return pools.anagramPool.query(setUnretweetedDate, [matchId]).then(x => {
+        if (x.rowCount != 1) {
+            throw x;
+        } else {
+            return x;
+        }
+    });
+};
+
+exports.getMostRecentRetweetedMatches = function (limit = 10) {
+    let getRecentRetweetedMatchesQuery = `
+SELECT
+  anagram_matches.id,
+  anagram_matches.interesting_factor AS interesting,
+  anagram_matches.date_retweeted,
+  tweet1.original_text               AS t1_originaltext,
+  tweet2.original_text               AS t2_originaltext,
+  tweet1.user_name                   AS t1_username,
+  tweet1.status_id                   AS t1_statusid,
+  tweet2.user_name                   AS t2_username,
+  tweet2.status_id                   AS t2_statusid
+FROM
+  anagram_matches
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.ID
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.ID
+WHERE anagram_matches.date_retweeted IS NOT NULL
+ORDER BY anagram_matches.date_retweeted DESC
+LIMIT $1::int;
+`;
+
+    return pools.anagramPool.query(getRecentRetweetedMatchesQuery, [limit]).then(x => {
+        return x.rows;
     });
 };
 

@@ -72,6 +72,39 @@ router.get('/statistics', function(req, res) {
     });
 });
 
+router.get('/unretweetmanually', function(req, res) {
+    anagramsDb.getMostRecentRetweetedMatches().then(matches => {
+        res.render('anagrams/unretweetmanually', {
+            matches: matches
+        });
+    }).catch(err => {
+        logger.error(err.toString());
+        req.flash('error', err.toString());
+        res.redirect('/anagrams/list');
+    });
+});
+
+router.post('/unretweetmanually/:id', function(req, res) {
+
+    var matchId = req.params.id;
+
+    anagramsDb.getAnagramMatch(matchId).then(match => {
+        return Promise.all([
+            twitter.destroyTweet(match.tweet1_retweet_id),
+            twitter.destroyTweet(match.tweet2_retweet_id)
+        ]);
+    }).then(x => {
+        return anagramsDb.setUnretweetedAndClearRetweetStatus(matchId);
+    }).then(x => {
+        req.flash('info', `Unretweeted match ${matchId}`);
+        res.redirect('/anagrams/list');
+    }).catch(err => {
+        logger.error(err.toString());
+        req.flash('error', err.toString());
+        res.redirect('/anagrams/list');
+    });
+});
+
 router.get('/more/:queryType', function (req, res) {
     var cutoff = parseFloat(req.query.cutoff);
     var topMatches = anagramsDb.findMatches(req.params.queryType, 15, cutoff).then(anagramMatches => {
