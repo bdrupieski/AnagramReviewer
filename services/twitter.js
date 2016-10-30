@@ -11,10 +11,11 @@ var client = new Twitter({
 });
 
 exports.autoRejectableErrors = [
-    {code: 179, message: 'Sorry, you are not authorized to see this status.'},
-    {code: 144, message: 'No status found with that ID.'},
+    {code: 34, message: 'Sorry, that page does not exist.'},
     {code: 63, message: 'User has been suspended.'},
-    {code: 136, message: 'You have been blocked from the author of this tweet.'}
+    {code: 136, message: 'You have been blocked from the author of this tweet.'},
+    {code: 144, message: 'No status found with that ID.'},
+    {code: 179, message: 'Sorry, you are not authorized to see this status.'},
 ];
 
 function getTweet(id) {
