@@ -44,8 +44,8 @@ FROM
   ANAGRAM_MATCHES A
   INNER JOIN TWEETS T1 ON A.TWEET1_ID = T1.ID
   INNER JOIN TWEETS T2 ON A.TWEET2_ID = T2.ID
-WHERE NOT A.rejected AND
-      A.DATE_RETWEETED IS NULL
+WHERE NOT A.rejected
+      AND A.DATE_RETWEETED IS NULL
 ORDER BY
   A.INTERESTING_FACTOR DESC
 limit $1::int;
@@ -78,9 +78,9 @@ FROM
   ANAGRAM_MATCHES A
   INNER JOIN TWEETS T1 ON A.TWEET1_ID = T1.ID
   INNER JOIN TWEETS T2 ON A.TWEET2_ID = T2.ID
-WHERE NOT A.rejected AND
-      A.DATE_RETWEETED IS NULL AND
-      A.interesting_factor > $2::float
+WHERE NOT A.rejected
+      AND A.DATE_RETWEETED IS NULL
+      AND A.interesting_factor > $2::float
 ORDER BY
   A.DATE_CREATED
 LIMIT $1::int;
@@ -111,8 +111,8 @@ FROM
   ANAGRAM_MATCHES A
   INNER JOIN TWEETS T1 ON A.TWEET1_ID = T1.ID
   INNER JOIN TWEETS T2 ON A.TWEET2_ID = T2.ID
-WHERE NOT A.rejected AND
-      A.date_retweeted IS NULL
+WHERE NOT A.rejected
+      AND A.date_retweeted IS NULL
 ORDER BY
   A.date_created DESC
 LIMIT $1::int;
@@ -272,6 +272,7 @@ exports.getCountOfRetweetedMatches = function () {
 SELECT count(1)
 FROM anagram_matches
 WHERE date_retweeted IS NOT NULL
+      AND date_unretweeted IS NULL;
 `;
     return pools.anagramPool.query(selectRetweetedMatchCount).then(x => {
         return Number(x.rows[0].count);
