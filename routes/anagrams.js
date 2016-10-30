@@ -58,6 +58,7 @@ router.get('/statistics', function(req, res) {
         };
 
         formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.countOfMatches;
+        formattedStats.countOfRetweetedTweets = formattedStats.countOfRetweetedMatches * 2;
 
         return formattedStats;
     }).then(stats => {
