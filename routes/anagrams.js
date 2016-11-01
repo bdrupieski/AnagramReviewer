@@ -134,7 +134,9 @@ router.post('/approve/:id', function (req, res) {
 
     var originalTweets, retweet1, retweet2;
 
-    anagramsDb.getCountOfAnagramMatchesWithTweetInThisMatchAlreadyRetweeted(matchId).then(count => {
+    anagramsDb.markAttemptedApprovalForMatch(matchId).then(x => {
+        return anagramsDb.getCountOfAnagramMatchesWithTweetInThisMatchAlreadyRetweeted(matchId);
+    }).then(count => {
         if (count > 0) {
             throw "Match contains tweet that's already been retweeted."
         } else {
@@ -173,7 +175,7 @@ router.post('/approve/:id', function (req, res) {
             var rejectableCodes = twitter.autoRejectableErrors.map(x => x.code);
 
             if (intersection(codes, rejectableCodes).length > 0) {
-                return anagramsDb.rejectMatch(matchId).then(x => {
+                return anagramsDb.rejectMatch(matchId, true).then(x => {
                     return res.json({error: approvalErrorMessages, systemResponse: "Auto-rejected.", remove: true});
                 }).catch(err => {
                     logger.error(err);

@@ -127,15 +127,35 @@ LIMIT $1::int;
     });
 }
 
-exports.rejectMatch = function (matchId) {
+exports.rejectMatch = function (matchId, isAutoRejected = false) {
 
     let rejectMatchQuery = `
 UPDATE anagram_matches
-SET rejected = TRUE
+SET 
+rejected = TRUE,
+date_rejected = current_timestamp,
+auto_rejected = $2::boolean
 WHERE anagram_matches.id = $1::int;
 `;
 
-    return pools.anagramPool.query(rejectMatchQuery, [matchId]).then(x => {
+    return pools.anagramPool.query(rejectMatchQuery, [matchId, isAutoRejected]).then(x => {
+        if (x.rowCount != 1) {
+            throw x;
+        } else {
+            return x;
+        }
+    });
+};
+
+exports.markAttemptedApprovalForMatch = function (matchId) {
+
+    let markApprovalAttempted = `
+UPDATE anagram_matches
+SET attempted_approval = true
+WHERE anagram_matches.id = $1::int;
+`;
+
+    return pools.anagramPool.query(markApprovalAttempted, [matchId]).then(x => {
         if (x.rowCount != 1) {
             throw x;
         } else {
