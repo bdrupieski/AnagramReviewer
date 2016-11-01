@@ -105,6 +105,32 @@ router.post('/unretweetmanually/:id', function(req, res) {
     });
 });
 
+router.get('/unrejectmanually', function(req, res) {
+    anagramsDb.getMostRecentRejectedMatches().then(matches => {
+        res.render('anagrams/unrejectmanually', {
+            matches: matches
+        });
+    }).catch(err => {
+        logger.error(err.toString());
+        req.flash('error', err.toString());
+        res.redirect('/anagrams/list');
+    });
+});
+
+router.post('/unrejectmanually/:id', function(req, res) {
+
+    var matchId = req.params.id;
+
+    anagramsDb.unrejectMatch(matchId).then(x => {
+        req.flash('info', `Unrejected match ${matchId}`);
+        res.redirect('/anagrams/list');
+    }).catch(err => {
+        logger.error(err.toString());
+        req.flash('error', err.toString());
+        res.redirect('/anagrams/list');
+    });
+});
+
 router.get('/more/:queryType', function (req, res) {
     var cutoff = parseFloat(req.query.cutoff);
     var topMatches = anagramsDb.findMatches(req.params.queryType, 15, cutoff).then(anagramMatches => {

@@ -132,13 +132,33 @@ exports.rejectMatch = function (matchId, isAutoRejected = false) {
     let rejectMatchQuery = `
 UPDATE anagram_matches
 SET 
-rejected = TRUE,
-date_rejected = current_timestamp,
-auto_rejected = $2::boolean
+  rejected      = TRUE,
+  date_rejected = current_timestamp,
+  auto_rejected = $2::boolean
 WHERE anagram_matches.id = $1::int;
 `;
 
     return pools.anagramPool.query(rejectMatchQuery, [matchId, isAutoRejected]).then(x => {
+        if (x.rowCount != 1) {
+            throw x;
+        } else {
+            return x;
+        }
+    });
+};
+
+exports.unrejectMatch = function (matchId) {
+
+    let unrejectMatchQuery = `
+UPDATE anagram_matches
+SET 
+  rejected      = FALSE,
+  date_rejected = NULL,
+  auto_rejected = NULL
+WHERE anagram_matches.id = $1::int;
+`;
+
+    return pools.anagramPool.query(unrejectMatchQuery, [matchId]).then(x => {
         if (x.rowCount != 1) {
             throw x;
         } else {
@@ -206,7 +226,7 @@ LIMIT 1
     return pools.anagramPool.query(selectAnagramMatchQuery, [id]).then(x => {
         return x.rows[0];
     });
-}
+};
 
 exports.getTweetsForMatch = function (matchId) {
     return exports.getAnagramMatch(matchId).then(match => {
@@ -425,6 +445,35 @@ LIMIT $1::int;
 `;
 
     return pools.anagramPool.query(getRecentRetweetedMatchesQuery, [limit]).then(x => {
+        return x.rows;
+    });
+};
+
+exports.getMostRecentRejectedMatches = function (limit = 10) {
+    let getRecentRejectedMatchesQuery = `
+SELECT
+  anagram_matches.id,
+  anagram_matches.interesting_factor AS interesting,
+  anagram_matches.date_retweeted,
+  tweet1.original_text               AS t1_originaltext,
+  tweet2.original_text               AS t2_originaltext,
+  tweet1.user_name                   AS t1_username,
+  tweet1.status_id                   AS t1_statusid,
+  tweet2.user_name                   AS t2_username,
+  tweet2.status_id                   AS t2_statusid
+FROM
+  anagram_matches
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.ID
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.ID
+WHERE date_rejected IS NOT NULL
+      AND anagram_matches.rejected = TRUE
+      AND anagram_matches.tweet1_retweet_id IS NULL
+      AND anagram_matches.tweet2_retweet_id IS NULL
+ORDER BY date_rejected DESC
+LIMIT $1::int;
+`;
+
+    return pools.anagramPool.query(getRecentRejectedMatchesQuery, [limit]).then(x => {
         return x.rows;
     });
 };
