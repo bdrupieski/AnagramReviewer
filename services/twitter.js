@@ -127,6 +127,23 @@ exports.getRateLimits = function(resources) {
     });
 };
 
+exports.oembedTweet = function(tweetId) {
+    return new Promise((resolve, reject) => {
+        client.get('statuses/oembed', {id: tweetId, hide_thread: true, hide_media: true}, function(error, data, response) {
+            if (error && error.length) {
+                var combinedErrors = error.map(x => x.message).join(" ");
+                return reject(combinedErrors);
+            } else if (error) {
+                return reject(error);
+            } if (data) {
+                return resolve(data);
+            } else {
+                return reject(`unknown error when retrieving rate_limit_status`);
+            }
+        })
+    });
+};
+
 exports.getPastTweetsUpTo3200 = function() {
 
     var getTimelineTweetsGreaterThanMaxId = function(maxId) {

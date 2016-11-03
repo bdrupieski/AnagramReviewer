@@ -169,6 +169,9 @@
                     if (data.successMessage) {
                         $.growl({title: '', style: 'notice', message: data.successMessage});
                     }
+                    if (data.tumblrError) {
+                        $.growl.error({title: '', message: data.tumblrError});
+                    }
                     if (data.remove) {
                         this.anagramMatches.remove(match => match.id === affectedMatch.id);
                         this.getMoreMatchesIfListIsRunningLow();

@@ -4,6 +4,7 @@ var anagramsDb = require('../db/anagrams');
 var passportConfig = require("../services/passport");
 var twitter = require("../services/twitter");
 var logger = require('winston');
+var tumblr = require("../services/tumblr");
 
 router.get('/*', passportConfig.isLoggedIn);
 
@@ -94,7 +95,7 @@ router.post('/unretweetmanually/:id', function(req, res) {
             twitter.destroyTweet(match.tweet2_retweet_id)
         ]);
     }).then(x => {
-        return anagramsDb.setUnretweetedAndClearRetweetStatus(matchId);
+        return anagramsDb.setUnretweetedAndClearRetweetIds(matchId);
     }).then(x => {
         req.flash('info', `Unretweeted match ${matchId}`);
         res.redirect('/anagrams/list');
@@ -187,8 +188,24 @@ router.post('/approve/:id', function (req, res) {
         retweet2 = retweet;
         return anagramsDb.approveMatch(matchId, retweet1.id_str, retweet2.id_str);
     }).then(x => {
+        return postMatchToTumblr(matchId, originalTweets.tweet1.id_str, originalTweets.tweet2.id_str).then(x => {
+            return null;
+        }).catch(err => {
+            return err;
+        });
+    }).then(tumblrError => {
+
         var rateLimitRemaining = Math.min(originalTweets.tweet1.rateLimitRemaining, originalTweets.tweet2.rateLimitRemaining);
-        res.json({successMessage: `Approved ${matchId}. ${rateLimitRemaining} calls remaining.`, remove: true});
+        var jsonResponse = {
+            successMessage: `Approved ${matchId}. ${rateLimitRemaining} calls remaining.`,
+            remove: true
+        };
+
+        if (tumblrError) {
+            jsonResponse.tumblrError = `tumblr error for ${matchId}: ${tumblrError}`;
+        }
+
+        res.json(jsonResponse);
     }).catch(err => {
 
         var approvalError = err.message || err;
@@ -303,6 +320,26 @@ router.post('/cleanup', function (req, res) {
 function intersection(array1, array2) {
     return array1.filter(function(n) {
         return array2.indexOf(n) != -1;
+    });
+}
+
+function postMatchToTumblr(matchId, t1StatusId, t2StatusId) {
+    return Promise.all([
+        twitter.oembedTweet(t1StatusId),
+        twitter.oembedTweet(t2StatusId)
+    ]).then(oembeds => {
+
+        const t1 = oembeds[0];
+        const t2 = oembeds[1];
+
+        const title = `${t1.author_name} vs. ${t2.author_name}`;
+        const content = `<div> ${t1.html} <br><br> ${t2.html} </div>`;
+
+        return tumblr.client.createTextPost("anagrammatweest", { title: title, body: content });
+    }).then(tumblrResponse => {
+        const tumblrPostId = tumblrResponse.id;
+        logger.info(`posted tumblr post id: ${tumblrPostId}`);
+        return anagramsDb.updateTumblrPostId(matchId, tumblrPostId);
     });
 }
 
