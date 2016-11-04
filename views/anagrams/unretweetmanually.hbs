@@ -14,9 +14,18 @@
             <td>{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
             <td>{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>
             <td>
-                <form action='unretweetmanually/{{id}}' method="post">
-                    <button type="submit" class="btn btn-primary">Unretweet</button>
-                </form>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <form action='unretweetmanually/{{id}}' method="post">
+                            <button type="submit" class="btn btn-primary">Unretweet</button>
+                        </form>
+                    </div>
+                    <div class="col-sm-6">
+                        <form action='unretweetmanually/{{id}}?deletetumblrpost=true' method="post">
+                            <button type="submit" class="btn btn-primary">Unretweet, delete tumblr</button>
+                        </form>
+                    </div>
+                </div>
             </td>
         </tr>
     {{/each}}

@@ -88,14 +88,22 @@ router.get('/unretweetmanually', function(req, res) {
 router.post('/unretweetmanually/:id', function(req, res) {
 
     var matchId = req.params.id;
+    var deleteFromTumblr = req.query.deletetumblrpost === "true";
 
     anagramsDb.getAnagramMatch(matchId).then(match => {
-        return Promise.all([
+
+        var unretweetPromises = [
             twitter.destroyTweet(match.tweet1_retweet_id),
             twitter.destroyTweet(match.tweet2_retweet_id)
-        ]);
+        ];
+
+        if (deleteFromTumblr){
+            unretweetPromises.push(tumblr.client.deletePost("anagrammatweest", {id: match.tumblr_post_id}));
+        }
+
+        return Promise.all(unretweetPromises);
     }).then(x => {
-        return anagramsDb.setUnretweetedAndClearRetweetIds(matchId);
+        return anagramsDb.setUnretweetedAndClearRetweetIds(matchId, deleteFromTumblr);
     }).then(x => {
         req.flash('info', `Unretweeted match ${matchId}`);
         res.redirect('/anagrams/list');
@@ -320,7 +328,7 @@ router.post('/cleanup', function (req, res) {
 router.post('/bulkpostmissingtumblrposts', function (req, res) {
     anagramsDb.getTweetsToPostToTumblr(25).then(matches => {
         if (matches.length == 0) {
-            req.flash('info', "No tweets to clean up.");
+            req.flash('info', "No missing tumblr posts.");
             res.redirect('/anagrams/list');
         } else {
             return Promise.all(matches.map(x => postMatchToTumblr(x.id, x.t1_status_id, x.t2_status_id))).then(x => {

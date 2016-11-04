@@ -443,7 +443,7 @@ WHERE id = $1::int
     });
 };
 
-exports.setUnretweetedAndClearRetweetIds = function(matchId) {
+exports.setUnretweetedAndClearRetweetIds = function(matchId, clearTumblrPostId) {
     let setUnretweetedDateAndRetweetIds = `
 UPDATE anagram_matches
 SET date_unretweeted = current_timestamp,
@@ -453,7 +453,24 @@ SET date_unretweeted = current_timestamp,
 WHERE id = $1::int
 `;
 
-    return pools.anagramPool.query(setUnretweetedDateAndRetweetIds, [matchId]).then(x => {
+    let setUnretweetedDateRetweetIdsTumblrPostId = `
+UPDATE anagram_matches
+SET date_unretweeted = current_timestamp,
+  date_retweeted     = NULL,
+  tweet1_retweet_id  = NULL,
+  tweet2_retweet_id  = NULL,
+  tumblr_post_id     = NULL
+WHERE id = $1::int
+`;
+
+    var queryToUseForUnretweeting;
+    if (clearTumblrPostId) {
+        queryToUseForUnretweeting = setUnretweetedDateRetweetIdsTumblrPostId;
+    } else {
+        queryToUseForUnretweeting = setUnretweetedDateAndRetweetIds;
+    }
+
+    return pools.anagramPool.query(queryToUseForUnretweeting, [matchId]).then(x => {
         if (x.rowCount != 1) {
             throw x;
         } else {
