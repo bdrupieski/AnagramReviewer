@@ -1,7 +1,7 @@
 var pools = require('./poolProvider');
 
 let maxMatchLimit = 50;
-let defaultInterestingFactor = 0.75;
+let defaultInterestingFactor = 0.67;
 let topMatchesQueryType = "topmatches";
 let oldestTopMatchesQueryType = "oldesttopmatches";
 let mostRecentMatches = "mostrecentmatches";

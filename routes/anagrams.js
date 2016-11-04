@@ -32,8 +32,8 @@ router.get('/ratelimits', function(req, res) {
 
 router.get('/statistics', function(req, res) {
 
-    let interestingFactorCutoff = req.query.interestingfactor || 0.75;
-    let numberOfLastDaysToGetMatchesCreatedPerDay = req.query.days || 100;
+    let interestingFactorCutoff = req.query.interestingfactor || 0.67;
+    let numberOfLastDaysToGetMatchesCreatedPerDay = req.query.days || 500;
 
     Promise.all([
         anagramsDb.getCountOfAnagramMatches(),
