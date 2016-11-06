@@ -263,8 +263,8 @@ exports.getMatchesCreatedPerDay = function (numberOfPastDays = 30) {
 
     let selectMatchesCreatedPerDayQuery = `
 SELECT
-  date_trunc('day', anagram_matches.date_created) AS day,
-  SUM(1)                                          AS sum
+  date(anagram_matches.date_created) AS day,
+  SUM(1)                             AS sum
 FROM anagram_matches
 GROUP BY day
 ORDER BY day DESC
