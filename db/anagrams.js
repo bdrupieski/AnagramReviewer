@@ -257,20 +257,28 @@ exports.getTweetsForMatch = function (matchId) {
     });
 };
 
-exports.getMatchesCreatedPerDay = function (numberOfPastDays = 30) {
+exports.getStatsByDateMatchCreated = function (numberOfPastDays = 30) {
 
     numberOfPastDays = Math.max(numberOfPastDays, 5);
 
-    let selectMatchesCreatedPerDayQuery = `
+    let statsByDateMatchCreated = `
 SELECT
+  DISTINCT ON (day)
   date(anagram_matches.date_created) AS day,
-  SUM(1)                             AS sum
+  count(1) OVER w AS matches_created,
+  sum(CASE WHEN anagram_matches.attempted_approval = true THEN 1 ELSE 0 END) OVER w AS attempted_approval,
+  sum(CASE WHEN anagram_matches.auto_rejected = true THEN 1 ELSE 0 END) OVER w AS auto_rejected,
+  count(anagram_matches.date_retweeted) OVER w AS retweeted,
+  count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
+  sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
+  count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr
 FROM anagram_matches
-GROUP BY day
+WINDOW w AS (
+  PARTITION BY date(anagram_matches.date_created) )
 ORDER BY day DESC
 LIMIT $1::int;
 `;
-    return pools.anagramPool.query(selectMatchesCreatedPerDayQuery, [numberOfPastDays]).then(x => {
+    return pools.anagramPool.query(statsByDateMatchCreated, [numberOfPastDays]).then(x => {
         return x.rows;
     });
 };
@@ -281,7 +289,7 @@ exports.getStatsByInterestingFactorBucket = function () {
 SELECT
   DISTINCT ON (score)
   trunc(anagram_matches.interesting_factor :: NUMERIC, 2) AS score,
-  count(1) OVER w AS total_matches_for_day,
+  count(1) OVER w AS matches_created,
   sum(CASE WHEN anagram_matches.attempted_approval = true THEN 1 ELSE 0 END) OVER w AS attempted_approval,
   sum(CASE WHEN anagram_matches.auto_rejected = true THEN 1 ELSE 0 END) OVER w AS auto_rejected,
   count(anagram_matches.date_retweeted) OVER w AS retweeted,
