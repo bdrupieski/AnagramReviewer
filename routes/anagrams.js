@@ -33,7 +33,7 @@ router.get('/ratelimits', function(req, res) {
 router.get('/statistics', function(req, res) {
 
     let interestingFactorCutoff = req.query.interestingfactor || 0.67;
-    let numberOfLastDaysToGetMatchesCreatedPerDay = req.query.days || 500;
+    let numberOfLastDaysToGetMatchesCreatedPerDay = req.query.days || 15;
 
     Promise.all([
         anagramsDb.getCountOfAnagramMatches(),
@@ -43,7 +43,8 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getCountOfRetweetedMatches(),
         anagramsDb.getCountOfRejectedMatches(),
         anagramsDb.getDateLastMatchCreated(),
-        anagramsDb.getMatchesCreatedPerDay(numberOfLastDaysToGetMatchesCreatedPerDay)
+        anagramsDb.getMatchesCreatedPerDay(numberOfLastDaysToGetMatchesCreatedPerDay),
+        anagramsDb.getStatsByInterestingFactorBucket()
     ]).then(stats => {
         var formattedStats = {
             countOfMatches: stats[0],
@@ -55,7 +56,8 @@ router.get('/statistics', function(req, res) {
             interestingFactorCutoff: interestingFactorCutoff,
             dateLastMatchCreated: stats[6],
             matchesPerDay: stats[7],
-            numberOfDaysToGetMatchesPerDay: numberOfLastDaysToGetMatchesCreatedPerDay
+            numberOfDaysToGetMatchesPerDay: numberOfLastDaysToGetMatchesCreatedPerDay,
+            statsByInterestingFactorBucket: stats[8]
         };
 
         formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.countOfMatches;

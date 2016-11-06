@@ -275,6 +275,29 @@ LIMIT $1::int;
     });
 };
 
+exports.getStatsByInterestingFactorBucket = function () {
+
+    let statsByInterestingFactorBucket = `
+SELECT
+  DISTINCT ON (score)
+  trunc(anagram_matches.interesting_factor :: NUMERIC, 2) AS score,
+  count(1) OVER w AS total_matches_for_day,
+  sum(CASE WHEN anagram_matches.attempted_approval = true THEN 1 ELSE 0 END) OVER w AS attempted_approval,
+  sum(CASE WHEN anagram_matches.auto_rejected = true THEN 1 ELSE 0 END) OVER w AS auto_rejected,
+  count(anagram_matches.date_retweeted) OVER w AS retweeted,
+  count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
+  sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
+  count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr
+FROM anagram_matches
+WINDOW w AS (
+  PARTITION BY trunc(anagram_matches.interesting_factor :: NUMERIC, 2) )
+ORDER BY score DESC;
+`;
+    return pools.anagramPool.query(statsByInterestingFactorBucket).then(x => {
+        return x.rows;
+    });
+};
+
 exports.getCountOfAnagramMatches = function () {
     let anagramMatchCountQuery = `
 SELECT count(1)

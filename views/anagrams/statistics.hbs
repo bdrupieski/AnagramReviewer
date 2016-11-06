@@ -32,24 +32,60 @@
     <div class="row">
         Matches created for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:
     </div>
-    <div class="row col-md-4">
-        <table class="table table-hover">
+    <div class="row">
+        <div class="col-md-4">
+            <table class="table table-hover">
 
-            <thead>
-            <tr>
-                <th>Day</th>
-                <th>Matches created</th>
-            </tr>
-            </thead>
-            <tbody>
-            {{#each stats.matchesPerDay}}
+                <thead>
                 <tr>
-                    <td>{{formatTime day day="numeric" month="long" year="numeric"}}</td>
-                    <td>{{sum}}</td>
+                    <th>Day</th>
+                    <th>Matches created</th>
                 </tr>
-            {{/each}}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                {{#each stats.matchesPerDay}}
+                    <tr>
+                        <td>{{formatTime day day="numeric" month="long" year="numeric"}}</td>
+                        <td>{{sum}}</td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        </div>
     </div>
 
+    <h3>Stats by interesting factor bucket</h3>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-hover">
+
+                <thead>
+                <tr>
+                    <th>Interesting Factor</th>
+                    <th>Total matches</th>
+                    <th>Attempted Approval</th>
+                    <th>Auto-rejected</th>
+                    <th>Retweeted</th>
+                    <th>Unretweeted</th>
+                    <th>Rejected</th>
+                    <th>Tumblr</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each stats.statsByInterestingFactorBucket}}
+                    <tr>
+                        <td>{{score}}</td>
+                        <td>{{total_matches_for_day}}</td>
+                        <td>{{attempted_approval}}</td>
+                        <td>{{auto_rejected}}</td>
+                        <td>{{retweeted}}</td>
+                        <td>{{unretweeted}}</td>
+                        <td>{{rejected}}</td>
+                        <td>{{posted_to_tumblr}}</td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
