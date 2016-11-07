@@ -28,6 +28,31 @@
         <strong>{{formatTime stats.dateLastMatchCreated day="numeric" month="long" year="numeric" }}</strong>.
     </div>
 
+    <h3>Retweets and Tumblr posts made by day for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:</h3>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-hover">
+
+                <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Retweets</th>
+                    <th>Tumblr posts</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each stats.retweetsAndTumblrByDay}}
+                    <tr>
+                        <td>{{formatTime day day="numeric" month="long" year="numeric"}}</td>
+                        <td>{{retweeted}}</td>
+                        <td>{{posted_to_tumblr}}</td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <h3>Stats by date match created for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:</h3>
     <div class="row">
         <div class="col-md-12">

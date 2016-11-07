@@ -306,6 +306,35 @@ ORDER BY score DESC;
     });
 };
 
+exports.getRetweetsAndTumblrPostsByDay = function (numberOfPastDays = 30) {
+
+    numberOfPastDays = Math.max(numberOfPastDays, 5);
+
+    let retweetsAndTumblrPostsByDayQuery = `
+SELECT
+  COALESCE(retweeted.day, tumblr.day) as day,
+  COALESCE(count_retweeted, 0) as retweeted,
+  COALESCE(count_posted_tumblr, 0) as posted_to_tumblr
+FROM (SELECT
+        date(anagram_matches.date_retweeted) AS day,
+        count(1)                             AS count_retweeted
+      FROM anagram_matches
+      WHERE date_retweeted IS NOT NULL
+      GROUP BY day) AS retweeted
+  FULL OUTER JOIN (SELECT
+                     date(anagram_matches.date_posted_tumblr) AS day,
+                     count(1)                                 AS count_posted_tumblr
+                   FROM anagram_matches
+                   WHERE date_posted_tumblr IS NOT NULL
+                   GROUP BY day) AS tumblr ON retweeted.day = tumblr.day
+ORDER BY day DESC
+LIMIT $1::int
+`;
+    return pools.anagramPool.query(retweetsAndTumblrPostsByDayQuery, [numberOfPastDays]).then(x => {
+        return x.rows;
+    });
+};
+
 exports.getCountOfAnagramMatches = function () {
     let anagramMatchCountQuery = `
 SELECT count(1)

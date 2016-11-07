@@ -43,6 +43,7 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getCountOfRetweetedMatches(),
         anagramsDb.getCountOfRejectedMatches(),
         anagramsDb.getDateLastMatchCreated(),
+        anagramsDb.getRetweetsAndTumblrPostsByDay(numberOfLastDaysToGetMatchesCreatedPerDay),
         anagramsDb.getStatsByDateMatchCreated(numberOfLastDaysToGetMatchesCreatedPerDay),
         anagramsDb.getStatsByInterestingFactorBucket()
     ]).then(stats => {
@@ -55,9 +56,10 @@ router.get('/statistics', function(req, res) {
             countOfRejectedMatches: stats[5],
             interestingFactorCutoff: interestingFactorCutoff,
             dateLastMatchCreated: stats[6],
-            statsByDateMatchCreated: stats[7],
+            retweetsAndTumblrByDay: stats[7],
+            statsByDateMatchCreated: stats[8],
             numberOfDaysToGetMatchesPerDay: numberOfLastDaysToGetMatchesCreatedPerDay,
-            statsByInterestingFactorBucket: stats[8]
+            statsByInterestingFactorBucket: stats[9]
         };
 
         formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.countOfMatches;
@@ -99,7 +101,7 @@ router.post('/unretweetmanually/:id', function(req, res) {
             twitter.destroyTweet(match.tweet2_retweet_id)
         ];
 
-        if (deleteFromTumblr){
+        if (deleteFromTumblr) {
             unretweetPromises.push(tumblr.client.deletePost("anagrammatweest", {id: match.tumblr_post_id}));
         }
 
