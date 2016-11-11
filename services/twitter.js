@@ -22,15 +22,16 @@ function getTweet(id) {
     return new Promise((resolve, reject) => {
         client.get(`statuses/show/${id}`, {include_entities: false, trim_user: true, include_my_retweet: true},
             function (error, tweet, response) {
-                if (tweet.id) {
+                if (error) {
+                    return reject(error);
+                } else if (tweet.id) {
                     tweet.rateLimitRemaining = response.headers['x-rate-limit-remaining'];
                     if (tweet.rateLimitRemaining < 10) {
                         reject(`Only ${tweet.rateLimitRemaining} calls remain.`)
                     }
                     return resolve(tweet);
-                } else if (error) {
-                    return reject(error);
                 } else {
+                    logger.error(response);
                     return reject(`unknown error when retrieving ${id}`);
                 }
             });
@@ -52,14 +53,17 @@ exports.retweet = function(id) {
     return new Promise((resolve, reject) => {
         client.post(`statuses/retweet/${id}`, {trim_user: true},
             function (error, tweet, response) {
-                if (tweet.id) {
+                if (error) {
+                    if (error.length) {
+                        var combinedErrors = error.map(x => x.message).join(" ");
+                        return reject(combinedErrors);
+                    } else {
+                        return reject(error);
+                    }
+                } else if (tweet && tweet.id) {
                     return resolve(tweet);
-                } else if (error.length) {
-                    var combinedErrors = error.map(x => x.message).join(" ");
-                    return reject(combinedErrors);
-                } else if (error) {
-                    return reject(error);
                 } else {
+                    logger.error(response);
                     return reject(`unknown error when retweeting ${id}`);
                 }
             });
@@ -71,15 +75,18 @@ exports.unretweet = function(id) {
     return new Promise((resolve, reject) => {
         client.post(`statuses/unretweet/${id}`, {trim_user: true},
             function (error, tweet, response) {
-                if (tweet.id) {
+                if (error) {
+                    if (error.length) {
+                        var combinedErrors = error.map(x => x.message).join(" ");
+                        logger.error(`error while unretweeting ${id}: ${combinedErrors}`);
+                        return reject(combinedErrors);
+                    } else {
+                        return reject(error);
+                    }
+                } else if (tweet && tweet.id) {
                     return resolve(tweet);
-                } else if (error.length) {
-                    var combinedErrors = error.map(x => x.message).join(" ");
-                    logger.error(`error while unretweeting ${id}: ${combinedErrors}`);
-                    return reject(combinedErrors);
-                } else if (error) {
-                    return reject(error);
                 } else {
+                    logger.error(response);
                     return reject(`unknown error when unretweeting ${id}`);
                 }
             });
@@ -91,15 +98,18 @@ exports.destroyTweet = function (id) {
     return new Promise((resolve, reject) => {
         client.post(`statuses/destroy/${id}`, {trim_user: true},
             function (error, tweet, response) {
-                if (tweet.id_str) {
+                if (error) {
+                    if (error.length) {
+                        var combinedErrors = error.map(x => x.message).join(" ");
+                        logger.error(`error while destroying ${id}: ${combinedErrors}`);
+                        return reject(combinedErrors);
+                    } else {
+                        return reject(error);
+                    }
+                } else if (tweet && tweet.id_str) {
                     return resolve(tweet);
-                } else if (error.length) {
-                    var combinedErrors = error.map(x => x.message).join(" ");
-                    logger.error(`error while destroying ${id}: ${combinedErrors} `);
-                    return reject(combinedErrors);
-                } else if (error) {
-                    return reject(error);
                 } else {
+                    logger.error(response);
                     return reject(`unknown error when destroying ${id}`);
                 }
             });
@@ -121,6 +131,7 @@ exports.getRateLimits = function(resources) {
                 var combinedErrors = error.map(x => x.message).join(" ");
                 return reject(combinedErrors);
             } else {
+                logger.error(response);
                 return reject(`unknown error when retrieving rate_limit_status`);
             }
         })
@@ -130,14 +141,17 @@ exports.getRateLimits = function(resources) {
 exports.oembedTweet = function(tweetId) {
     return new Promise((resolve, reject) => {
         client.get('statuses/oembed', {id: tweetId, hide_thread: true, hide_media: true}, function(error, data, response) {
-            if (error && error.length) {
-                var combinedErrors = error.map(x => x.message).join(" ");
-                return reject(combinedErrors);
-            } else if (error) {
-                return reject(error);
+            if (error) {
+                if (error.length) {
+                    var combinedErrors = error.map(x => x.message).join(" ");
+                    return reject(combinedErrors);
+                } else {
+                    return reject(error);
+                }
             } if (data) {
                 return resolve(data);
             } else {
+                logger.error(response);
                 return reject(`unknown error when retrieving rate_limit_status`);
             }
         })
@@ -166,6 +180,7 @@ exports.getPastTweetsUpTo3200 = function() {
                 else if (data) {
                     return resolve(data);
                 } else {
+                    logger.error(response);
                     return reject(`unknown error when retrieving statuses/user_timeline`);
                 }
             })
