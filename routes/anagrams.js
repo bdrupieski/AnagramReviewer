@@ -171,17 +171,24 @@ router.post('/approve/:id', function (req, res) {
     var matchId = req.params.id;
     var orderAsShown = req.body.orderAsShown === "true";
 
-    var originalTweets, retweet1, retweet2;
-
     anagramsDb.markAttemptedApprovalForMatch(matchId).then(x => {
         return anagramsDb.getCountOfAnagramMatchesWithTweetInThisMatchAlreadyRetweeted(matchId);
     }).then(count => {
         if (count > 0) {
-            throw "Match contains tweet that's already been retweeted."
+            return postToTumblr(matchId, orderAsShown);
         } else {
-            return anagramsDb.getTweetsForMatch(matchId);
+            return retweetAndPostToTumblr(matchId, orderAsShown);
         }
-    }).then(tweets => {
+    }).then(response => {
+        return res.json(response);
+    });
+});
+
+function retweetAndPostToTumblr(matchId, orderAsShown) {
+
+    var originalTweets, retweet1, retweet2;
+
+    return anagramsDb.getTweetsForMatch(matchId).then(tweets => {
         return twitter.getTweets(tweets.tweet1.status_id, tweets.tweet2.status_id);
     }).then(tweets => {
 
@@ -208,52 +215,80 @@ router.post('/approve/:id', function (req, res) {
     }).then(tumblrError => {
 
         var rateLimitRemaining = Math.min(originalTweets.tweet1.rateLimitRemaining, originalTweets.tweet2.rateLimitRemaining);
-        var jsonResponse = {
+        var response = {
             successMessage: `Approved ${matchId}. ${rateLimitRemaining} calls remaining.`,
             remove: true
         };
 
         if (tumblrError) {
-            jsonResponse.tumblrError = `tumblr error for ${matchId}: ${tumblrError}`;
+            response.tumblrError = `tumblr error for ${matchId}: ${tumblrError}`;
         }
 
-        res.json(jsonResponse);
-    }).catch(err => {
+        return response;
+    }).catch(error => {
 
-        var approvalError = err.message || err;
-        console.log(err);
+        var approvalError = error.message || error;
+        console.log(error);
 
-        if (Array.isArray(err)) {
-
-            var codes = err.map(x => x.code);
-            var approvalErrorMessages = err.map(x => x.message).join();
-            var rejectableCodes = twitter.autoRejectableErrors.map(x => x.code);
-
-            if (intersection(codes, rejectableCodes).length > 0) {
-                return anagramsDb.rejectMatch(matchId, true).then(x => {
-                    return res.json({error: approvalErrorMessages, systemResponse: "Auto-rejected.", remove: true});
-                }).catch(err => {
-                    logger.error(err);
-                    return res.json({error: approvalErrorMessages, systemResponse: "Auto-rejection failed: " + err, recoveryError: true});
-                });
-            } else {
-                logger.error(approvalErrorMessages);
-                return res.json({error: approvalErrorMessages});
-            }
+        if (Array.isArray(error)) {
+            return autoRejectFromTwitterError(matchId, error);
         }
 
         if (retweet1 || retweet2) {
             return Promise.all([retweet1, retweet2].filter(x => x).map(x => twitter.unretweet(x.id_str))).then(unretweet => {
-                return res.json({error: approvalError, systemResponse: "Unretweeted."});
+                return {error: approvalError, systemResponse: "Unretweeted."};
             }).catch(err => {
                 logger.error(err);
-                return res.json({error: approvalError, systemResponse: "Error unretweeting: " + err, recoveryError: true});
+                return {error: approvalError, systemResponse: "Error unretweeting: " + err, recoveryError: true};
             });
         }
 
-        return res.json({error: approvalError});
+        return {error: approvalError};
     });
-});
+}
+
+function postToTumblr(matchId, orderAsShown) {
+    return anagramsDb.getTweetsForMatch(matchId).then(tweets => {
+        return twitter.getTweets(tweets.tweet1.status_id, tweets.tweet2.status_id);
+    }).then(tweets => {
+
+        if (!orderAsShown) {
+            var temp = tweets.tweet1;
+            tweets.tweet1 = tweets.tweet2;
+            tweets.tweet2 = temp;
+        }
+
+        return postMatchToTumblr(matchId, tweets.tweet1.id_str, tweets.tweet2.id_str);
+    }).then(x => {
+        return {successMessage: "Match contains retweet. Posted to tumblr.", remove: true};
+    }).catch(error => {
+
+        if (Array.isArray(error)) {
+            return autoRejectFromTwitterError(matchId, error);
+        }
+
+        logger.error(error);
+        return {error: `error posting ${matchId} to tumblr: ${error}`};
+    });
+}
+
+function autoRejectFromTwitterError(matchId, error) {
+    var codes = error.map(x => x.code);
+    var approvalErrorMessages = error.map(x => x.message).join();
+    var rejectableCodes = twitter.autoRejectableErrors.map(x => x.code);
+
+    if (intersection(codes, rejectableCodes).length > 0) {
+        return anagramsDb.rejectMatch(matchId, true).then(x => {
+            return {error: approvalErrorMessages, systemResponse: "Auto-rejected.", remove: true};
+        }).catch(err => {
+            logger.error(err);
+            return {error: approvalErrorMessages, systemResponse: "Auto-rejection failed: " + err, recoveryError: true};
+        });
+    } else {
+        logger.error(approvalErrorMessages);
+        return {error: approvalErrorMessages};
+    }
+}
 
 router.post('/cleanup', function (req, res) {
 

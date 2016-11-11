@@ -46,6 +46,7 @@ FROM
   INNER JOIN TWEETS T2 ON A.TWEET2_ID = T2.ID
 WHERE NOT A.rejected
       AND A.DATE_RETWEETED IS NULL
+      AND A.tumblr_post_id IS NULL
 ORDER BY
   A.INTERESTING_FACTOR DESC
 limit $1::int;
@@ -80,6 +81,7 @@ FROM
   INNER JOIN TWEETS T2 ON A.TWEET2_ID = T2.ID
 WHERE NOT A.rejected
       AND A.DATE_RETWEETED IS NULL
+      AND A.tumblr_post_id IS NULL
       AND A.interesting_factor > $2::float
 ORDER BY
   A.DATE_CREATED
@@ -113,6 +115,7 @@ FROM
   INNER JOIN TWEETS T2 ON A.TWEET2_ID = T2.ID
 WHERE NOT A.rejected
       AND A.date_retweeted IS NULL
+      AND A.tumblr_post_id IS NULL
 ORDER BY
   A.date_created DESC
 LIMIT $1::int;
@@ -376,7 +379,7 @@ exports.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterTh
 SELECT count(1)
 FROM anagram_matches
 WHERE interesting_factor > $1::float 
-      AND rejected = false      
+      AND rejected = false
       AND anagram_matches.date_retweeted IS NULL;
 `;
     return pools.anagramPool.query(notRejectedAndNotApprovedAnagramMatchCountQuery, [interestingFactorCutoff]).then(x => {
