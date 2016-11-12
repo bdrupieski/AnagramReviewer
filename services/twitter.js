@@ -39,7 +39,7 @@ exports.getTweet = function(id) {
 };
 
 exports.getTweets = function(id1, id2) {
-    return Promise.all([getTweet(id1), getTweet(id2)]).then(tweets => {
+    return Promise.all([exports.getTweet(id1), exports.getTweet(id2)]).then(tweets => {
         return {
             tweet1: tweets[0],
             tweet2: tweets[1]
