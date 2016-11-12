@@ -6,6 +6,7 @@ var logger = require('morgan');
 var bodyParser = require('body-parser');
 var flash = require('connect-flash');
 var winston = require('winston');
+var schedule = require('node-schedule');
 
 winston.add(winston.transports.File, {
     name: 'info',
@@ -26,6 +27,7 @@ winston.add(winston.transports.File, {
 var routes = require('./routes/index');
 var account = require('./routes/account');
 var anagrams = require('./routes/anagrams');
+var tasks = require('./services/tasks');
 
 var app = express();
 
@@ -58,6 +60,11 @@ app.use(flash());
 
 var passportConfig = require("./services/passport");
 passportConfig.configure();
+
+// every 3 minutes
+schedule.scheduleJob("*/3 * * * *", function(){
+    tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(160);
+});
 
 app.use(function(req, res, next){
     res.locals.user = req.user;

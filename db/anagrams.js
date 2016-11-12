@@ -157,7 +157,7 @@ UPDATE anagram_matches
 SET 
   rejected      = FALSE,
   date_rejected = NULL,
-  auto_rejected = NULL
+  auto_rejected = FALSE
 WHERE anagram_matches.id = $1::int;
 `;
 
@@ -594,6 +594,87 @@ LIMIT $1::int;
 
     return pools.anagramPool.query(getRecentRejectedMatchesQuery, [limit]).then(x => {
         return x.rows;
+    });
+};
+
+exports.getOldestUnreviewedTweets = function(limit = 20) {
+    let oldestUnreviewedTweetsQuery = `
+WITH unreviewedMatchTweetIds AS (SELECT
+                                   anagram_matches.tweet1_id,
+                                   anagram_matches.tweet2_id
+                                 FROM anagram_matches
+                                 WHERE anagram_matches.attempted_approval = FALSE
+                                       AND anagram_matches.date_retweeted IS NULL
+                                       AND anagram_matches.date_posted_tumblr IS NULL),
+    unreviewedTweetIds AS (SELECT tweet1_id AS id
+                           FROM unreviewedMatchTweetIds
+                           UNION
+                           SELECT tweet2_id AS id
+                           FROM unreviewedMatchTweetIds)
+SELECT *
+FROM tweets
+WHERE tweets.id NOT IN (SELECT id
+                        FROM unreviewedTweetIds)
+ORDER BY date_existence_last_checked
+LIMIT $1::int;
+`;
+    return pools.anagramPool.query(oldestUnreviewedTweetsQuery, [limit]).then(x => {
+        return x.rows;
+    });
+};
+
+exports.updateTweetsExistenceChecked = function(tweetIds) {
+
+    if (tweetIds.length == 0) {
+        return Promise.resolve(0);
+    }
+
+    let updateExistenceCheckedQuery = `
+UPDATE tweets
+SET date_existence_last_checked = current_timestamp
+WHERE id = ANY($1)
+`;
+
+    return pools.anagramPool.query(updateExistenceCheckedQuery, [tweetIds]).then(x => {
+        if (x.rowCount != tweetIds.length) {
+            throw x;
+        } else {
+            return x;
+        }
+    });
+};
+
+exports.deleteMatchesWithTweetIds = function(tweetIds) {
+
+    if (tweetIds.length == 0) {
+        return Promise.resolve(0);
+    }
+
+    let deleteMatchesQuery = `
+DELETE FROM anagram_matches WHERE tweet1_id = ANY($1) OR tweet2_id = ANY($1);
+`;
+
+    return pools.anagramPool.query(deleteMatchesQuery, [tweetIds]).then(x => {
+        return x;
+    });
+};
+
+exports.deleteTweets = function(tweetIds) {
+
+    if (tweetIds.length == 0) {
+        return Promise.resolve(0);
+    }
+
+    let deleteTweetsQuery = `
+DELETE FROM tweets WHERE id = ANY($1);
+`;
+
+    return pools.anagramPool.query(deleteTweetsQuery, [tweetIds]).then(x => {
+        if (x.rowCount != tweetIds.length) {
+            throw x;
+        } else {
+            return x;
+        }
     });
 };
 

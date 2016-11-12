@@ -18,7 +18,7 @@ exports.autoRejectableErrors = [
     {code: 179, message: 'Sorry, you are not authorized to see this status.'},
 ];
 
-function getTweet(id) {
+exports.getTweet = function(id) {
     return new Promise((resolve, reject) => {
         client.get(`statuses/show/${id}`, {include_entities: false, trim_user: true, include_my_retweet: true},
             function (error, tweet, response) {
@@ -36,7 +36,7 @@ function getTweet(id) {
                 }
             });
     });
-}
+};
 
 exports.getTweets = function(id1, id2) {
     return Promise.all([getTweet(id1), getTweet(id2)]).then(tweets => {
@@ -128,8 +128,7 @@ exports.getRateLimits = function(resources) {
             if (data) {
                 return resolve(data);
             } else if (error) {
-                var combinedErrors = error.map(x => x.message).join(" ");
-                return reject(combinedErrors);
+                return reject(error);
             } else {
                 logger.error(response);
                 return reject(`unknown error when retrieving rate_limit_status`);
