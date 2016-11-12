@@ -15,7 +15,7 @@ exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfO
             const existingTweets = tweetsAndExistence.filter(x => x.exists).map(x => x.tweet.id);
             const nonexistingTweets = tweetsAndExistence.filter(x => !x.exists).map(x => x.tweet.id);
 
-            logger.info(`confirming ${existingTweets.length} tweets exist as of right now: [ ${existingTweets.join(', ')} ]`);
+            logger.info(`${existingTweets.length} tweets still exist`);
             logger.info(`deleting ${nonexistingTweets.length} non-existent tweets: [ ${nonexistingTweets.join(', ')} ]`);
 
             return anagramsDb.updateTweetsExistenceChecked(existingTweets).then(x => {

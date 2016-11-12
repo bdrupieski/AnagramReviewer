@@ -1,10 +1,11 @@
-var express = require('express');
-var router = express.Router();
-var anagramsDb = require('../db/anagrams');
-var passportConfig = require("../services/passport");
-var twitter = require("../services/twitter");
-var logger = require('winston');
-var tumblr = require("../services/tumblr");
+const express = require('express');
+const router = express.Router();
+const anagramsDb = require('../db/anagrams');
+const passportConfig = require("../services/passport");
+const twitter = require("../services/twitter");
+const logger = require('winston');
+const tumblr = require("../services/tumblr");
+const countdown = require("countdown");
 
 router.get('/*', passportConfig.isLoggedIn);
 
@@ -20,7 +21,13 @@ router.get('/list', function (req, res) {
 
 router.get('/ratelimits', function(req, res) {
     twitter.getRateLimits(["application", "statuses"]).then(rateLimits => {
+        console.log(formatRateLimit(rateLimits.resources.application, '/application/rate_limit_status'));
         res.render('anagrams/ratelimits', {
+            limitsFormatted: [
+                formatRateLimit(rateLimits.resources.application, '/application/rate_limit_status'),
+                formatRateLimit(rateLimits.resources.statuses, '/statuses/show/:id'),
+                formatRateLimit(rateLimits.resources.statuses, '/statuses/oembed')
+            ],
             rateLimits: JSON.stringify(rateLimits, null, 4)
         });
     }).catch(err => {
@@ -30,10 +37,24 @@ router.get('/ratelimits', function(req, res) {
     });
 });
 
+function formatRateLimit(rateLimitCategory, key) {
+    const rateLimit = rateLimitCategory[key];
+    const resetDate = new Date(rateLimit.reset * 1000);
+    const reset = countdown(resetDate);
+
+    return {
+        call: key,
+        limit: rateLimit.limit,
+        used: rateLimit.limit - rateLimit.remaining,
+        remaining: rateLimit.remaining,
+        reset: reset
+    }
+}
+
 router.get('/statistics', function(req, res) {
 
-    let interestingFactorCutoff = req.query.interestingfactor || 0.67;
-    let numberOfLastDaysToGetMatchesCreatedPerDay = req.query.days || 15;
+    const interestingFactorCutoff = req.query.interestingfactor || 0.67;
+    const numberOfLastDaysToGetMatchesCreatedPerDay = req.query.days || 15;
 
     Promise.all([
         anagramsDb.getCountOfAnagramMatches(),
@@ -91,12 +112,12 @@ router.get('/unretweetmanually', function(req, res) {
 
 router.post('/unretweetmanually/:id', function(req, res) {
 
-    var matchId = req.params.id;
-    var deleteFromTumblr = req.query.deletetumblrpost === "true";
+    const matchId = req.params.id;
+    const deleteFromTumblr = req.query.deletetumblrpost === "true";
 
     anagramsDb.getAnagramMatch(matchId).then(match => {
 
-        var unretweetPromises = [
+        const unretweetPromises = [
             twitter.destroyTweet(match.tweet1_retweet_id),
             twitter.destroyTweet(match.tweet2_retweet_id)
         ];
@@ -132,7 +153,7 @@ router.get('/unrejectmanually', function(req, res) {
 
 router.post('/unrejectmanually/:id', function(req, res) {
 
-    var matchId = req.params.id;
+    const matchId = req.params.id;
 
     anagramsDb.unrejectMatch(matchId).then(x => {
         req.flash('info', `Unrejected match ${matchId}`);
@@ -145,8 +166,8 @@ router.post('/unrejectmanually/:id', function(req, res) {
 });
 
 router.get('/more/:queryType', function (req, res) {
-    var cutoff = parseFloat(req.query.cutoff);
-    var topMatches = anagramsDb.findMatches(req.params.queryType, 15, cutoff).then(anagramMatches => {
+    const cutoff = parseFloat(req.query.cutoff);
+    const topMatches = anagramsDb.findMatches(req.params.queryType, 15, cutoff).then(anagramMatches => {
         res.json({anagramMatches: anagramMatches});
     }).catch(err => {
         logger.error(err.message);
@@ -156,9 +177,9 @@ router.get('/more/:queryType', function (req, res) {
 
 router.post('/reject/:id', function (req, res) {
 
-    var matchId = req.params.id;
+    const matchId = req.params.id;
 
-    var topMatches = anagramsDb.rejectMatch(matchId).then(result => {
+    const topMatches = anagramsDb.rejectMatch(matchId).then(result => {
         res.json({successMessage: `Rejected match ${matchId}.`, remove: true});
     }).catch(err => {
         logger.error(err.message || err);
@@ -168,8 +189,8 @@ router.post('/reject/:id', function (req, res) {
 
 router.post('/approve/:id', function (req, res) {
 
-    var matchId = req.params.id;
-    var orderAsShown = req.body.orderAsShown === "true";
+    const matchId = req.params.id;
+    const orderAsShown = req.body.orderAsShown === "true";
 
     anagramsDb.markAttemptedApprovalForMatch(matchId).then(x => {
         return anagramsDb.getCountOfAnagramMatchesWithTweetInThisMatchAlreadyRetweeted(matchId);
@@ -186,7 +207,7 @@ router.post('/approve/:id', function (req, res) {
 
 function retweetAndPostToTumblr(matchId, orderAsShown) {
 
-    var originalTweets, retweet1, retweet2;
+    let originalTweets, retweet1, retweet2;
 
     return anagramsDb.getTweetsForMatch(matchId).then(tweets => {
         return twitter.getTweets(tweets.tweet1.status_id, tweets.tweet2.status_id);
@@ -214,8 +235,8 @@ function retweetAndPostToTumblr(matchId, orderAsShown) {
         });
     }).then(tumblrError => {
 
-        var rateLimitRemaining = Math.min(originalTweets.tweet1.rateLimitRemaining, originalTweets.tweet2.rateLimitRemaining);
-        var response = {
+        const rateLimitRemaining = Math.min(originalTweets.tweet1.rateLimitRemaining, originalTweets.tweet2.rateLimitRemaining);
+        const response = {
             successMessage: `Approved ${matchId}. ${rateLimitRemaining} calls remaining.`,
             remove: true
         };
@@ -227,7 +248,7 @@ function retweetAndPostToTumblr(matchId, orderAsShown) {
         return response;
     }).catch(error => {
 
-        var approvalError = error.message || error;
+        const approvalError = error.message || error;
         console.log(error);
 
         if (Array.isArray(error)) {
@@ -253,7 +274,7 @@ function postToTumblr(matchId, orderAsShown) {
     }).then(tweets => {
 
         if (!orderAsShown) {
-            var temp = tweets.tweet1;
+            const temp = tweets.tweet1;
             tweets.tweet1 = tweets.tweet2;
             tweets.tweet2 = temp;
         }
@@ -273,9 +294,9 @@ function postToTumblr(matchId, orderAsShown) {
 }
 
 function autoRejectFromTwitterError(matchId, error) {
-    var codes = error.map(x => x.code);
-    var approvalErrorMessages = error.map(x => x.message).join();
-    var rejectableCodes = twitter.autoRejectableErrors.map(x => x.code);
+    const codes = error.map(x => x.code);
+    const approvalErrorMessages = error.map(x => x.message).join();
+    const rejectableCodes = twitter.autoRejectableErrors.map(x => x.code);
 
     if (intersection(codes, rejectableCodes).length > 0) {
         return anagramsDb.rejectMatch(matchId, true).then(x => {
@@ -292,7 +313,7 @@ function autoRejectFromTwitterError(matchId, error) {
 
 router.post('/cleanup', function (req, res) {
 
-    var retweetIds;
+    let retweetIds;
 
     twitter.getPastTweetsUpTo3200().then(timelineTweets => {
         console.log(`${timelineTweets.length} timeline tweets`);
@@ -305,10 +326,10 @@ router.post('/cleanup', function (req, res) {
             tweetIdToMatchId.set(match.t2_status_id, {matchId : match.id, otherTweetId: match.t1_status_id});
         }
 
-        var matchesWithMissingPair = [];
+        const matchesWithMissingPair = [];
         for (let tweetId of retweetIds) {
 
-            var matchingTweet = tweetIdToMatchId.get(tweetId);
+            const matchingTweet = tweetIdToMatchId.get(tweetId);
 
             if (!retweetIds.has(matchingTweet.otherTweetId)) {
                 matchesWithMissingPair.push({ missingTweet: matchingTweet.otherTweetId, existingTweet: tweetId, id: matchingTweet.matchId});
