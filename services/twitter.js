@@ -17,6 +17,7 @@ exports.autoRejectableErrors = [
     {code: 144, message: 'No status found with that ID.'},
     {code: 179, message: 'Sorry, you are not authorized to see this status.'},
 ];
+exports.rateLimitExceeded = {code: 88, message: 'Rate limit exceeded'};
 
 exports.getTweet = function(id) {
     return new Promise((resolve, reject) => {
@@ -116,7 +117,7 @@ exports.destroyTweet = function (id) {
     });
 };
 
-exports.getRateLimits = function(resources) {
+function getRateLimits(resources) {
 
     var params = {};
     if (resources) {
@@ -124,7 +125,7 @@ exports.getRateLimits = function(resources) {
     }
 
     return new Promise((resolve, reject) => {
-        client.get('application/rate_limit_status', params, function(error, data, response) {
+        client.get('application/rate_limit_status', params, function (error, data, response) {
             if (data) {
                 return resolve(data);
             } else if (error) {
@@ -135,6 +136,16 @@ exports.getRateLimits = function(resources) {
             }
         })
     });
+}
+
+exports.getShowIdRateLimit = function() {
+    return getRateLimits(["statuses"]).then(rateLimits => {
+        return rateLimits.resources.statuses['/statuses/show/:id'];
+    });
+};
+
+exports.getAppAndStatusRateLimits = function() {
+    return getRateLimits(["application", "statuses"]);
 };
 
 exports.oembedTweet = function(tweetId) {

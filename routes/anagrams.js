@@ -6,6 +6,7 @@ const twitter = require("../services/twitter");
 const logger = require('winston');
 const tumblr = require("../services/tumblr");
 const countdown = require("countdown");
+const _ = require("lodash");
 
 router.get('/*', passportConfig.isLoggedIn);
 
@@ -20,8 +21,7 @@ router.get('/list', function (req, res) {
 });
 
 router.get('/ratelimits', function(req, res) {
-    twitter.getRateLimits(["application", "statuses"]).then(rateLimits => {
-        console.log(formatRateLimit(rateLimits.resources.application, '/application/rate_limit_status'));
+    twitter.getAppAndStatusRateLimits().then(rateLimits => {
         res.render('anagrams/ratelimits', {
             limitsFormatted: [
                 formatRateLimit(rateLimits.resources.application, '/application/rate_limit_status'),
@@ -298,7 +298,7 @@ function autoRejectFromTwitterError(matchId, error) {
     const approvalErrorMessages = error.map(x => x.message).join();
     const rejectableCodes = twitter.autoRejectableErrors.map(x => x.code);
 
-    if (intersection(codes, rejectableCodes).length > 0) {
+    if (_.intersection(codes, rejectableCodes).length > 0) {
         return anagramsDb.rejectMatch(matchId, true).then(x => {
             return {error: approvalErrorMessages, systemResponse: "Auto-rejected.", remove: true};
         }).catch(err => {
@@ -402,12 +402,6 @@ router.post('/bulkpostmissingtumblrposts', function (req, res) {
         res.redirect('/anagrams/list');
     });
 });
-
-function intersection(array1, array2) {
-    return array1.filter(function(n) {
-        return array2.indexOf(n) != -1;
-    });
-}
 
 function postMatchToTumblr(matchId, t1StatusId, t2StatusId) {
     return Promise.all([
