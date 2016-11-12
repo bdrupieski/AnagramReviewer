@@ -61,9 +61,9 @@ app.use(flash());
 var passportConfig = require("./services/passport");
 passportConfig.configure();
 
-// every 3 minutes
-schedule.scheduleJob("*/3 * * * *", function(){
-    tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(160);
+// every minute
+schedule.scheduleJob("*/1 * * * *", function(){
+    tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(50);
 });
 
 app.use(function(req, res, next){
