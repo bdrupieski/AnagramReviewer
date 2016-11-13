@@ -83,13 +83,21 @@ router.get('/statistics', function(req, res) {
             statsByInterestingFactorBucket: stats[9]
         };
 
-        for (let dayStats of formattedStats.statsByDateMatchCreated) {
+        for (const dayStats of formattedStats.statsByDateMatchCreated) {
             dayStats.unreviewed = dayStats.matches_created - dayStats.rejected - dayStats.retweeted;
             dayStats.percentUnreviewed = dayStats.unreviewed / dayStats.matches_created;
             dayStats.percentRetweeted = dayStats.retweeted / dayStats.matches_created;
+
+            const countOfAdditionalTumblrPostsMadeBecauseAMatchContainedAnAlreadyRetweetedTweet =
+                dayStats.posted_to_tumblr - dayStats.retweeted;
+            const numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches =
+                dayStats.attempted_approval - countOfAdditionalTumblrPostsMadeBecauseAMatchContainedAnAlreadyRetweetedTweet;
+
+            dayStats.adjustedFailedAttemptedApprovals = numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches - dayStats.retweeted;
+            dayStats.percentApprovalFailure = 1 - (dayStats.retweeted / numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches);
         }
 
-        for (let scoreBucket of formattedStats.statsByInterestingFactorBucket) {
+        for (const scoreBucket of formattedStats.statsByInterestingFactorBucket) {
             scoreBucket.unreviewed = scoreBucket.matches_created - scoreBucket.rejected - scoreBucket.retweeted;
             scoreBucket.percentUnreviewed = scoreBucket.unreviewed / scoreBucket.matches_created;
             scoreBucket.percentRetweeted = scoreBucket.retweeted / scoreBucket.matches_created;
@@ -97,6 +105,10 @@ router.get('/statistics', function(req, res) {
 
         formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.countOfMatches;
         formattedStats.countOfRetweetedTweets = formattedStats.countOfRetweetedMatches * 2;
+
+        formattedStats.retweetsAndTumblrByDayJson = JSON.stringify(formattedStats.retweetsAndTumblrByDay);
+        formattedStats.statsByDateMatchCreatedJson = JSON.stringify(formattedStats.statsByDateMatchCreated);
+        formattedStats.statsByInterestingFactorBucketJson = JSON.stringify(formattedStats.statsByInterestingFactorBucket);
 
         return formattedStats;
     }).then(stats => {
@@ -226,7 +238,7 @@ function retweetAndPostToTumblr(matchId, orderAsShown) {
     }).then(tweets => {
 
         if (!orderAsShown) {
-            var temp = tweets.tweet1;
+            const temp = tweets.tweet1;
             tweets.tweet1 = tweets.tweet2;
             tweets.tweet2 = temp;
         }
@@ -332,14 +344,14 @@ router.post('/cleanup', function (req, res) {
         retweetIds = new Set(timelineTweets.map(x => x.retweeted_status.id_str));
         return anagramsDb.getRetweetedStatusIds();
     }).then(matches => {
-        var tweetIdToMatchId = new Map();
-        for (let match of matches) {
+        const tweetIdToMatchId = new Map();
+        for (const match of matches) {
             tweetIdToMatchId.set(match.t1_status_id, {matchId : match.id, otherTweetId: match.t2_status_id});
             tweetIdToMatchId.set(match.t2_status_id, {matchId : match.id, otherTweetId: match.t1_status_id});
         }
 
         const matchesWithMissingPair = [];
-        for (let tweetId of retweetIds) {
+        for (const tweetId of retweetIds) {
 
             const matchingTweet = tweetIdToMatchId.get(tweetId);
 

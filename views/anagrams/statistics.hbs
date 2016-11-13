@@ -1,5 +1,14 @@
 <div class="container-fluid">
 
+    <h3>Important</h3>
+    <div class="row">
+        There are <strong>{{formatNumber stats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff}}</strong> matches
+        with an interesting factor
+        above
+        <strong>{{stats.interestingFactorCutoff}}</strong> that are not rejected, not retweeted, and not posted to
+        tumblr.
+    </div>
+    <h3>Fun</h3>
     <div class="row">
         There are <strong>{{formatNumber stats.countOfMatches}}</strong> total matches over approximately
         <strong>{{formatNumber stats.approximateCountOfTweets}}</strong> tweets. That's about
@@ -9,11 +18,6 @@
         There are <strong>{{formatNumber stats.countOfMatchesAboveCutoff}}</strong> matches with an interesting factor
         above
         <strong>{{stats.interestingFactorCutoff}}</strong>.
-    </div>
-    <div class="row">
-        There are <strong>{{formatNumber stats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff}}</strong> matches with an interesting factor
-        above
-        <strong>{{stats.interestingFactorCutoff}}</strong> that are not rejected, not retweeted, and not posted to tumblr.
     </div>
     <div class="row">
         <strong>{{formatNumber stats.countOfRetweetedMatches}}</strong> matches have been retweeted.
@@ -28,7 +32,8 @@
         <strong>{{formatTime stats.dateLastMatchCreated day="numeric" month="long" year="numeric" }}</strong>.
     </div>
 
-    <h3>Retweets and Tumblr posts made by day for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:</h3>
+    <h3>Retweets and Tumblr posts made by day for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong>
+        days:</h3>
     <div class="row">
         <div class="col-md-5">
             <table class="table table-hover table-condensed">
@@ -51,6 +56,9 @@
                 </tbody>
             </table>
         </div>
+        <div class="col-md-7">
+            <svg id="retweets-and-tumblr-posts-by-day-chart" height="400"></svg>
+        </div>
     </div>
 
     <h3>Stats by date match created for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:</h3>
@@ -71,6 +79,7 @@
                     <th>Unreviewed</th>
                     <th>% Unreviewed</th>
                     <th>% Retweeted</th>
+                    <th>% Approval Failure</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -87,11 +96,20 @@
                         <td>{{unreviewed}}</td>
                         <td>{{formatNumber percentUnreviewed style="percent"}}</td>
                         <td>{{formatNumber percentRetweeted style="percent"}}</td>
+                        <td>{{formatNumber percentApprovalFailure style="percent"}}</td>
                     </tr>
                 {{/each}}
                 </tbody>
             </table>
         </div>
+    </div>
+    <h3>Percent retweeted, unreviewed, and approval failure by date match created:</h3>
+    <div class="row">
+        <svg id="percent-reviewed-unreviewed-by-date-created-chart" height="400"></svg>
+    </div>
+    <h3>Counts of things that happened by date match created:</h3>
+    <div class="row">
+        <svg id="counts-by-date-created-chart" height="400"></svg>
     </div>
 
     <h3>Stats by interesting factor bucket:</h3>
@@ -134,4 +152,369 @@
             </table>
         </div>
     </div>
+    <h3>Percent retweeted and unreviewed by interesting factor bucket:</h3>
+    <div class="row">
+        <svg id="reviewed-unreviewed-by-score-bucket-chart" height="400"></svg>
+    </div>
 </div>
+
+<script>
+    $(() => {
+
+        var defaultPropValueZeroHandler = {
+            get: (target, name) => {
+                return name in target ? target[name] : 0;
+            }
+        };
+
+        Date.prototype.addDays = function(days) {
+            const theDate = new Date(this.valueOf());
+            theDate.setDate(theDate.getDate() + days);
+            return theDate;
+        };
+
+        function getAllDatesBetween(startDate, stopDate) {
+            const dateArray = [];
+            let currentDate = startDate;
+            while (currentDate <= stopDate) {
+                dateArray.push(new Date(currentDate));
+                currentDate = currentDate.addDays(1);
+            }
+            return dateArray;
+        }
+
+        function fillInMissingDays(data, dateKeySelector, valueSelector, missingValueSelector) {
+
+            const dataByDay = new Map(data.map(x => [dateKeySelector(x).toDateString(), valueSelector(x)]));
+            const dates = data.map(x => dateKeySelector(x));
+
+            const firstDay = new Date(Math.min(...dates));
+            const lastDay = new Date(Math.max(...dates));
+            const contiguousDates = getAllDatesBetween(firstDay, lastDay);
+
+            return contiguousDates.map(x => {
+                if (dataByDay.has(x.toDateString())) {
+                    return dataByDay.get(x.toDateString());
+                } else {
+                    return missingValueSelector(x);
+                }
+            });
+        }
+
+        function buildRetweetsAndTumblrPostsByDay() {
+
+            class PostCountsForDayPostCreated {
+                constructor(row) {
+                    this.day = new Date(row.day);
+                    this.retweeted = Number(row.retweeted);
+                    this.postedToTumblr = Number(row.posted_to_tumblr);
+                }
+            }
+
+            const stats = JSON.parse('{{{stats.retweetsAndTumblrByDayJson}}}').map(x => new PostCountsForDayPostCreated(x));
+            const statsWithDaysFilledIn = fillInMissingDays(stats,
+                    row => row.day,
+                    row => row,
+                    day => new Proxy({day: day}, defaultPropValueZeroHandler)
+            );
+
+            const retweetedCounts = statsWithDaysFilledIn.map(row => {
+                return {x: row.day, y: row.retweeted}
+            });
+            const tumblrCounts = statsWithDaysFilledIn.map(row => {
+                return {x: row.day, y: row.postedToTumblr}
+            });
+
+            const data = [
+                {
+                    values: tumblrCounts,
+                    key: "Tumblr",
+                },
+                {
+                    values: retweetedCounts,
+                    key: 'Retweeted',
+                }
+            ];
+
+            nv.addGraph(() => {
+
+                const chart = nv.models.multiBarChart()
+                                .options({
+                                    duration: 300
+                                })
+                                .margin({right: 50, bottom: 70})
+                                .groupSpacing(0.4)
+                                .color(d3.scale.category10().range())
+                                .rotateLabels(45)
+                        ;
+
+                chart.xAxis
+                        .axisLabel("Date")
+                        .tickFormat((d) => {
+                            return d3.time.format('%x')(new Date(d))
+                        })
+                        .ticks(10)
+                ;
+
+                chart.yAxis
+                        .axisLabel('Count')
+                        .tickFormat(d3.format('i'))
+                        .ticks(5)
+                ;
+
+                d3.select('#retweets-and-tumblr-posts-by-day-chart')
+                        .datum(data)
+                        .call(chart);
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            });
+        }
+
+        function buildRetweetedAndUnreviewedByDateMatchCreatedChart() {
+
+            class ReviewStatsForDay {
+                constructor(row) {
+                    this.day = new Date(row.day);
+                    this.percentUnreviewed = Number(row.percentUnreviewed);
+                    this.percentRetweeted = Number(row.percentRetweeted);
+                    const percentApprovalFailure = Number(row.percentApprovalFailure);
+                    this.percentApprovalFailure = _.isNaN(percentApprovalFailure) ? 0 : percentApprovalFailure;
+                }
+            }
+
+            const statsByDateCreated = JSON.parse('{{{stats.statsByDateMatchCreatedJson}}}')
+                    .map(x => new ReviewStatsForDay(x));
+
+            const statsWithDaysFilledIn = fillInMissingDays(statsByDateCreated,
+                    row => row.day,
+                    row => row,
+                    day => new Proxy({day: day}, defaultPropValueZeroHandler)
+            );
+
+            const percentUnreviewed = statsWithDaysFilledIn.map(row => {
+                return {x: row.day, y: row.percentUnreviewed}
+            });
+            const percentRetweeted = statsWithDaysFilledIn.map(row => {
+                return {x: row.day, y: row.percentRetweeted}
+            });
+            const percentApprovalFailure = statsWithDaysFilledIn.map(row => {
+                return {x: row.day, y: row.percentApprovalFailure}
+            });
+
+            const data = [
+                {
+                    values: percentUnreviewed,
+                    key: "Unreviewed",
+                },
+                {
+                    values: percentRetweeted,
+                    key: 'Retweeted',
+                },
+                {
+                    values: percentApprovalFailure,
+                    key: 'Approval Failure'
+                }
+            ];
+
+            nv.addGraph(() => {
+
+                const chart = nv.models.lineWithFocusChart()
+                                .options({
+                                    useInteractiveGuideline: true,
+                                    duration: 300,
+                                })
+                                .color(d3.scale.category10().range())
+                                .margin({bottom: 90, right: 70})
+                        ;
+
+                chart.xAxis
+                        .axisLabel("Date")
+                        .tickFormat((d) => {
+                            return d3.time.format('%x')(new Date(d))
+                        })
+                        .rotateLabels(45)
+                ;
+
+                chart.x2Axis.tickFormat((d) => {
+                    return d3.time.format('%x')(new Date(d))
+                });
+
+                chart.yAxis
+                        .axisLabel('Percent')
+                        .tickFormat((d) => {
+                            if (d == null) {
+                                return 'N/A';
+                            }
+                            return d3.format('.2%')(d);
+                        })
+                        .ticks(4)
+                ;
+
+                d3.select('#percent-reviewed-unreviewed-by-date-created-chart')
+                        .datum(data)
+                        .call(chart);
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            });
+        }
+
+        function buildCountsByDateMatchCreatedChart() {
+            class CountsForDayMatchCreated {
+                constructor(row) {
+                    this.day = new Date(row.day);
+                    this.matchesCreated = Number(row.matches_created);
+                    this.unreviewed = Number(row.unreviewed);
+                    this.retweeted = Number(row.retweeted);
+                    this.adjustedFailedAttemptedApprovals = Number(row.adjustedFailedAttemptedApprovals);
+                }
+            }
+
+            const statsByDateCreated = JSON.parse('{{{stats.statsByDateMatchCreatedJson}}}')
+                    .map(x => new CountsForDayMatchCreated(x));
+
+            const statsWithDaysFilledIn = fillInMissingDays(statsByDateCreated,
+                    row => row.day,
+                    row => row,
+                    day => new Proxy({day: day}, defaultPropValueZeroHandler)
+            );
+
+            const matchesCreated = statsWithDaysFilledIn.map(row => {
+                return {x: row.day, y: row.matchesCreated}
+            });
+            const unreviewed = statsWithDaysFilledIn.map(row => {
+                return {x: row.day, y: row.unreviewed}
+            });
+            const retweeted = statsWithDaysFilledIn.map(row => {
+                return {x: row.day, y: row.retweeted}
+            });
+            const adjustedFailedAttemptedApprovals = statsWithDaysFilledIn.map(row => {
+                return {x: row.day, y: row.adjustedFailedAttemptedApprovals}
+            });
+
+            const data = [
+                {
+                    values: matchesCreated,
+                    key: "Created",
+                },
+                {
+                    values: unreviewed,
+                    key: 'Unreviewed',
+                },
+                {
+                    values: retweeted,
+                    key: 'Retweeted'
+                },
+                {
+                    values: adjustedFailedAttemptedApprovals,
+                    key: 'Failed Attempted Approvals'
+                }
+            ];
+
+            nv.addGraph(() => {
+
+                const chart = nv.models.multiBarChart()
+                                .options({
+                                    duration: 300
+                                })
+                                .margin({right: 50, bottom: 70})
+                                .groupSpacing(0.4)
+                                .color(d3.scale.category10().range())
+                                .rotateLabels(45)
+                        ;
+
+                chart.xAxis
+                        .axisLabel("Date")
+                        .axisLabelDistance(30)
+                        .tickFormat((d) => {
+                            return d3.time.format('%x')(new Date(d))
+                        })
+                        .ticks(10)
+                ;
+
+                chart.yAxis
+                        .axisLabel('Count')
+                        .tickFormat(d3.format('i'))
+                        .ticks(5)
+                ;
+
+                d3.select('#counts-by-date-created-chart')
+                        .datum(data)
+                        .call(chart);
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            });
+        }
+
+        function buildRetweetedAndUnreviewedByScoreBucketChart() {
+
+            const statsByInterestingFactorBucket = JSON.parse('{{{stats.statsByInterestingFactorBucketJson}}}').reverse();
+            const percentUnreviewed = statsByInterestingFactorBucket.map(row => {
+                return {x: Number(row.score), y: Number(row.percentUnreviewed)}
+            });
+            const percentRetweeted = statsByInterestingFactorBucket.map(row => {
+                return {x: Number(row.score), y: Number(row.percentRetweeted)}
+            });
+
+            const scoreBucketData = [
+                {
+                    values: percentRetweeted,
+                    key: 'Retweeted'
+                },
+                {
+                    values: percentUnreviewed,
+                    key: "Unreviewed",
+                }
+            ];
+
+            nv.addGraph(() => {
+
+                const chart = nv.models.lineChart()
+                                .options({
+                                    useInteractiveGuideline : true,
+                                    duration: 300,
+                                    forceY: [0, 1],
+                                    forceX: [0.4, 1]
+                                })
+                                .color(d3.scale.category10().range())
+                        ;
+
+                chart.xAxis
+                        .axisLabel("Interesting Factor")
+                        .tickFormat(d3.format('.2f'))
+                        .ticks(10)
+                ;
+
+                chart.yAxis
+                        .axisLabel('Percent')
+                        .tickFormat((d) => {
+                            if (d == null) {
+                                return 'N/A';
+                            }
+                            return d3.format('.2%')(d);
+                        })
+                        .ticks(4)
+                ;
+
+                d3.select('#reviewed-unreviewed-by-score-bucket-chart')
+                        .datum(scoreBucketData)
+                        .call(chart);
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            });
+        }
+
+        buildRetweetsAndTumblrPostsByDay();
+        buildRetweetedAndUnreviewedByDateMatchCreatedChart();
+        buildCountsByDateMatchCreatedChart();
+        buildRetweetedAndUnreviewedByScoreBucketChart();
+
+    });
+</script>
