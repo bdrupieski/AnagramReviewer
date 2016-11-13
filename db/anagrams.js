@@ -378,9 +378,10 @@ exports.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterTh
     let notRejectedAndNotApprovedAnagramMatchCountQuery = `
 SELECT count(1)
 FROM anagram_matches
-WHERE interesting_factor > $1::float 
-      AND rejected = false
-      AND anagram_matches.date_retweeted IS NULL;
+WHERE interesting_factor > $1::float
+      AND anagram_matches.rejected = FALSE
+      AND anagram_matches.date_retweeted IS NULL
+      AND anagram_matches.tumblr_post_id IS NULL
 `;
     return pools.anagramPool.query(notRejectedAndNotApprovedAnagramMatchCountQuery, [interestingFactorCutoff]).then(x => {
         return Number(x.rows[0].count);
