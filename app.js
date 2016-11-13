@@ -12,7 +12,7 @@ winston.add(winston.transports.File, {
     name: 'info',
     filename: 'info.log',
     dirname: 'logs',
-    maxsize: 100000,
+    maxsize: 2000000,
     level: 'info'
 });
 
@@ -20,7 +20,7 @@ winston.add(winston.transports.File, {
     name: 'error',
     filename: 'error.log',
     dirname: 'logs',
-    maxsize: 100000,
+    maxsize: 2000000,
     level: 'error'
 });
 
