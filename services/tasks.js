@@ -7,38 +7,40 @@ exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfO
     logger.info(`starting clean up of ${numberOfOldestTweetsToCheckAtOnce} old tweets.`);
 
     twitter.getShowIdRateLimit().then(showIdRateLimit => {
-        if (showIdRateLimit.remaining <= numberOfOldestTweetsToCheckAtOnce) {
-            throw `only ${showIdRateLimit.remaining} remaining for show/:id. cannot check ${numberOfOldestTweetsToCheckAtOnce} tweets.`;
-        }
-        logger.info(`${showIdRateLimit.remaining} show/:id remaining.`);
-        return anagramsDb.getOldestUnreviewedTweets(numberOfOldestTweetsToCheckAtOnce);
-    }).then(storedTweets => {
-        return Promise.all(storedTweets.map(x => determineIfTweetExists(x.status_id))).then(existences => {
-            const tweetsAndExistence = _
-                .zipWith(storedTweets, existences, (tweet, exists) => {
-                    return {tweet: tweet, exists: exists}
+        const numberToCheck = Math.min(showIdRateLimit.remaining, numberOfOldestTweetsToCheckAtOnce);
+        if (numberToCheck == 0) {
+            logger.info(`rate limit reached for show/:id. cannot check ${numberOfOldestTweetsToCheckAtOnce} tweets.`);
+        } else {
+            logger.info(`${showIdRateLimit.remaining} show/:id remaining. checking ${numberToCheck} tweets.`);
+            return anagramsDb.getOldestUnreviewedTweets(numberToCheck).then(storedTweets => {
+                return Promise.all(storedTweets.map(x => determineIfTweetExists(x.status_id))).then(existences => {
+                    const tweetsAndExistence = _
+                        .zipWith(storedTweets, existences, (tweet, exists) => {
+                            return {tweet: tweet, exists: exists}
+                        });
+
+                    const existingTweets = tweetsAndExistence.filter(x => x.exists).map(x => x.tweet.id);
+                    const nonexistingTweets = tweetsAndExistence.filter(x => !x.exists).map(x => x.tweet.id);
+
+                    logger.info(`${existingTweets.length} tweets still exist`);
+                    logger.info(`deleting ${nonexistingTweets.length} non-existent tweets: [ ${nonexistingTweets.join(', ')} ]`);
+
+                    return anagramsDb.updateTweetsExistenceChecked(existingTweets).then(x => {
+                        logger.info(`updated ${x.rowCount} tweets as still existing.`);
+                        return anagramsDb.deleteMatchesWithTweetIds(nonexistingTweets);
+                    }).then(x => {
+                        logger.info(`deleted ${x.rowCount} matches.`);
+                        return anagramsDb.deleteTweets(nonexistingTweets);
+                    }).then(x => {
+                        logger.info(`deleted ${x.rowCount} tweets.`);
+                    });
                 });
-
-            const existingTweets = tweetsAndExistence.filter(x => x.exists).map(x => x.tweet.id);
-            const nonexistingTweets = tweetsAndExistence.filter(x => !x.exists).map(x => x.tweet.id);
-
-            logger.info(`${existingTweets.length} tweets still exist`);
-            logger.info(`deleting ${nonexistingTweets.length} non-existent tweets: [ ${nonexistingTweets.join(', ')} ]`);
-
-            return anagramsDb.updateTweetsExistenceChecked(existingTweets).then(x => {
-                logger.info(`updated ${x.rowCount} tweets as still existing.`);
-                return anagramsDb.deleteMatchesWithTweetIds(nonexistingTweets);
             }).then(x => {
-                logger.info(`deleted ${x.rowCount} matches.`);
-                return anagramsDb.deleteTweets(nonexistingTweets);
-            }).then(x => {
-                logger.info(`deleted ${x.rowCount} tweets.`);
+                return twitter.getShowIdRateLimit();
+            }).then(showIdRateLimit => {
+                logger.info(`${showIdRateLimit.remaining} show/:id remaining.`);
             });
-        });
-    }).then(x => {
-        return twitter.getShowIdRateLimit();
-    }).then(showIdRateLimit => {
-        logger.info(`${showIdRateLimit.remaining} show/:id remaining.`);
+        }
     }).catch(error => {
         logger.error(error);
     });

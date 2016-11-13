@@ -27,9 +27,6 @@ exports.getTweet = function(id) {
                     return reject(error);
                 } else if (tweet.id) {
                     tweet.rateLimitRemaining = response.headers['x-rate-limit-remaining'];
-                    if (tweet.rateLimitRemaining < 10) {
-                        reject(`Only ${tweet.rateLimitRemaining} calls remain.`)
-                    }
                     return resolve(tweet);
                 } else {
                     logger.error(response);
