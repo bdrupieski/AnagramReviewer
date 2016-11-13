@@ -63,7 +63,7 @@ passportConfig.configure();
 
 // every minute
 schedule.scheduleJob("*/1 * * * *", function(){
-    tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(50);
+    tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(55);
 });
 
 app.use(function(req, res, next){
