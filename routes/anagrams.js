@@ -68,7 +68,7 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getStatsByDateMatchCreated(numberOfLastDaysToGetMatchesCreatedPerDay),
         anagramsDb.getStatsByInterestingFactorBucket()
     ]).then(stats => {
-        var formattedStats = {
+        const formattedStats = {
             countOfMatches: stats[0],
             approximateCountOfTweets: stats[1],
             countOfMatchesAboveCutoff: stats[2],
@@ -82,6 +82,18 @@ router.get('/statistics', function(req, res) {
             numberOfDaysToGetMatchesPerDay: numberOfLastDaysToGetMatchesCreatedPerDay,
             statsByInterestingFactorBucket: stats[9]
         };
+
+        for (let dayStats of formattedStats.statsByDateMatchCreated) {
+            dayStats.unreviewed = dayStats.matches_created - dayStats.rejected - dayStats.retweeted;
+            dayStats.percentUnreviewed = dayStats.unreviewed / dayStats.matches_created;
+            dayStats.percentRetweeted = dayStats.retweeted / dayStats.matches_created;
+        }
+
+        for (let scoreBucket of formattedStats.statsByInterestingFactorBucket) {
+            scoreBucket.unreviewed = scoreBucket.matches_created - scoreBucket.rejected - scoreBucket.retweeted;
+            scoreBucket.percentUnreviewed = scoreBucket.unreviewed / scoreBucket.matches_created;
+            scoreBucket.percentRetweeted = scoreBucket.retweeted / scoreBucket.matches_created;
+        }
 
         formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.countOfMatches;
         formattedStats.countOfRetweetedTweets = formattedStats.countOfRetweetedMatches * 2;
