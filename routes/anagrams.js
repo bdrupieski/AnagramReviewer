@@ -83,6 +83,9 @@ router.get('/statistics', function(req, res) {
             statsByInterestingFactorBucket: stats[9]
         };
 
+        formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoffIsOne =
+            formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff == 1;
+
         for (const dayStats of formattedStats.statsByDateMatchCreated) {
             dayStats.unreviewed = dayStats.matches_created - dayStats.rejected - dayStats.retweeted;
             dayStats.percentUnreviewed = dayStats.unreviewed / dayStats.matches_created;

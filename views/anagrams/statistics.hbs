@@ -2,11 +2,31 @@
 
     <h3>Important</h3>
     <div class="row">
-        There are <strong>{{formatNumber stats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff}}</strong> matches
-        with an interesting factor
-        above
-        <strong>{{stats.interestingFactorCutoff}}</strong> that are not rejected, not retweeted, and not posted to
-        tumblr.
+        There
+
+        {{#if stats.countOfNotRejectedAndNotApprovedMatchesAboveCutoffIsOne}}
+            is
+        {{else}}
+            are
+        {{/if}}
+
+        <strong>{{formatNumber stats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff}}</strong>
+
+        {{#if stats.countOfNotRejectedAndNotApprovedMatchesAboveCutoffIsOne}}
+            match
+        {{else}}
+            matches
+        {{/if}}
+
+        with an interesting factor above <strong>{{stats.interestingFactorCutoff}}</strong> that
+
+        {{#if stats.countOfNotRejectedAndNotApprovedMatchesAboveCutoffIsOne}}
+            is
+        {{else}}
+            are
+        {{/if}}
+
+        not rejected, not retweeted, and not posted to tumblr.
     </div>
     <h3>Fun</h3>
     <div class="row">
