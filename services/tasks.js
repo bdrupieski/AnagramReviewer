@@ -8,10 +8,11 @@ exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfO
     logger.info(`starting clean up of ${numberOfOldestTweetsToCheckAtOnce} old tweets.`);
 
     twitter.getShowIdRateLimit().then(showIdRateLimit => {
-        if (showIdRateLimit.remaining < 15) {
-            logger.info(`only ${showIdRateLimit.remaining} left for show/:id. cannot check ${numberOfOldestTweetsToCheckAtOnce} tweets.`);
+        const numberToCheck = Math.min(showIdRateLimit.remaining, numberOfOldestTweetsToCheckAtOnce);
+        const numberOfCallsThatWillBeLeft = showIdRateLimit.remaining - numberToCheck;
+        if (numberOfCallsThatWillBeLeft < 15) {
+            logger.info(`only ${showIdRateLimit.remaining} left for show/:id. skipping check of ${numberOfOldestTweetsToCheckAtOnce} tweets.`);
         } else {
-            const numberToCheck = Math.min(showIdRateLimit.remaining, numberOfOldestTweetsToCheckAtOnce);
             logger.info(`${showIdRateLimit.remaining} show/:id remaining. checking ${numberToCheck} tweets.`);
             return anagramsDb.getOldestUnreviewedTweets(numberToCheck).then(storedTweets => {
                 return Promise.all(storedTweets.map(x => determineIfTweetExists(x.status_id))).then(existences => {
@@ -82,17 +83,20 @@ exports.retweetOnePendingMatch = function() {
                     return anagramManagement.retweetAndPostToTumblr(matchId, orderAsShown);
                 }
             }).then(x => {
-                return anagramsDb.updateQueuedMatchAsPosted(queuedMatchId);
+                if (x.error) {
+                    if (isRateLimited(x.error)) {
+                        throw x.error;
+                    } else {
+                        throw x;
+                    }
+                } else {
+                    return anagramsDb.updateQueuedMatchAsPosted(queuedMatchId);
+                }
             }).then(x => {
                 logger.info(`successfully dequeued and posted ${queuedMatchId} for match ${matchId}`);
             }).catch(error => {
-                if (Array.isArray(error)) {
-                    if (isRateLimited(error)) {
-                        console.log(`rate limited when dequeuing ${queuedMatchId} for match ${matchId}`);
-                    } else {
-                        var response = anagramManagement.autoRejectFromTwitterError(matchId, error);
-                        logger.error(response);
-                    }
+                if (isRateLimited(error)) {
+                    console.log(`rate limited when dequeuing ${queuedMatchId} for match ${matchId}`);
                 } else {
                     logger.error(error);
                     return anagramsDb.updateQueuedMatchAsError(queuedMatchId, error).then(x => {
@@ -108,6 +112,10 @@ exports.retweetOnePendingMatch = function() {
 };
 
 function isRateLimited(error) {
-    const codes = error.map(x => x.code);
-    return codes.includes(twitter.rateLimitExceeded.code);
+    if (Array.isArray(error)) {
+        const codes = error.map(x => x.code);
+        return codes.includes(twitter.rateLimitExceeded.code);
+    } else {
+        return false;
+    }
 }
