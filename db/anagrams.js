@@ -47,6 +47,9 @@ FROM
 WHERE NOT A.rejected
       AND A.DATE_RETWEETED IS NULL
       AND A.tumblr_post_id IS NULL
+      AND A.id NOT IN (SELECT match_id
+                       FROM match_queue
+                       WHERE status = 'pending')
 ORDER BY
   A.INTERESTING_FACTOR DESC
 limit $1::int;
@@ -83,6 +86,9 @@ WHERE NOT A.rejected
       AND A.DATE_RETWEETED IS NULL
       AND A.tumblr_post_id IS NULL
       AND A.interesting_factor > $2::float
+      AND A.id NOT IN (SELECT match_id
+                       FROM match_queue
+                       WHERE status = 'pending')
 ORDER BY
   A.DATE_CREATED
 LIMIT $1::int;
@@ -116,6 +122,9 @@ FROM
 WHERE NOT A.rejected
       AND A.date_retweeted IS NULL
       AND A.tumblr_post_id IS NULL
+      AND A.id NOT IN (SELECT match_id
+                       FROM match_queue
+                       WHERE status = 'pending')
 ORDER BY
   A.date_created DESC
 LIMIT $1::int;
@@ -672,6 +681,90 @@ DELETE FROM tweets WHERE id = ANY($1);
 
     return pools.anagramPool.query(deleteTweetsQuery, [tweetIds]).then(x => {
         if (x.rowCount != tweetIds.length) {
+            throw x;
+        } else {
+            return x;
+        }
+    });
+};
+
+exports.enqueueMatch = function(matchId, orderAsShown) {
+    const enqueueMatchQuery = `
+INSERT INTO match_queue (match_id, order_as_shown) VALUES ($1::int, $2::bool)
+`;
+    return pools.anagramPool.query(enqueueMatchQuery, [matchId, orderAsShown]).then(x => {
+        if (x.rowCount != 1) {
+            throw x;
+        } else {
+            return x;
+        }
+    });
+};
+
+exports.getPendingQueuedCountForMatch = function(matchId) {
+    const pendingQueuedMatchCountQuery = `
+SELECT count(1)
+FROM match_queue
+WHERE
+  status = 'pending'
+  AND match_id = $1::int
+`;
+    return pools.anagramPool.query(pendingQueuedMatchCountQuery, [matchId]).then(x => {
+        return Number(x.rows[0].count);
+    });
+};
+
+exports.getPendingQueuedMatch = function () {
+    const pendingQueuedMatchQuery = `
+SELECT
+  match_queue.id       AS match_queue_id,
+  match_queue.match_id AS match_id,
+  match_queue.order_as_shown,
+  anagram_matches.tweet1_id,
+  anagram_matches.tweet2_id
+FROM match_queue
+  INNER JOIN anagram_matches ON match_queue.match_id = anagram_matches.id
+WHERE match_queue.status = 'pending'
+      AND match_queue.match_id NOT IN (SELECT match_id
+                                       FROM match_queue
+                                       WHERE status = 'pending'
+                                       GROUP BY match_id
+                                       HAVING count(1) > 1)
+ORDER BY date_queued
+LIMIT 1
+`;
+    return pools.anagramPool.query(pendingQueuedMatchQuery).then(x => {
+        return x.rows;
+    });
+};
+
+exports.updateQueuedMatchAsPosted = function (queuedMatchId) {
+    const updateQueuedMatchAsPostedQuery = `
+UPDATE match_queue
+SET date_posted = current_timestamp,
+  status        = 'posted'
+WHERE id = $1::int
+`;
+
+    return pools.anagramPool.query(updateQueuedMatchAsPostedQuery, [queuedMatchId]).then(x => {
+        if (x.rowCount != 1) {
+            throw x;
+        } else {
+            return x;
+        }
+    });
+};
+
+exports.updateQueuedMatchAsError = function (queuedMatchId, error) {
+    const updateQueuedMatchAsErrorQuery = `
+UPDATE match_queue
+SET status = 'error',
+  message  = $2
+WHERE id = $1::int
+`;
+
+    return pools.anagramPool.query(updateQueuedMatchAsErrorQuery, [queuedMatchId, error]).then(x => {
+        if (x.rowCount != 1) {
             throw x;
         } else {
             return x;

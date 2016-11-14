@@ -61,9 +61,14 @@ app.use(flash());
 var passportConfig = require("./services/passport");
 passportConfig.configure();
 
-// every minute
+// every minute on the minute
 schedule.scheduleJob("*/1 * * * *", function () {
-    tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(60);
+    tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(59);
+});
+
+// every 15 minutes on :00, :15, :30, :45
+schedule.scheduleJob("*/15 * * * *", function () {
+    tasks.retweetOnePendingMatch();
 });
 
 app.use(function(req, res, next){

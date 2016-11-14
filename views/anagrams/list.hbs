@@ -82,6 +82,7 @@
                 <th>tweets</th>
                 <th>reject</th>
                 <th>approve</th>
+                <th>enqueue</th>
             </tr>
             </thead>
             <tbody data-bind="template: { foreach: anagramMatches }">
@@ -94,15 +95,23 @@
                 </td>
                 <td>
                     <button type="submit" class="btn btn-danger"
-                            data-bind="click: $parent.rejectMatch, attr: { 'data-match': id }">REJECT
+                            data-bind="click: $parent.rejectMatch, attr: { 'data-match': id }">✘
                     </button>
                 </td>
                 <td>
-                    <button type="submit" class="btn btn-success"
-                            data-bind="click: $parent.approveMatchAsShownOrder, attr: { 'data-match': id }">As shown
+                    <button type="submit" class="btn btn-success" title="approve in order as shown"
+                            data-bind="click: $parent.approveMatchAsShownOrder, attr: { 'data-match': id }">⇉
                     </button>
-                    <button type="submit" class="btn btn-success"
-                            data-bind="click: $parent.approveMatchReverseOrder, attr: { 'data-match': id }">Reversed
+                    <button type="submit" class="btn btn-success" title="approve in reverse order"
+                            data-bind="click: $parent.approveMatchReverseOrder, attr: { 'data-match': id }">⤮
+                    </button>
+                </td>
+                <td>
+                    <button type="submit" class="btn btn-info" title="enqueue in order as shown"
+                            data-bind="click: $parent.enqueueMatchAsShownOrder, attr: { 'data-match': id }">⇉
+                    </button>
+                    <button type="submit" class="btn btn-info" title="enqueue in reverse order"
+                            data-bind="click: $parent.enqueueMatchReverseOrder, attr: { 'data-match': id }">⤮
                     </button>
                 </td>
             </tr>
@@ -155,10 +164,17 @@
 
             this.approveMatchAsShownOrder = anagramMatchToApprove => this.approveMatch(anagramMatchToApprove, true);
             this.approveMatchReverseOrder = anagramMatchToApprove => this.approveMatch(anagramMatchToApprove, false);
+            this.enqueueMatchAsShownOrder = anagramMatchToEnqueue => this.enqueueMatch(anagramMatchToEnqueue, true);
+            this.enqueueMatchReverseOrder = anagramMatchToEnqueue => this.enqueueMatch(anagramMatchToEnqueue, false);
 
             this.approveMatch = (anagramMatchToApprove, orderAsShown) => {
                 var params = { orderAsShown: orderAsShown };
                 this.hitEndPoint(`/anagrams/approve/${anagramMatchToApprove.id}`, anagramMatchToApprove, params);
+            };
+
+            this.enqueueMatch = (anagramMatchToApprove, orderAsShown) => {
+                var params = { orderAsShown: orderAsShown };
+                this.hitEndPoint(`/anagrams/enqueue/${anagramMatchToApprove.id}`, anagramMatchToApprove, params);
             };
 
             this.hitEndPoint = function (endPoint, affectedMatch, data) {
