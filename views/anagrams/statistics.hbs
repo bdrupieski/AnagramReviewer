@@ -181,7 +181,7 @@
 <script>
     $(() => {
 
-        var defaultPropValueZeroHandler = {
+        const defaultPropValueIsZeroHandler = {
             get: (target, name) => {
                 return name in target ? target[name] : 0;
             }
@@ -221,37 +221,140 @@
             });
         }
 
-        function buildRetweetsAndTumblrPostsByDay() {
+        function dateSeriesByProperty(data, ySelector) {
+            return data.map(row => {
+                return {x: row.day, y: ySelector(row)}
+            });
+        }
 
-            class PostCountsForDayPostCreated {
-                constructor(row) {
-                    this.day = new Date(row.day);
-                    this.retweeted = Number(row.retweeted);
-                    this.postedToTumblr = Number(row.posted_to_tumblr);
-                }
+        function scoreSeriesByProperty(data, ySelector) {
+            return data.map(row => {
+                return {x: row.score, y: ySelector(row)}
+            });
+        }
+
+        class StatsByDateMatchPosted {
+            constructor(row) {
+                this.day = new Date(row.day);
+                this.retweeted = Number(row.retweeted);
+                this.postedToTumblr = Number(row.posted_to_tumblr);
             }
+        }
 
-            const stats = JSON.parse('{{{stats.retweetsAndTumblrByDayJson}}}').map(x => new PostCountsForDayPostCreated(x));
-            const statsWithDaysFilledIn = fillInMissingDays(stats,
-                    row => row.day,
-                    row => row,
-                    day => new Proxy({day: day}, defaultPropValueZeroHandler)
-            );
+        class StatsByDateMatchPostedSeriesCollection {
+            constructor(statsByDateMatchPostedCollection) {
+                const stats = fillInMissingDays(statsByDateMatchPostedCollection, row => row.day, row => row,
+                        day => new Proxy({day: day}, defaultPropValueIsZeroHandler));
 
-            const retweetedCounts = statsWithDaysFilledIn.map(row => {
-                return {x: row.day, y: row.retweeted}
-            });
-            const tumblrCounts = statsWithDaysFilledIn.map(row => {
-                return {x: row.day, y: row.postedToTumblr}
-            });
+                this.retweeted = dateSeriesByProperty(stats, x => x.retweeted);
+                this.postedToTumblr = dateSeriesByProperty(stats, x => x.postedToTumblr);
+            }
+        }
+
+        class StatsByDateMatchCreated {
+            constructor(row) {
+                this.day = new Date(row.day);
+                this.matchesCreated = Number(row.matches_created);
+                this.attemptedApproval = Number(row.attempted_approval);
+                this.autoRejected = Number(row.auto_rejected);
+                this.retweeted = Number(row.retweeted);
+                this.unretweeted = Number(row.unretweeted);
+                this.rejected = Number(row.rejected);
+                this.postedToTumblr = Number(row.posted_to_tumblr);
+                this.unreviewed = Number(row.unreviewed);
+                this.adjustedFailedAttemptedApprovals = Number(row.adjustedFailedAttemptedApprovals);
+
+                this.percentUnreviewed = Number(row.percentUnreviewed) || 0;
+                this.percentRetweeted = Number(row.percentRetweeted) || 0;
+                this.percentApprovalFailure = Number(row.percentApprovalFailure) || 0;
+            }
+        }
+
+        class StatsByDateMatchCreatedSeriesCollection {
+            constructor(statsByDayMatchCreatedCollection) {
+
+                const stats = fillInMissingDays(statsByDayMatchCreatedCollection, row => row.day, row => row,
+                        day => new Proxy({day: day}, defaultPropValueIsZeroHandler));
+
+                this.matchesCreated = dateSeriesByProperty(stats, x => x.matchesCreated);
+                this.attemptedApproval = dateSeriesByProperty(stats, x => x.attemptedApproval);
+                this.autoRejected = dateSeriesByProperty(stats, x => x.autoRejected);
+                this.retweeted = dateSeriesByProperty(stats, x => x.retweeted);
+                this.unretweeted = dateSeriesByProperty(stats, x => x.unretweeted);
+                this.rejected = dateSeriesByProperty(stats, x => x.rejected);
+                this.postedToTumblr = dateSeriesByProperty(stats, x => x.postedToTumblr);
+                this.unreviewed = dateSeriesByProperty(stats, x => x.unreviewed);
+                this.adjustedFailedAttemptedApprovals = dateSeriesByProperty(stats, x => x.adjustedFailedAttemptedApprovals);
+
+                this.percentUnreviewed = dateSeriesByProperty(stats, x => x.percentUnreviewed);
+                this.percentRetweeted = dateSeriesByProperty(stats, x => x.percentRetweeted);
+                this.percentApprovalFailure = dateSeriesByProperty(stats, x => x.percentApprovalFailure);
+            }
+        }
+
+        class StatsByScoreBucket {
+            constructor(row) {
+                this.score = Number(row.score);
+                this.matchesCreated = Number(row.matches_created);
+                this.attemptedApproval = Number(row.attempted_approval);
+                this.autoRejected = Number(row.auto_rejected);
+                this.retweeted = Number(row.retweeted);
+                this.unretweeted = Number(row.unretweeted);
+                this.rejected = Number(row.rejected);
+                this.postedToTumblr = Number(row.posted_to_tumblr);
+                this.unreviewed = Number(row.unreviewed);
+
+                this.percentUnreviewed = Number(row.percentUnreviewed) || 0;
+                this.percentRetweeted = Number(row.percentRetweeted) || 0;
+            }
+        }
+
+        class StatsByScoreBucketSeriesCollection {
+            constructor(statsByScoreBucketCollection) {
+
+                const stats = statsByScoreBucketCollection;
+
+                this.matchesCreated = scoreSeriesByProperty(stats, x => x.matchesCreated);
+                this.attemptedApproval = scoreSeriesByProperty(stats, x => x.attemptedApproval);
+                this.autoRejected = scoreSeriesByProperty(stats, x => x.autoRejected);
+                this.retweeted = scoreSeriesByProperty(stats, x => x.retweeted);
+                this.unretweeted = scoreSeriesByProperty(stats, x => x.unretweeted);
+                this.rejected = scoreSeriesByProperty(stats, x => x.rejected);
+                this.postedToTumblr = scoreSeriesByProperty(stats, x => x.postedToTumblr);
+                this.unreviewed = scoreSeriesByProperty(stats, x => x.unreviewed);
+
+                this.percentUnreviewed = scoreSeriesByProperty(stats, x => x.percentUnreviewed);
+                this.percentRetweeted = scoreSeriesByProperty(stats, x => x.percentRetweeted);
+            }
+        }
+
+        function buildStatsByDateMatchPosted() {
+            const stats = JSON.parse('{{{stats.retweetsAndTumblrByDayJson}}}')
+                    .map(x => new StatsByDateMatchPosted(x));
+            return new StatsByDateMatchPostedSeriesCollection(stats);
+        }
+
+        function buildStatsByDateMatchCreated() {
+            const stats = JSON.parse('{{{stats.statsByDateMatchCreatedJson}}}')
+                    .map(x => new StatsByDateMatchCreated(x));
+            return new StatsByDateMatchCreatedSeriesCollection(stats);
+        }
+
+        function buildStatsByScoreBucket() {
+            const stats = JSON.parse('{{{stats.statsByInterestingFactorBucketJson}}}')
+                    .map(x => new StatsByScoreBucket(x)).reverse();
+            return new StatsByScoreBucketSeriesCollection(stats);
+        }
+
+        function buildRetweetsAndTumblrPostsByDay(dayStats) {
 
             const data = [
                 {
-                    values: tumblrCounts,
+                    values: dayStats.postedToTumblr,
                     key: "Tumblr",
                 },
                 {
-                    values: retweetedCounts,
+                    values: dayStats.retweeted,
                     key: 'Retweeted',
                 }
             ];
@@ -292,51 +395,18 @@
             });
         }
 
-        function buildRetweetedAndUnreviewedByDateMatchCreatedChart() {
+        function buildRetweetedAndUnreviewedByDateMatchCreatedChart(stats) {
 
-            class ReviewStatsForDay {
-                constructor(row) {
-                    this.day = new Date(row.day);
-                    this.percentUnreviewed = Number(row.percentUnreviewed);
-                    this.percentRetweeted = Number(row.percentRetweeted);
-                    const percentApprovalFailure = Number(row.percentApprovalFailure);
-                    this.percentApprovalFailure = _.isNaN(percentApprovalFailure) ? 0 : percentApprovalFailure;
-                }
-            }
-
-            const statsByDateCreated = JSON.parse('{{{stats.statsByDateMatchCreatedJson}}}')
-                    .map(x => new ReviewStatsForDay(x));
-
-            const statsWithDaysFilledIn = fillInMissingDays(statsByDateCreated,
-                    row => row.day,
-                    row => row,
-                    day => new Proxy({day: day}, defaultPropValueZeroHandler)
-            );
-
-            const percentUnreviewed = statsWithDaysFilledIn.map(row => {
-                return {x: row.day, y: row.percentUnreviewed}
-            });
-            const percentRetweeted = statsWithDaysFilledIn.map(row => {
-                return {x: row.day, y: row.percentRetweeted}
-            });
-            const percentApprovalFailure = statsWithDaysFilledIn.map(row => {
-                return {x: row.day, y: row.percentApprovalFailure}
-            });
-
-            const data = [
-                {
-                    values: percentUnreviewed,
-                    key: "Unreviewed",
-                },
-                {
-                    values: percentRetweeted,
-                    key: 'Retweeted',
-                },
-                {
-                    values: percentApprovalFailure,
-                    key: 'Approval Failure'
-                }
-            ];
+            const data = [{
+                values: stats.percentUnreviewed,
+                key: "Unreviewed",
+            }, {
+                values: stats.percentRetweeted,
+                key: 'Retweeted',
+            }, {
+                values: stats.percentApprovalFailure,
+                key: 'Approval Failure'
+            }];
 
             nv.addGraph(() => {
 
@@ -382,57 +452,21 @@
             });
         }
 
-        function buildCountsByDateMatchCreatedChart() {
-            class CountsForDayMatchCreated {
-                constructor(row) {
-                    this.day = new Date(row.day);
-                    this.matchesCreated = Number(row.matches_created);
-                    this.unreviewed = Number(row.unreviewed);
-                    this.retweeted = Number(row.retweeted);
-                    this.adjustedFailedAttemptedApprovals = Number(row.adjustedFailedAttemptedApprovals);
-                }
-            }
+        function buildCountsByDateMatchCreatedChart(dayStats) {
 
-            const statsByDateCreated = JSON.parse('{{{stats.statsByDateMatchCreatedJson}}}')
-                    .map(x => new CountsForDayMatchCreated(x));
-
-            const statsWithDaysFilledIn = fillInMissingDays(statsByDateCreated,
-                    row => row.day,
-                    row => row,
-                    day => new Proxy({day: day}, defaultPropValueZeroHandler)
-            );
-
-            const matchesCreated = statsWithDaysFilledIn.map(row => {
-                return {x: row.day, y: row.matchesCreated}
-            });
-            const unreviewed = statsWithDaysFilledIn.map(row => {
-                return {x: row.day, y: row.unreviewed}
-            });
-            const retweeted = statsWithDaysFilledIn.map(row => {
-                return {x: row.day, y: row.retweeted}
-            });
-            const adjustedFailedAttemptedApprovals = statsWithDaysFilledIn.map(row => {
-                return {x: row.day, y: row.adjustedFailedAttemptedApprovals}
-            });
-
-            const data = [
-                {
-                    values: matchesCreated,
-                    key: "Created",
-                },
-                {
-                    values: unreviewed,
-                    key: 'Unreviewed',
-                },
-                {
-                    values: retweeted,
-                    key: 'Retweeted'
-                },
-                {
-                    values: adjustedFailedAttemptedApprovals,
-                    key: 'Failed Attempted Approvals'
-                }
-            ];
+            const data = [{
+                values: dayStats.matchesCreated,
+                key: "Created",
+            }, {
+                values: dayStats.unreviewed,
+                key: 'Unreviewed',
+            }, {
+                values: dayStats.retweeted,
+                key: 'Retweeted'
+            }, {
+                values: dayStats.adjustedFailedAttemptedApprovals,
+                key: 'Failed Attempted Approvals'
+            }];
 
             nv.addGraph(() => {
 
@@ -471,26 +505,15 @@
             });
         }
 
-        function buildRetweetedAndUnreviewedByScoreBucketChart() {
+        function buildRetweetedAndUnreviewedByScoreBucketChart(stats) {
 
-            const statsByInterestingFactorBucket = JSON.parse('{{{stats.statsByInterestingFactorBucketJson}}}').reverse();
-            const percentUnreviewed = statsByInterestingFactorBucket.map(row => {
-                return {x: Number(row.score), y: Number(row.percentUnreviewed)}
-            });
-            const percentRetweeted = statsByInterestingFactorBucket.map(row => {
-                return {x: Number(row.score), y: Number(row.percentRetweeted)}
-            });
-
-            const scoreBucketData = [
-                {
-                    values: percentRetweeted,
-                    key: 'Retweeted'
-                },
-                {
-                    values: percentUnreviewed,
-                    key: "Unreviewed",
-                }
-            ];
+            const scoreBucketData = [{
+                values: stats.percentRetweeted,
+                key: 'Retweeted'
+            }, {
+                values: stats.percentUnreviewed,
+                key: "Unreviewed",
+            }];
 
             nv.addGraph(() => {
 
@@ -531,10 +554,14 @@
             });
         }
 
-        buildRetweetsAndTumblrPostsByDay();
-        buildRetweetedAndUnreviewedByDateMatchCreatedChart();
-        buildCountsByDateMatchCreatedChart();
-        buildRetweetedAndUnreviewedByScoreBucketChart();
+        const statsByDayMatchPostedSeries = buildStatsByDateMatchPosted();
+        const statsByDayMatchCreatedSeries = buildStatsByDateMatchCreated();
+        const statsByScoreBucketSeries = buildStatsByScoreBucket();
+
+        buildRetweetsAndTumblrPostsByDay(statsByDayMatchPostedSeries);
+        buildRetweetedAndUnreviewedByDateMatchCreatedChart(statsByDayMatchCreatedSeries);
+        buildCountsByDateMatchCreatedChart(statsByDayMatchCreatedSeries);
+        buildRetweetedAndUnreviewedByScoreBucketChart(statsByScoreBucketSeries);
 
     });
 </script>
