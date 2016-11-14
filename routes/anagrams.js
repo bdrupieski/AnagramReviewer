@@ -15,8 +15,23 @@ router.get('/', function (req, res) {
 });
 
 router.get('/list', function (req, res) {
-    res.render('anagrams/list', {
-        title: 'Anagrams'
+
+    return anagramsDb.getCountOfErrorQueuedMatches().then(count => {
+        const responseData = {
+            title: 'Anagrams'
+        };
+
+        if (count > 0) {
+            responseData.errorMessage = count == 1
+                ? `There is ${count} queued match with an error.`
+                : `There are ${count} queued matches with an error.`;
+        }
+
+        res.render('anagrams/list', responseData);
+    }).catch(error => {
+        logger.error(error.toString());
+        req.flash('error', error.toString());
+        res.redirect('/');
     });
 });
 

@@ -5,6 +5,9 @@ const defaultInterestingFactor = 0.67;
 const topMatchesQueryType = "topmatches";
 const oldestTopMatchesQueryType = "oldesttopmatches";
 const mostRecentMatches = "mostrecentmatches";
+const queuedMatchPendingStatus = 'pending';
+const queuedMatchErrorStatus = 'error';
+const queuedMatchPostedStatus = 'posted';
 
 const topMatchQueryTypes = [topMatchesQueryType, oldestTopMatchesQueryType, mostRecentMatches];
 
@@ -49,7 +52,7 @@ WHERE NOT A.rejected
       AND A.tumblr_post_id IS NULL
       AND A.id NOT IN (SELECT match_id
                        FROM match_queue
-                       WHERE status = 'pending')
+                       WHERE status = '${queuedMatchPendingStatus}')
 ORDER BY
   A.INTERESTING_FACTOR DESC
 limit $1::int;
@@ -88,7 +91,7 @@ WHERE NOT A.rejected
       AND A.interesting_factor > $2::float
       AND A.id NOT IN (SELECT match_id
                        FROM match_queue
-                       WHERE status = 'pending')
+                       WHERE status = '${queuedMatchPendingStatus}')
 ORDER BY
   A.DATE_CREATED
 LIMIT $1::int;
@@ -124,7 +127,7 @@ WHERE NOT A.rejected
       AND A.tumblr_post_id IS NULL
       AND A.id NOT IN (SELECT match_id
                        FROM match_queue
-                       WHERE status = 'pending')
+                       WHERE status = '${queuedMatchPendingStatus}')
 ORDER BY
   A.date_created DESC
 LIMIT $1::int;
@@ -706,7 +709,7 @@ exports.getPendingQueuedCountForMatch = function(matchId) {
 SELECT count(1)
 FROM match_queue
 WHERE
-  status = 'pending'
+  status = '${queuedMatchPendingStatus}'
   AND match_id = $1::int
 `;
     return pools.anagramPool.query(pendingQueuedMatchCountQuery, [matchId]).then(x => {
@@ -724,10 +727,10 @@ SELECT
   anagram_matches.tweet2_id
 FROM match_queue
   INNER JOIN anagram_matches ON match_queue.match_id = anagram_matches.id
-WHERE match_queue.status = 'pending'
+WHERE match_queue.status = '${queuedMatchPendingStatus}'
       AND match_queue.match_id NOT IN (SELECT match_id
                                        FROM match_queue
-                                       WHERE status = 'pending'
+                                       WHERE status = '${queuedMatchPendingStatus}'
                                        GROUP BY match_id
                                        HAVING count(1) > 1)
 ORDER BY date_queued
@@ -742,7 +745,7 @@ exports.updateQueuedMatchAsPosted = function (queuedMatchId) {
     const updateQueuedMatchAsPostedQuery = `
 UPDATE match_queue
 SET date_posted = current_timestamp,
-  status        = 'posted'
+  status        = '${queuedMatchPostedStatus}'
 WHERE id = $1::int
 `;
 
@@ -758,7 +761,7 @@ WHERE id = $1::int
 exports.updateQueuedMatchAsError = function (queuedMatchId, error) {
     const updateQueuedMatchAsErrorQuery = `
 UPDATE match_queue
-SET status = 'error',
+SET status = '${queuedMatchErrorStatus}',
   message  = $2
 WHERE id = $1::int
 `;
@@ -770,6 +773,25 @@ WHERE id = $1::int
             return x;
         }
     });
+};
+
+function getCountOfQueuedMatchesWithStatus(status) {
+    const queuedMatchCountQuery = `
+SELECT count(1)
+FROM match_queue
+WHERE status = $1::text
+`;
+    return pools.anagramPool.query(queuedMatchCountQuery, [status]).then(x => {
+        return Number(x.rows[0].count);
+    });
+}
+
+exports.getCountOfPendingQueuedMatches = function() {
+    return getCountOfQueuedMatchesWithStatus(queuedMatchPendingStatus);
+};
+
+exports.getCountOfErrorQueuedMatches = function() {
+    return getCountOfQueuedMatchesWithStatus(queuedMatchErrorStatus);
 };
 
 function clamp(x, a, b) {
