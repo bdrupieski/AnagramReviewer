@@ -1,7 +1,7 @@
-var tumblr = require('tumblr.js');
-var tumblrConfig = require('../configuration/tumblr.json');
+const tumblr = require('tumblr.js');
+const tumblrConfig = require('../configuration/tumblr.json');
 
-var client = tumblr.createClient({
+const client = tumblr.createClient({
     credentials: {
         consumer_key: tumblrConfig.consumerkey,
         consumer_secret: tumblrConfig.consumersecret,

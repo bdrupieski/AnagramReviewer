@@ -1,12 +1,12 @@
-var env = require('dotenv').config();
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var bodyParser = require('body-parser');
-var flash = require('connect-flash');
-var winston = require('winston');
-var schedule = require('node-schedule');
+const env = require('dotenv').config();
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const bodyParser = require('body-parser');
+const flash = require('connect-flash');
+const winston = require('winston');
+const schedule = require('node-schedule');
 
 winston.add(winston.transports.File, {
     name: 'info',
@@ -24,15 +24,15 @@ winston.add(winston.transports.File, {
     level: 'error'
 });
 
-var routes = require('./routes/index');
-var account = require('./routes/account');
-var anagrams = require('./routes/anagrams');
-var tasks = require('./services/tasks');
+const routes = require('./routes/index');
+const account = require('./routes/account');
+const anagrams = require('./routes/anagrams');
+const tasks = require('./services/tasks');
 
-var app = express();
+const app = express();
 
-var handlebarsIntl = require('handlebars-intl');
-var hbs = require('hbs');
+const handlebarsIntl = require('handlebars-intl');
+const hbs = require('hbs');
 handlebarsIntl.registerWith(hbs);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
@@ -44,12 +44,12 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(require('cookie-parser')());
 app.use(express.static(path.join(__dirname, 'public')));
 
-var passport = require('passport');
-var Strategy = require('passport-local').Strategy;
-var userDb = require("./db/users");
+const passport = require('passport');
+const Strategy = require('passport-local').Strategy;
+const userDb = require("./db/users");
 
-var sessionConfig = require('./configuration/session.json');
-var cookieSession = require('cookie-session');
+const sessionConfig = require('./configuration/session.json');
+const cookieSession = require('cookie-session');
 app.use(cookieSession({
     secret: sessionConfig.secret,
     cookie: { maxAge: 1000 * 60 * 60 * 30 * 365 }
@@ -58,7 +58,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-var passportConfig = require("./services/passport");
+const passportConfig = require("./services/passport");
 passportConfig.configure();
 
 // every minute on the minute
@@ -89,7 +89,7 @@ app.use('/anagrams', anagrams);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    var err = new Error('Not Found');
+    const err = new Error('Not Found');
     err.status = 404;
     next(err);
 });

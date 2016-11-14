@@ -1,8 +1,8 @@
-var pg = require('pg');
-var dbConfig = require("../configuration/db.json");
+const pg = require('pg');
+const dbConfig = require("../configuration/db.json");
 
 function poolFromConfig(dbConfig) {
-    var config = {
+    const config = {
         user: dbConfig.user,
         database: dbConfig.databaseName,
         password: dbConfig.password,
@@ -14,8 +14,8 @@ function poolFromConfig(dbConfig) {
     return new pg.Pool(config);
 }
 
-var userPool = poolFromConfig(dbConfig.reviewerDatabase);
-var anagramPool = poolFromConfig(dbConfig.anagramDatabase);
+const userPool = poolFromConfig(dbConfig.reviewerDatabase);
+const anagramPool = poolFromConfig(dbConfig.anagramDatabase);
 
 exports.userPool = userPool;
 exports.anagramPool = anagramPool;

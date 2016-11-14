@@ -1,8 +1,8 @@
-var userDb = require("../db/users");
-var passport = require('passport');
-var Strategy = require('passport-local').Strategy;
-var logger = require('winston');
-var bcrypt = require('./bcryptPromisified');
+const userDb = require("../db/users");
+const passport = require('passport');
+const Strategy = require('passport-local').Strategy;
+const logger = require('winston');
+const bcrypt = require('./bcryptPromisified');
 
 exports.configure = function () {
     passport.use(new Strategy(

@@ -1,12 +1,12 @@
-let gulp = require('gulp');
-let concat = require('gulp-concat');
-let uglify = require('gulp-uglify');
-let pump = require('pump');
-let concatCss = require('gulp-concat-css');
-let minifyCss = require('gulp-clean-css');
+const gulp = require('gulp');
+const concat = require('gulp-concat');
+const uglify = require('gulp-uglify');
+const pump = require('pump');
+const concatCss = require('gulp-concat-css');
+const minifyCss = require('gulp-clean-css');
 
 // jQuery first or bootstrap complains
-let jsSources = [
+const jsSources = [
     "public-dev/javascripts/jquery*.js",
     "public-dev/javascripts/*.js"
 ];

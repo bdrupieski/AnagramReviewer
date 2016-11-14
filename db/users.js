@@ -1,4 +1,4 @@
-var pools = require('./poolProvider');
+const pools = require('./poolProvider');
 
 exports.findById = function (id) {
     return pools.userPool.query("select * from app_user where id = $1::int limit 1", [id]).then(x => {

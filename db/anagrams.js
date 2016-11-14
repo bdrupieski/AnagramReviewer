@@ -1,12 +1,12 @@
-var pools = require('./poolProvider');
+const pools = require('./poolProvider');
 
-let maxMatchLimit = 50;
-let defaultInterestingFactor = 0.67;
-let topMatchesQueryType = "topmatches";
-let oldestTopMatchesQueryType = "oldesttopmatches";
-let mostRecentMatches = "mostrecentmatches";
+const maxMatchLimit = 50;
+const defaultInterestingFactor = 0.67;
+const topMatchesQueryType = "topmatches";
+const oldestTopMatchesQueryType = "oldesttopmatches";
+const mostRecentMatches = "mostrecentmatches";
 
-let topMatchQueryTypes = [topMatchesQueryType, oldestTopMatchesQueryType, mostRecentMatches];
+const topMatchQueryTypes = [topMatchesQueryType, oldestTopMatchesQueryType, mostRecentMatches];
 
 exports.findMatches = function (topMatchQueryType, limit = maxMatchLimit, interestingFactorCutoff = defaultInterestingFactor) {
 
@@ -30,7 +30,7 @@ exports.findMatches = function (topMatchQueryType, limit = maxMatchLimit, intere
 
 function findTopMatches(limit) {
 
-    let topMatchesQuery = `
+    const topMatchesQuery = `
 SELECT
   A.id,
   A.INTERESTING_FACTOR AS interesting,
@@ -66,7 +66,7 @@ limit $1::int;
 
 function findOldestTopMatches (limit, interestingFactorCutoff = defaultInterestingFactor) {
 
-    let oldestTopMatchQuery = `
+    const oldestTopMatchQuery = `
 SELECT
   A.id,
   A.INTERESTING_FACTOR AS interesting,
@@ -105,7 +105,7 @@ LIMIT $1::int;
 
 function findMostRecentMatches(limit) {
 
-    let topMatchesQuery = `
+    const topMatchesQuery = `
 SELECT
   A.id,
   A.INTERESTING_FACTOR AS interesting,
@@ -141,7 +141,7 @@ LIMIT $1::int;
 
 exports.rejectMatch = function (matchId, isAutoRejected = false) {
 
-    let rejectMatchQuery = `
+    const rejectMatchQuery = `
 UPDATE anagram_matches
 SET 
   rejected      = TRUE,
@@ -161,7 +161,7 @@ WHERE anagram_matches.id = $1::int;
 
 exports.unrejectMatch = function (matchId) {
 
-    let unrejectMatchQuery = `
+    const unrejectMatchQuery = `
 UPDATE anagram_matches
 SET 
   rejected      = FALSE,
@@ -181,7 +181,7 @@ WHERE anagram_matches.id = $1::int;
 
 exports.markAttemptedApprovalForMatch = function (matchId) {
 
-    let markApprovalAttemptedQuery = `
+    const markApprovalAttemptedQuery = `
 UPDATE anagram_matches
 SET attempted_approval = true
 WHERE anagram_matches.id = $1::int;
@@ -198,7 +198,7 @@ WHERE anagram_matches.id = $1::int;
 
 exports.approveMatch = function (matchId, tweet1RetweetId, tweet2RetweetId) {
 
-    let approveMatchQuery = `
+    const approveMatchQuery = `
 UPDATE anagram_matches
 SET
   tweet1_retweet_id = $2,
@@ -217,7 +217,7 @@ WHERE anagram_matches.id = $1::int;
 };
 
 exports.updateTumblrPostId = function(matchId, tumblrPostId) {
-    let updateTumblrPostIdQuery = `
+    const updateTumblrPostIdQuery = `
 UPDATE anagram_matches
 SET
   tumblr_post_id = $2::bigint,
@@ -235,7 +235,7 @@ WHERE anagram_matches.id = $1::int;
 };
 
 function getTweet(id) {
-    let tweetByIdQuery = `
+    const tweetByIdQuery = `
 SELECT *
 FROM tweets
 WHERE id = $1::uuid
@@ -247,7 +247,7 @@ LIMIT 1
 }
 
 exports.getAnagramMatch = function(id) {
-    let anagramMatchByIdQuery = `
+    const anagramMatchByIdQuery = `
 SELECT *
 FROM anagram_matches
 WHERE id = $1::int
@@ -273,7 +273,7 @@ exports.getStatsByDateMatchCreated = function (numberOfPastDays = 30) {
 
     numberOfPastDays = Math.max(numberOfPastDays, 5);
 
-    let statsByDateMatchCreated = `
+    const statsByDateMatchCreated = `
 SELECT
   DISTINCT ON (day)
   date(anagram_matches.date_created) AS day,
@@ -297,7 +297,7 @@ LIMIT $1::int;
 
 exports.getStatsByInterestingFactorBucket = function () {
 
-    let statsByInterestingFactorBucket = `
+    const statsByInterestingFactorBucket = `
 SELECT
   DISTINCT ON (score)
   trunc(anagram_matches.interesting_factor :: NUMERIC, 2) AS score,
@@ -322,7 +322,7 @@ exports.getRetweetsAndTumblrPostsByDay = function (numberOfPastDays = 30) {
 
     numberOfPastDays = Math.max(numberOfPastDays, 5);
 
-    let retweetsAndTumblrPostsByDayQuery = `
+    const retweetsAndTumblrPostsByDayQuery = `
 SELECT
   COALESCE(retweeted.day, tumblr.day) as day,
   COALESCE(count_retweeted, 0) as retweeted,
@@ -348,7 +348,7 @@ LIMIT $1::int
 };
 
 exports.getCountOfAnagramMatches = function () {
-    let anagramMatchCountQuery = `
+    const anagramMatchCountQuery = `
 SELECT count(1)
 FROM anagram_matches;
 `;
@@ -358,7 +358,7 @@ FROM anagram_matches;
 };
 
 exports.getApproximateCountOfTweets = function () {
-    let approximateTweetCountQuery = `
+    const approximateTweetCountQuery = `
 SELECT reltuples AS approximate_row_count FROM pg_class WHERE relname = 'tweets' LIMIT 1;
 `;
     return pools.anagramPool.query(approximateTweetCountQuery).then(x => {
@@ -370,7 +370,7 @@ exports.getCountOfMatchesWithInterestingFactorGreaterThan = function (interestin
 
     interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
 
-    let anagramMatchCountQuery = `
+    const anagramMatchCountQuery = `
 SELECT count(1)
 FROM anagram_matches
 WHERE interesting_factor > $1::float;
@@ -384,7 +384,7 @@ exports.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterTh
 
     interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
 
-    let notRejectedAndNotApprovedAnagramMatchCountQuery = `
+    const notRejectedAndNotApprovedAnagramMatchCountQuery = `
 SELECT count(1)
 FROM anagram_matches
 WHERE interesting_factor > $1::float
@@ -399,7 +399,7 @@ WHERE interesting_factor > $1::float
 
 exports.getCountOfRetweetedMatches = function () {
 
-    let retweetedMatchCountQuery = `
+    const retweetedMatchCountQuery = `
 SELECT count(1)
 FROM anagram_matches
 WHERE date_retweeted IS NOT NULL
@@ -412,7 +412,7 @@ WHERE date_retweeted IS NOT NULL
 
 exports.getCountOfRejectedMatches = function () {
 
-    let rejectedMatchCountQuery = `
+    const rejectedMatchCountQuery = `
 SELECT count(1)
 FROM anagram_matches
 WHERE rejected = true
@@ -423,7 +423,7 @@ WHERE rejected = true
 };
 
 exports.getDateLastMatchCreated = function () {
-    let dateLastMatchCreatedQuery = `
+    const dateLastMatchCreatedQuery = `
 SELECT date_created
 FROM anagram_matches
 ORDER BY date_created DESC
@@ -435,7 +435,7 @@ LIMIT 1;
 };
 
 exports.getCountOfAnagramMatchesWithTweetInThisMatchAlreadyRetweeted = function(matchId) {
-    let countOfMatchesWithTweetAlreadyRetweetedQuery = `
+    const countOfMatchesWithTweetAlreadyRetweetedQuery = `
 WITH candidateTweets AS (SELECT
                            t1.id tweet1id,
                            t2.id tweet2id
@@ -463,7 +463,7 @@ WHERE anagram_matches.id != $1::int AND anagram_matches.date_retweeted IS NOT NU
 };
 
 exports.getRetweetedStatusIds = function() {
-    let retweetedStatusIdsQuery = `
+    const retweetedStatusIdsQuery = `
 SELECT
   anagram_matches.id,
   t1.status_id AS t1_status_id,
@@ -480,7 +480,7 @@ WHERE anagram_matches.date_retweeted IS NOT NULL
 };
 
 exports.getTweetsToPostToTumblr = function(limit) {
-    let retweetedAndNotUnretweetedAndNotPostedToTumblrQuery = `
+    const retweetedAndNotUnretweetedAndNotPostedToTumblrQuery = `
 SELECT
   anagram_matches.id,
   t1.status_id AS t1_status_id,
@@ -501,7 +501,7 @@ LIMIT $1::int
 };
 
 exports.setUnretweeted = function(matchId) {
-    let setUnretweetedDate = `
+    const setUnretweetedDate = `
 UPDATE anagram_matches
 SET date_unretweeted = current_timestamp
 WHERE id = $1::int
@@ -517,7 +517,7 @@ WHERE id = $1::int
 };
 
 exports.setUnretweetedAndClearRetweetIds = function(matchId, clearTumblrPostId) {
-    let setUnretweetedDateAndRetweetIds = `
+    const setUnretweetedDateAndRetweetIds = `
 UPDATE anagram_matches
 SET date_unretweeted = current_timestamp,
   date_retweeted     = NULL,
@@ -526,7 +526,7 @@ SET date_unretweeted = current_timestamp,
 WHERE id = $1::int
 `;
 
-    let setUnretweetedDateRetweetIdsTumblrPostId = `
+    const setUnretweetedDateRetweetIdsTumblrPostId = `
 UPDATE anagram_matches
 SET date_unretweeted = current_timestamp,
   date_retweeted     = NULL,
@@ -536,7 +536,7 @@ SET date_unretweeted = current_timestamp,
 WHERE id = $1::int
 `;
 
-    var queryToUseForUnretweeting;
+    let queryToUseForUnretweeting;
     if (clearTumblrPostId) {
         queryToUseForUnretweeting = setUnretweetedDateRetweetIdsTumblrPostId;
     } else {
@@ -553,7 +553,7 @@ WHERE id = $1::int
 };
 
 exports.getMostRecentRetweetedMatches = function (limit = 10) {
-    let getRecentRetweetedMatchesQuery = `
+    const getRecentRetweetedMatchesQuery = `
 SELECT
   anagram_matches.id,
   anagram_matches.interesting_factor AS interesting,
@@ -579,7 +579,7 @@ LIMIT $1::int;
 };
 
 exports.getMostRecentRejectedMatches = function (limit = 10) {
-    let getRecentRejectedMatchesQuery = `
+    const getRecentRejectedMatchesQuery = `
 SELECT
   anagram_matches.id,
   anagram_matches.interesting_factor AS interesting,
@@ -608,7 +608,7 @@ LIMIT $1::int;
 };
 
 exports.getOldestUnreviewedTweets = function(limit = 20) {
-    let oldestUnreviewedTweetsQuery = `
+    const oldestUnreviewedTweetsQuery = `
 WITH unreviewedMatchTweetIds AS (SELECT
                                    anagram_matches.tweet1_id,
                                    anagram_matches.tweet2_id
@@ -639,7 +639,7 @@ exports.updateTweetsExistenceChecked = function(tweetIds) {
         return Promise.resolve(0);
     }
 
-    let updateExistenceCheckedQuery = `
+    const updateExistenceCheckedQuery = `
 UPDATE tweets
 SET date_existence_last_checked = current_timestamp
 WHERE id = ANY($1)
@@ -660,7 +660,7 @@ exports.deleteMatchesWithTweetIds = function(tweetIds) {
         return Promise.resolve(0);
     }
 
-    let deleteMatchesQuery = `
+    const deleteMatchesQuery = `
 DELETE FROM anagram_matches WHERE tweet1_id = ANY($1) OR tweet2_id = ANY($1);
 `;
 
@@ -675,7 +675,7 @@ exports.deleteTweets = function(tweetIds) {
         return Promise.resolve(0);
     }
 
-    let deleteTweetsQuery = `
+    const deleteTweetsQuery = `
 DELETE FROM tweets WHERE id = ANY($1);
 `;
 

@@ -1,10 +1,10 @@
-var express = require('express');
-var router = express.Router();
-var passport = require('passport');
-var passportConfig = require('../services/passport');
-var userDb = require('../db/users');
-var bcrypt = require('../services/bcryptPromisified');
-var logger = require('winston');
+const express = require('express');
+const router = express.Router();
+const passport = require('passport');
+const passportConfig = require('../services/passport');
+const userDb = require('../db/users');
+const bcrypt = require('../services/bcryptPromisified');
+const logger = require('winston');
 
 router.get('/', function (req, res) {
     res.redirect('account/login');
@@ -47,7 +47,7 @@ router.post('/changepassword', passportConfig.isLoggedIn, function(req, res) {
         return res.redirect('changepassword');
     }
 
-    let userId = req.user.id;
+    const userId = req.user.id;
     userDb.findById(userId).then(user => {
         return bcrypt.comparePassword(req.body.currentPassword, user.passwordhash);
     }).then(success => {

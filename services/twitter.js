@@ -1,9 +1,9 @@
-var Twitter = require('twitter');
-var twitterConfig = require('./../configuration/twitter.json');
-var logger = require('winston');
-var _ = require('lodash');
+const Twitter = require('twitter');
+const twitterConfig = require('./../configuration/twitter.json');
+const logger = require('winston');
+const _ = require('lodash');
 
-var client = new Twitter({
+const client = new Twitter({
     consumer_key: twitterConfig.consumerkey,
     consumer_secret: twitterConfig.consumersecret,
     access_token_key: twitterConfig.accesstoken,
@@ -53,7 +53,7 @@ exports.retweet = function(id) {
             function (error, tweet, response) {
                 if (error) {
                     if (error.length) {
-                        var combinedErrors = error.map(x => x.message).join(" ");
+                        const combinedErrors = error.map(x => x.message).join(" ");
                         return reject(combinedErrors);
                     } else {
                         return reject(error);
@@ -75,7 +75,7 @@ exports.unretweet = function(id) {
             function (error, tweet, response) {
                 if (error) {
                     if (error.length) {
-                        var combinedErrors = error.map(x => x.message).join(" ");
+                        const combinedErrors = error.map(x => x.message).join(" ");
                         logger.error(`error while unretweeting ${id}: ${combinedErrors}`);
                         return reject(combinedErrors);
                     } else {
@@ -98,7 +98,7 @@ exports.destroyTweet = function (id) {
             function (error, tweet, response) {
                 if (error) {
                     if (error.length) {
-                        var combinedErrors = error.map(x => x.message).join(" ");
+                        const combinedErrors = error.map(x => x.message).join(" ");
                         logger.error(`error while destroying ${id}: ${combinedErrors}`);
                         return reject(combinedErrors);
                     } else {
@@ -116,7 +116,7 @@ exports.destroyTweet = function (id) {
 
 function getRateLimits(resources) {
 
-    var params = {};
+    const params = {};
     if (resources) {
         params.resources = resources.join(",");
     }
@@ -150,7 +150,7 @@ exports.oembedTweet = function(tweetId) {
         client.get('statuses/oembed', {id: tweetId, hide_thread: true, hide_media: true}, function(error, data, response) {
             if (error) {
                 if (error.length) {
-                    var combinedErrors = error.map(x => x.message).join(" ");
+                    const combinedErrors = error.map(x => x.message).join(" ");
                     return reject(combinedErrors);
                 } else {
                     return reject(error);
@@ -167,9 +167,9 @@ exports.oembedTweet = function(tweetId) {
 
 exports.getPastTweetsUpTo3200 = function() {
 
-    var getTimelineTweetsGreaterThanMaxId = function(maxId) {
+    const getTimelineTweetsGreaterThanMaxId = function(maxId) {
 
-        var data = {
+        const data = {
             count: 200,
             trim_user: true,
             exclude_replies: true
@@ -194,11 +194,11 @@ exports.getPastTweetsUpTo3200 = function() {
         });
     };
 
-    var allTweets = [];
-    var count = 0;
+    const allTweets = [];
+    let count = 0;
 
     function recurse(maxId) {
-        var closedMaxId = maxId;
+        const closedMaxId = maxId;
         return getTimelineTweetsGreaterThanMaxId(maxId).then(tweets => {
 
             count++;
@@ -211,7 +211,7 @@ exports.getPastTweetsUpTo3200 = function() {
             if (tweets.length == 1) {
                 return true;
             } else {
-                var maxId = tweets[tweets.length - 1].id_str;
+                const maxId = tweets[tweets.length - 1].id_str;
                 return recurse(maxId);
             }
         })
