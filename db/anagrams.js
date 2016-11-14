@@ -35,26 +35,26 @@ function findTopMatches(limit) {
 
     const topMatchesQuery = `
 SELECT
-  A.id,
-  A.INTERESTING_FACTOR AS interesting,
-  T1.ORIGINAL_TEXT     AS t1_originalText,
-  T2.ORIGINAL_TEXT     AS t2_originalText,
-  T1.USER_NAME         AS t1_username,
-  T1.STATUS_ID         AS t1_statusId,
-  T2.USER_NAME         AS t2_username,
-  T2.STATUS_ID         AS t2_statusId
+  anagram_matches.id,
+  anagram_matches.interesting_factor AS interesting,
+  tweet1.original_text               AS t1_originalText,
+  tweet2.original_text               AS t2_originalText,
+  tweet1.user_name                   AS t1_username,
+  tweet1.status_id                   AS t1_statusId,
+  tweet2.user_name                   AS t2_username,
+  tweet2.status_id                   AS t2_statusId
 FROM
-  ANAGRAM_MATCHES A
-  INNER JOIN TWEETS T1 ON A.TWEET1_ID = T1.ID
-  INNER JOIN TWEETS T2 ON A.TWEET2_ID = T2.ID
-WHERE NOT A.rejected
-      AND A.DATE_RETWEETED IS NULL
-      AND A.tumblr_post_id IS NULL
-      AND A.id NOT IN (SELECT match_id
-                       FROM match_queue
-                       WHERE status = '${queuedMatchPendingStatus}')
+  anagram_matches
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+WHERE NOT anagram_matches.rejected
+      AND anagram_matches.date_retweeted IS NULL
+      AND anagram_matches.tumblr_post_id IS NULL
+      AND anagram_matches.id NOT IN (SELECT match_id
+                                     FROM match_queue
+                                     WHERE status = '${queuedMatchPendingStatus}')
 ORDER BY
-  A.INTERESTING_FACTOR DESC
+  anagram_matches.interesting_factor DESC
 limit $1::int;
 `;
 
@@ -71,29 +71,27 @@ function findOldestTopMatches (limit, interestingFactorCutoff = defaultInteresti
 
     const oldestTopMatchQuery = `
 SELECT
-  A.id,
-  A.INTERESTING_FACTOR AS interesting,
-  T1.ORIGINAL_TEXT     AS t1_originalText,
-  T2.ORIGINAL_TEXT     AS t2_originalText,
-  T1.USER_NAME         AS t1_username,
-  T1.STATUS_ID         AS t1_statusId,
-  T2.USER_NAME         AS t2_username,
-  T2.STATUS_ID         AS t2_statusId,
-  T1.CREATED_AT        AS t1_created,
-  T2.CREATED_AT        AS t2_created
+  anagram_matches.id,
+  anagram_matches.interesting_factor AS interesting,
+  tweet1.original_text               AS t1_originalText,
+  tweet2.original_text               AS t2_originalText,
+  tweet1.user_name                   AS t1_username,
+  tweet1.status_id                   AS t1_statusId,
+  tweet2.user_name                   AS t2_username,
+  tweet2.status_id                   AS t2_statusId
 FROM
-  ANAGRAM_MATCHES A
-  INNER JOIN TWEETS T1 ON A.TWEET1_ID = T1.ID
-  INNER JOIN TWEETS T2 ON A.TWEET2_ID = T2.ID
-WHERE NOT A.rejected
-      AND A.DATE_RETWEETED IS NULL
-      AND A.tumblr_post_id IS NULL
-      AND A.interesting_factor > $2::float
-      AND A.id NOT IN (SELECT match_id
-                       FROM match_queue
-                       WHERE status = '${queuedMatchPendingStatus}')
+  anagram_matches
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+WHERE NOT anagram_matches.rejected
+      AND anagram_matches.date_retweeted IS NULL
+      AND anagram_matches.tumblr_post_id IS NULL
+      AND anagram_matches.interesting_factor > $2::float
+      AND anagram_matches.id NOT IN (SELECT match_id
+                                     FROM match_queue
+                                     WHERE status = '${queuedMatchPendingStatus}')
 ORDER BY
-  A.DATE_CREATED
+  anagram_matches.date_created
 LIMIT $1::int;
 `;
 
@@ -110,26 +108,26 @@ function findMostRecentMatches(limit) {
 
     const topMatchesQuery = `
 SELECT
-  A.id,
-  A.INTERESTING_FACTOR AS interesting,
-  T1.ORIGINAL_TEXT     AS t1_originalText,
-  T2.ORIGINAL_TEXT     AS t2_originalText,
-  T1.USER_NAME         AS t1_username,
-  T1.STATUS_ID         AS t1_statusId,
-  T2.USER_NAME         AS t2_username,
-  T2.STATUS_ID         AS t2_statusId
+  anagram_matches.id,
+  anagram_matches.interesting_factor AS interesting,
+  tweet1.original_text               AS t1_originalText,
+  tweet2.original_text               AS t2_originalText,
+  tweet1.user_name                   AS t1_username,
+  tweet1.status_id                   AS t1_statusId,
+  tweet2.user_name                   AS t2_username,
+  tweet2.status_id                   AS t2_statusId
 FROM
-  ANAGRAM_MATCHES A
-  INNER JOIN TWEETS T1 ON A.TWEET1_ID = T1.ID
-  INNER JOIN TWEETS T2 ON A.TWEET2_ID = T2.ID
-WHERE NOT A.rejected
-      AND A.date_retweeted IS NULL
-      AND A.tumblr_post_id IS NULL
-      AND A.id NOT IN (SELECT match_id
-                       FROM match_queue
-                       WHERE status = '${queuedMatchPendingStatus}')
+  anagram_matches
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+WHERE NOT anagram_matches.rejected
+      AND anagram_matches.date_retweeted IS NULL
+      AND anagram_matches.tumblr_post_id IS NULL
+      AND anagram_matches.id NOT IN (SELECT match_id
+                                     FROM match_queue
+                                     WHERE status = '${queuedMatchPendingStatus}')
 ORDER BY
-  A.date_created DESC
+  anagram_matches.date_created DESC
 LIMIT $1::int;
 `;
 
@@ -223,7 +221,7 @@ exports.updateTumblrPostId = function(matchId, tumblrPostId) {
     const updateTumblrPostIdQuery = `
 UPDATE anagram_matches
 SET
-  tumblr_post_id = $2::bigint,
+  tumblr_post_id     = $2::bigint,
   date_posted_tumblr = current_timestamp
 WHERE anagram_matches.id = $1::int;
 `;
