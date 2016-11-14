@@ -65,7 +65,7 @@ function determineIfTweetExists(statusId) {
 }
 
 exports.retweetOnePendingMatch = function() {
-    return anagramsDb.getPendingQueuedMatch().then(queuedMatches => {
+    return anagramsDb.getNextPendingQueuedMatchToDequeue().then(queuedMatches => {
         if (queuedMatches.length == 0) {
             console.log("no pending matches to dequeue");
         } else {

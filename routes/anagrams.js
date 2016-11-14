@@ -207,6 +207,33 @@ router.post('/unrejectmanually/:id', function(req, res) {
     });
 });
 
+router.get('/queuestatus', function(req, res) {
+    return Promise.all([
+        anagramsDb.getCountOfPendingQueuedMatches(),
+        anagramsDb.getCountOfPostedQueueMatches(),
+        anagramsDb.getCountOfErrorQueuedMatches(),
+        anagramsDb.getPendingQueuedMatches(),
+        anagramsDb.getErrorQueuedMatches()
+    ]).then(queueStatus => {
+
+        const formattedQueueStatus = {
+            pendingCount: queueStatus[0],
+            postedCount: queueStatus[1],
+            errorCount: queueStatus[2],
+            pendingQueueMatches: queueStatus[3],
+            errorQueueMatches: queueStatus[4]
+        };
+
+        res.render('anagrams/queuestatus', {
+            queueStatus: formattedQueueStatus
+        });
+    }).catch(error => {
+        logger.error(error.toString());
+        req.flash('error', error.toString());
+        res.redirect('/anagrams/list');
+    });
+});
+
 router.get('/more/:queryType', function (req, res) {
     const cutoff = parseFloat(req.query.cutoff);
     const topMatches = anagramsDb.findMatches(req.params.queryType, 15, cutoff).then(anagramMatches => {

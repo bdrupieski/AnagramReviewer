@@ -1,0 +1,71 @@
+<div class="container-fluid">
+    <h3>Queue status counts:</h3>
+    <div class="row">
+        <strong>{{formatNumber queueStatus.pendingCount}}</strong> pending.
+    </div>
+    <div class="row">
+        <strong>{{formatNumber queueStatus.postedCount}}</strong> posted.
+    </div>
+    <div class="row">
+        <strong>{{formatNumber queueStatus.errorCount}}</strong> error.
+    </div>
+
+    {{#if queueStatus.pendingQueueMatches}}
+        <div class="row">
+            <h3>Pending matches</h3>
+            <div class="col-md-12">
+                <table class="table table-hover table-condensed">
+                    <thead>
+                    <tr>
+                        <th>Time Queued</th>
+                        <th>IF</th>
+                        <th>T1</th>
+                        <th>T2</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#each queueStatus.pendingQueueMatches}}
+                        <tr data-pending-id="{{id}}">
+                            <td>{{formatTime date_queued day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
+                            <td>{{formatNumber interesting maximumSignificantDigits='2'}}</td>
+                            <td>{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
+                            <td>{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {{/if}}
+
+    {{#if queueStatus.errorQueueMatches}}
+        <div class="row">
+            <h3>Errors</h3>
+            <div class="col-md-12">
+                <table class="table table-hover table-condensed">
+                    <thead>
+                    <tr>
+                        <th>Time Queued</th>
+                        <th>IF</th>
+                        <th>T1</th>
+                        <th>T2</th>
+                        <th>Message</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#each queueStatus.errorQueueMatches}}
+                        <tr data-error-id="{{id}}">
+                            <td>{{formatTime date_queued day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
+                            <td>{{formatNumber interesting maximumSignificantDigits='2'}}</td>
+                            <td>{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
+                            <td>{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>
+                            <td>{{message}}</td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    {{/if}}
+</div>

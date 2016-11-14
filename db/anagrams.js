@@ -717,7 +717,7 @@ WHERE
     });
 };
 
-exports.getPendingQueuedMatch = function () {
+exports.getNextPendingQueuedMatchToDequeue = function () {
     const pendingQueuedMatchQuery = `
 SELECT
   match_queue.id       AS match_queue_id,
@@ -792,6 +792,46 @@ exports.getCountOfPendingQueuedMatches = function() {
 
 exports.getCountOfErrorQueuedMatches = function() {
     return getCountOfQueuedMatchesWithStatus(queuedMatchErrorStatus);
+};
+
+exports.getCountOfPostedQueueMatches = function() {
+    return getCountOfQueuedMatchesWithStatus(queuedMatchPostedStatus);
+};
+
+function getQueuedMatchesWithStatus(status) {
+    const queuedMatchesWithStatusQuery = `
+SELECT
+  match_queue.id,
+  match_queue.date_queued,
+  match_queue.message,
+  anagram_matches.id                 AS match_id,
+  anagram_matches.interesting_factor AS interesting,
+  tweet1.original_text               AS t1_originalText,
+  tweet2.original_text               AS t2_originalText,
+  tweet1.user_name                   AS t1_username,
+  tweet1.status_id                   AS t1_statusId,
+  tweet2.user_name                   AS t2_username,
+  tweet2.status_id                   AS t2_statusId
+FROM
+  match_queue
+  INNER JOIN anagram_matches ON anagram_matches.id = match_queue.match_id
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+WHERE match_queue.status = '${status}'
+ORDER BY match_queue.date_queued;
+`;
+
+    return pools.anagramPool.query(queuedMatchesWithStatusQuery).then(x => {
+        return x.rows;
+    });
+}
+
+exports.getErrorQueuedMatches = function() {
+    return getQueuedMatchesWithStatus(queuedMatchErrorStatus);
+};
+
+exports.getPendingQueuedMatches = function() {
+    return getQueuedMatchesWithStatus(queuedMatchPendingStatus);
 };
 
 function clamp(x, a, b) {
