@@ -57,7 +57,6 @@
     <div class="row">
         <div class="col-md-5">
             <table class="table table-hover table-condensed">
-
                 <thead>
                 <tr>
                     <th>Day</th>
@@ -123,9 +122,13 @@
             </table>
         </div>
     </div>
-    <h3>Percent retweeted, unreviewed, and approval failure by date match created:</h3>
+    <h3>Percent retweeted and unreviewed relative to total matches:</h3>
     <div class="row">
         <svg id="percent-reviewed-unreviewed-by-date-created-chart" height="400"></svg>
+    </div>
+    <h3>Percent approval failure out of all approval attempts:</h3>
+    <div class="row">
+        <svg id="percent-approval-failure-by-date-created-chart" height="400"></svg>
     </div>
     <h3>Counts of things that happened by date match created:</h3>
     <div class="row">
@@ -175,6 +178,10 @@
     <h3>Percent retweeted and unreviewed by interesting factor bucket:</h3>
     <div class="row">
         <svg id="reviewed-unreviewed-by-score-bucket-chart" height="400"></svg>
+    </div>
+    <h3>Totals by interesting factor bucket:</h3>
+    <div class="row">
+        <svg id="totals-by-score-bucket-chart" height="400"></svg>
     </div>
 </div>
 
@@ -243,8 +250,7 @@
 
         class StatsByDateMatchPostedSeriesCollection {
             constructor(statsByDateMatchPostedCollection) {
-                const stats = fillInMissingDays(statsByDateMatchPostedCollection, row => row.day, row => row,
-                        day => new Proxy({day: day}, defaultPropValueIsZeroHandler));
+                const stats = statsByDateMatchPostedCollection;
 
                 this.retweeted = dateSeriesByProperty(stats, x => x.retweeted);
                 this.postedToTumblr = dateSeriesByProperty(stats, x => x.postedToTumblr);
@@ -273,8 +279,7 @@
         class StatsByDateMatchCreatedSeriesCollection {
             constructor(statsByDayMatchCreatedCollection) {
 
-                const stats = fillInMissingDays(statsByDayMatchCreatedCollection, row => row.day, row => row,
-                        day => new Proxy({day: day}, defaultPropValueIsZeroHandler));
+                const stats = statsByDayMatchCreatedCollection;
 
                 this.matchesCreated = dateSeriesByProperty(stats, x => x.matchesCreated);
                 this.attemptedApproval = dateSeriesByProperty(stats, x => x.attemptedApproval);
@@ -330,34 +335,48 @@
 
         function buildStatsByDateMatchPosted() {
             const stats = JSON.parse('{{{stats.retweetsAndTumblrByDayJson}}}')
-                    .map(x => new StatsByDateMatchPosted(x));
-            return new StatsByDateMatchPostedSeriesCollection(stats);
+                    .map(x => new StatsByDateMatchPosted(x)).reverse();
+            const statsWithDaysFilledIn = fillInMissingDays(stats, row => row.day, row => row,
+                    day => new Proxy({day: day}, defaultPropValueIsZeroHandler));
+            return {
+                series: new StatsByDateMatchPostedSeriesCollection(statsWithDaysFilledIn),
+                stats: statsWithDaysFilledIn
+            };
         }
 
         function buildStatsByDateMatchCreated() {
             const stats = JSON.parse('{{{stats.statsByDateMatchCreatedJson}}}')
-                    .map(x => new StatsByDateMatchCreated(x));
-            return new StatsByDateMatchCreatedSeriesCollection(stats);
+                    .map(x => new StatsByDateMatchCreated(x)).reverse();
+            const statsWithDaysFilledIn = fillInMissingDays(stats, row => row.day, row => row,
+                    day => new Proxy({day: day}, defaultPropValueIsZeroHandler));
+            return {
+                series: new StatsByDateMatchCreatedSeriesCollection(statsWithDaysFilledIn),
+                stats: statsWithDaysFilledIn};
         }
 
         function buildStatsByScoreBucket() {
             const stats = JSON.parse('{{{stats.statsByInterestingFactorBucketJson}}}')
                     .map(x => new StatsByScoreBucket(x)).reverse();
-            return new StatsByScoreBucketSeriesCollection(stats);
+
+            var lastBucket = () => stats[stats.length - 1];
+            while (lastBucket().score != 1.0) {
+                stats.push(new Proxy({score: lastBucket().score + 0.01}, defaultPropValueIsZeroHandler));
+            }
+            return {
+                series: new StatsByScoreBucketSeriesCollection(stats),
+                stats: stats
+            };
         }
 
         function buildRetweetsAndTumblrPostsByDay(dayStats) {
 
-            const data = [
-                {
-                    values: dayStats.postedToTumblr,
-                    key: "Tumblr",
-                },
-                {
-                    values: dayStats.retweeted,
-                    key: 'Retweeted',
-                }
-            ];
+            const data = [{
+                values: dayStats.postedToTumblr,
+                key: "Tumblr",
+            }, {
+                values: dayStats.retweeted,
+                key: 'Retweeted',
+            }];
 
             nv.addGraph(() => {
 
@@ -395,17 +414,11 @@
             });
         }
 
-        function buildRetweetedAndUnreviewedByDateMatchCreatedChart(stats) {
-
+        function buildPercentApprovalFailureChart(dayStats) {
             const data = [{
-                values: stats.percentUnreviewed,
-                key: "Unreviewed",
-            }, {
-                values: stats.percentRetweeted,
-                key: 'Retweeted',
-            }, {
-                values: stats.percentApprovalFailure,
-                key: 'Approval Failure'
+                values: dayStats.percentApprovalFailure,
+                key: 'Approval Failure',
+                color: '#FF0000'
             }];
 
             nv.addGraph(() => {
@@ -414,6 +427,69 @@
                                 .options({
                                     useInteractiveGuideline: true,
                                     duration: 300,
+                                })
+                                .margin({bottom: 90, right: 70})
+                        ;
+
+                chart.xAxis
+                        .axisLabel("Date")
+                        .tickFormat((d) => {
+                            return d3.time.format('%x')(new Date(d))
+                        })
+                        .rotateLabels(45)
+                ;
+
+                chart.x2Axis.tickFormat((d) => {
+                    return d3.time.format('%x')(new Date(d))
+                });
+
+                chart.yAxis
+                        .axisLabel('Percent')
+                        .tickFormat((d) => {
+                            if (d == null) {
+                                return 'N/A';
+                            }
+                            return d3.format('.2%')(d);
+                        })
+                        .ticks(4)
+                ;
+
+                chart.y2Axis
+                        .tickFormat((d) => {
+                            if (d == null) {
+                                return 'N/A';
+                            }
+                            return d3.format('.2%')(d);
+                        })
+                ;
+
+                d3.select('#percent-approval-failure-by-date-created-chart')
+                        .datum(data)
+                        .call(chart);
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            });
+        }
+
+        function buildRetweetedAndUnreviewedByDateMatchCreatedChart(dayStats) {
+
+            const data = [{
+                values: dayStats.percentUnreviewed,
+                key: "Unreviewed",
+            }, {
+                values: dayStats.percentRetweeted,
+                key: 'Retweeted',
+            }];
+
+            nv.addGraph(() => {
+
+                const chart = nv.models.lineWithFocusChart()
+                                .options({
+                                    useInteractiveGuideline: true,
+                                    duration: 300,
+                                    forceY: [0, 1],
                                 })
                                 .color(d3.scale.category10().range())
                                 .margin({bottom: 90, right: 70})
@@ -440,6 +516,15 @@
                             return d3.format('.2%')(d);
                         })
                         .ticks(4)
+                ;
+
+                chart.y2Axis
+                        .tickFormat((d) => {
+                            if (d == null) {
+                                return 'N/A';
+                            }
+                            return d3.format('.2%')(d);
+                        })
                 ;
 
                 d3.select('#percent-reviewed-unreviewed-by-date-created-chart')
@@ -505,13 +590,13 @@
             });
         }
 
-        function buildRetweetedAndUnreviewedByScoreBucketChart(stats) {
+        function buildRetweetedAndUnreviewedByScoreBucketChart(scoreStats) {
 
             const scoreBucketData = [{
-                values: stats.percentRetweeted,
+                values: scoreStats.percentRetweeted,
                 key: 'Retweeted'
             }, {
-                values: stats.percentUnreviewed,
+                values: scoreStats.percentUnreviewed,
                 key: "Unreviewed",
             }];
 
@@ -554,14 +639,57 @@
             });
         }
 
-        const statsByDayMatchPostedSeries = buildStatsByDateMatchPosted();
-        const statsByDayMatchCreatedSeries = buildStatsByDateMatchCreated();
-        const statsByScoreBucketSeries = buildStatsByScoreBucket();
+        function buildCountsByScoreBucketChart(scoreStats) {
 
-        buildRetweetsAndTumblrPostsByDay(statsByDayMatchPostedSeries);
-        buildRetweetedAndUnreviewedByDateMatchCreatedChart(statsByDayMatchCreatedSeries);
-        buildCountsByDateMatchCreatedChart(statsByDayMatchCreatedSeries);
-        buildRetweetedAndUnreviewedByScoreBucketChart(statsByScoreBucketSeries);
+            const data = [{
+                values: scoreStats.matchesCreated,
+                key: 'Created'
+            }, {
+                values: scoreStats.retweeted,
+                key: "Retweeted",
+            }, {
+                values: scoreStats.autoRejected,
+                key: "Auto-Rejected"
+            }];
 
+            nv.addGraph(() => {
+
+                const chart = nv.models.multiBarChart()
+                                .options({
+                                    duration: 300,
+                                })
+                                .color(d3.scale.category10().range())
+                        ;
+
+                chart.xAxis
+                        .axisLabel("Date")
+                ;
+
+                chart.yAxis
+                        .axisLabel('Count')
+                        .tickFormat(d3.format('i'))
+                ;
+
+                d3.select('#totals-by-score-bucket-chart')
+                        .datum(data)
+                        .call(chart);
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            });
+        }
+
+        const byDayMatchPosted = buildStatsByDateMatchPosted();
+        const byDayMatchCreated = buildStatsByDateMatchCreated();
+        const byScoreBucket = buildStatsByScoreBucket();
+
+        buildRetweetsAndTumblrPostsByDay(byDayMatchPosted.series);
+        buildRetweetedAndUnreviewedByDateMatchCreatedChart(byDayMatchCreated.series);
+        buildPercentApprovalFailureChart(byDayMatchCreated.series);
+        buildCountsByDateMatchCreatedChart(byDayMatchCreated.series);
+        buildRetweetedAndUnreviewedByScoreBucketChart(byScoreBucket.series);
+        buildCountsByScoreBucketChart(byScoreBucket.series);
     });
+
 </script>
