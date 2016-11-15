@@ -130,13 +130,13 @@
     <div class="row">
         <svg id="percent-reviewed-unreviewed-by-date-created-chart" height="400"></svg>
     </div>
-    <h3>Percent approval failure out of all approval attempts:</h3>
-    <div class="row">
-        <svg id="percent-approval-failure-by-date-created-chart" height="400"></svg>
-    </div>
     <h3>Counts of things that happened by date match created:</h3>
     <div class="row">
         <svg id="counts-by-date-created-chart" height="400"></svg>
+    </div>
+    <h3>Percent approval failure out of all approval attempts:</h3>
+    <div class="row">
+        <svg id="percent-approval-failure-by-date-created-chart" height="400"></svg>
     </div>
 
     <h3>
@@ -547,14 +547,14 @@
         function buildCountsByDateMatchCreatedChart(dayStats) {
 
             const data = [{
-                values: dayStats.matchesCreated,
-                key: "Created",
-            }, {
                 values: dayStats.unreviewed,
                 key: 'Unreviewed',
             }, {
                 values: dayStats.retweeted,
                 key: 'Retweeted'
+            }, {
+                values: dayStats.matchesCreated,
+                key: "Created",
             }, {
                 values: dayStats.adjustedFailedAttemptedApprovals,
                 key: 'Failed Attempted Approvals'
@@ -649,11 +649,14 @@
         function buildCountsByScoreBucketChart(scoreStats) {
 
             const data = [{
-                values: scoreStats.matchesCreated,
-                key: 'Created'
-            }, {
                 values: scoreStats.retweeted,
                 key: "Retweeted",
+            }, {
+                values: scoreStats.unreviewed,
+                key: "Unreviewed",
+            }, {
+                values: scoreStats.matchesCreated,
+                key: 'Created'
             }, {
                 values: scoreStats.autoRejected,
                 key: "Auto-Rejected"
