@@ -8,6 +8,7 @@ const mostRecentMatches = "mostrecentmatches";
 const queuedMatchPendingStatus = 'pending';
 const queuedMatchErrorStatus = 'error';
 const queuedMatchPostedStatus = 'posted';
+const queuedMatchRemovedStatus = 'removed';
 
 const topMatchQueryTypes = [topMatchesQueryType, oldestTopMatchesQueryType, mostRecentMatches];
 
@@ -773,6 +774,22 @@ WHERE id = $1::int
     });
 };
 
+exports.updateQueuedMatchAsRemoved = function (queuedMatchId) {
+    const updateQueuedMatchAsRemovedQuery = `
+UPDATE match_queue
+SET status = '${queuedMatchRemovedStatus}'
+WHERE id = $1::int
+`;
+
+    return pools.anagramPool.query(updateQueuedMatchAsRemovedQuery, [queuedMatchId]).then(x => {
+        if (x.rowCount != 1) {
+            throw x;
+        } else {
+            return x;
+        }
+    });
+};
+
 function getCountOfQueuedMatchesWithStatus(status) {
     const queuedMatchCountQuery = `
 SELECT count(1)
@@ -794,6 +811,10 @@ exports.getCountOfErrorQueuedMatches = function() {
 
 exports.getCountOfPostedQueueMatches = function() {
     return getCountOfQueuedMatchesWithStatus(queuedMatchPostedStatus);
+};
+
+exports.getCountOfRemovedQueueMatches = function() {
+    return getCountOfQueuedMatchesWithStatus(queuedMatchRemovedStatus);
 };
 
 function getQueuedMatchesWithStatus(status) {

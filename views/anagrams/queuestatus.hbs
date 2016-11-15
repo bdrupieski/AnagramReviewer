@@ -9,6 +9,9 @@
     <div class="row">
         <strong>{{formatNumber queueStatus.errorCount}}</strong> error.
     </div>
+    <div class="row">
+        <strong>{{formatNumber queueStatus.removedCount}}</strong> removed.
+    </div>
 
     {{#if queueStatus.pendingQueueMatches}}
         <div class="row">
@@ -21,6 +24,7 @@
                         <th>IF</th>
                         <th>T1</th>
                         <th>T2</th>
+                        <th>Remove</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -30,6 +34,11 @@
                             <td>{{formatNumber interesting maximumSignificantDigits='2'}}</td>
                             <td>{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
                             <td>{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>
+                            <td>
+                                <form action='queue/remove/{{id}}' method="post">
+                                    <button type="submit" class="btn btn-sm btn-danger">✖</button>
+                                </form>
+                            </td>
                         </tr>
                     {{/each}}
                     </tbody>
