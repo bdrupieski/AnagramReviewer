@@ -101,26 +101,6 @@ router.get('/statistics', function(req, res) {
         formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoffIsOne =
             formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff == 1;
 
-        for (const dayStats of formattedStats.statsByDateMatchCreated) {
-            dayStats.unreviewed = dayStats.matches_created - dayStats.rejected - dayStats.retweeted;
-            dayStats.percentUnreviewed = dayStats.unreviewed / dayStats.matches_created;
-            dayStats.percentRetweeted = dayStats.retweeted / dayStats.matches_created;
-
-            const countOfAdditionalTumblrPostsMadeBecauseAMatchContainedAnAlreadyRetweetedTweet =
-                dayStats.posted_to_tumblr - dayStats.retweeted;
-            const numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches =
-                dayStats.attempted_approval - countOfAdditionalTumblrPostsMadeBecauseAMatchContainedAnAlreadyRetweetedTweet;
-
-            dayStats.adjustedFailedAttemptedApprovals = numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches - dayStats.retweeted;
-            dayStats.percentApprovalFailure = 1 - (dayStats.retweeted / numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches);
-        }
-
-        for (const scoreBucket of formattedStats.statsByInterestingFactorBucket) {
-            scoreBucket.unreviewed = scoreBucket.matches_created - scoreBucket.rejected - scoreBucket.retweeted;
-            scoreBucket.percentUnreviewed = scoreBucket.unreviewed / scoreBucket.matches_created;
-            scoreBucket.percentRetweeted = scoreBucket.retweeted / scoreBucket.matches_created;
-        }
-
         formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.countOfMatches;
         formattedStats.countOfRetweetedTweets = formattedStats.countOfRetweetedMatches * 2;
 

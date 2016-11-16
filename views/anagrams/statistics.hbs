@@ -278,12 +278,17 @@
                 this.unretweeted = Number(row.unretweeted);
                 this.rejected = Number(row.rejected);
                 this.postedToTumblr = Number(row.posted_to_tumblr);
-                this.unreviewed = Number(row.unreviewed);
-                this.adjustedFailedAttemptedApprovals = Number(row.adjustedFailedAttemptedApprovals);
 
-                this.percentUnreviewed = Number(row.percentUnreviewed) || 0;
-                this.percentRetweeted = Number(row.percentRetweeted) || 0;
-                this.percentApprovalFailure = Number(row.percentApprovalFailure) || 0;
+                this.unreviewed = this.matchesCreated - this.rejected - Math.max(this.retweeted, this.postedToTumblr) + this.unretweeted;
+                this.percentUnreviewed = this.unreviewed / this.matchesCreated;
+                this.percentRetweeted = this.retweeted / this.matchesCreated;
+
+                const countOfAdditionalTumblrPostsMadeBecauseAMatchContainedAnAlreadyRetweetedTweet = this.postedToTumblr - this.retweeted;
+                const numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches =
+                        this.attemptedApproval - countOfAdditionalTumblrPostsMadeBecauseAMatchContainedAnAlreadyRetweetedTweet;
+
+                this.adjustedFailedAttemptedApprovals = numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches - this.retweeted;
+                this.percentApprovalFailure = (1 - (this.retweeted / numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches)) || 0;
             }
         }
 
@@ -318,10 +323,10 @@
                 this.unretweeted = Number(row.unretweeted);
                 this.rejected = Number(row.rejected);
                 this.postedToTumblr = Number(row.posted_to_tumblr);
-                this.unreviewed = Number(row.unreviewed);
 
-                this.percentUnreviewed = Number(row.percentUnreviewed) || 0;
-                this.percentRetweeted = Number(row.percentRetweeted) || 0;
+                this.unreviewed = this.matchesCreated - this.rejected - Math.max(this.retweeted, this.postedToTumblr) + this.unretweeted;
+                this.percentUnreviewed = (this.unreviewed / this.matchesCreated) || 0;
+                this.percentRetweeted = (this.retweeted / this.matchesCreated) || 0;
             }
         }
 
