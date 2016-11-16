@@ -86,3 +86,6 @@ jspm_packages
 /configuration/
 *.iml
 *.idea
+
+public/javascripts/app-front-end.js
+public/stylesheets/app-stylesheets.css
