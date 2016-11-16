@@ -56,8 +56,10 @@
         <button class="btn btn-sm btn-info js-collapse-button" data-toggle="collapse" data-target="#retweets-and-tumblr-posts-by-day-table"></button>
         Retweets and Tumblr posts made by day for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:
     </h3>
-    <div id="retweets-and-tumblr-posts-by-day-table" class="row collapse in">
-        <div class="col-md-5">
+    <div class="row">
+        <div id="retweets-and-tumblr-posts-by-day-table" class="col-md-5 collapse in"></div>
+
+        <script id="retweets-and-tumblr-posts-by-day-table-template" type="text/x-handlebars-template">
             <table class="table table-hover table-condensed">
                 <thead>
                 <tr>
@@ -67,16 +69,17 @@
                 </tr>
                 </thead>
                 <tbody>
-                {{#each stats.retweetsAndTumblrByDay}}
-                    <tr>
-                        <td>{{formatTime day day="numeric" month="long" year="numeric"}}</td>
-                        <td>{{retweeted}}</td>
-                        <td>{{posted_to_tumblr}}</td>
-                    </tr>
-                {{/each}}
+                \{{#each rows}}
+                <tr>
+                    <td>\{{formatTime day day="numeric" month="long" year="numeric"}}</td>
+                    <td>\{{retweeted}}</td>
+                    <td>\{{postedToTumblr}}</td>
+                </tr>
+                \{{/each}}
                 </tbody>
             </table>
-        </div>
+        </script>
+
         <div class="col-md-7">
             <svg id="retweets-and-tumblr-posts-by-day-chart" height="400"></svg>
         </div>
@@ -86,46 +89,47 @@
         <button class="btn btn-sm btn-info js-collapse-button" data-toggle="collapse" data-target="#stats-by-date-created-table"></button>
         Stats by date match created for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:
     </h3>
-    <div id="stats-by-date-created-table" class="row collapse in">
-        <div class="col-md-12">
-            <table class="table table-hover table-condensed">
-                <thead>
+    <div id="stats-by-date-created-table" class="row collapse in col-md-12"></div>
+
+    <script id="stats-by-date-created-table-template" type="text/x-handlebars-template">
+        <table class="table table-hover table-condensed">
+            <thead>
+            <tr>
+                <th>Day</th>
+                <th>Matches created</th>
+                <th>Attempted Approval</th>
+                <th>Auto-rejected</th>
+                <th>Retweeted</th>
+                <th>Unretweeted</th>
+                <th>Rejected</th>
+                <th>Tumblr</th>
+                <th>Unreviewed</th>
+                <th>% Unreviewed</th>
+                <th>% Retweeted</th>
+                <th>% Approval Failure</th>
+            </tr>
+            </thead>
+            <tbody>
+            \{{#each rows}}
                 <tr>
-                    <th>Day</th>
-                    <th>Matches created</th>
-                    <th>Attempted Approval</th>
-                    <th>Auto-rejected</th>
-                    <th>Retweeted</th>
-                    <th>Unretweeted</th>
-                    <th>Rejected</th>
-                    <th>Tumblr</th>
-                    <th>Unreviewed</th>
-                    <th>% Unreviewed</th>
-                    <th>% Retweeted</th>
-                    <th>% Approval Failure</th>
+                    <td>\{{formatTime day day="numeric" month="long" year="numeric"}}</td>
+                    <td>\{{matchesCreated}}</td>
+                    <td>\{{attemptedApproval}}</td>
+                    <td>\{{autoRejected}}</td>
+                    <td>\{{retweeted}}</td>
+                    <td>\{{unretweeted}}</td>
+                    <td>\{{rejected}}</td>
+                    <td>\{{postedToTumblr}}</td>
+                    <td>\{{unreviewed}}</td>
+                    <td>\{{formatNumber percentUnreviewed style="percent"}}</td>
+                    <td>\{{formatNumber percentRetweeted style="percent"}}</td>
+                    <td>\{{formatNumber percentApprovalFailure style="percent"}}</td>
                 </tr>
-                </thead>
-                <tbody>
-                {{#each stats.statsByDateMatchCreated}}
-                    <tr>
-                        <td>{{formatTime day day="numeric" month="long" year="numeric"}}</td>
-                        <td>{{matches_created}}</td>
-                        <td>{{attempted_approval}}</td>
-                        <td>{{auto_rejected}}</td>
-                        <td>{{retweeted}}</td>
-                        <td>{{unretweeted}}</td>
-                        <td>{{rejected}}</td>
-                        <td>{{posted_to_tumblr}}</td>
-                        <td>{{unreviewed}}</td>
-                        <td>{{formatNumber percentUnreviewed style="percent"}}</td>
-                        <td>{{formatNumber percentRetweeted style="percent"}}</td>
-                        <td>{{formatNumber percentApprovalFailure style="percent"}}</td>
-                    </tr>
-                {{/each}}
-                </tbody>
-            </table>
-        </div>
-    </div>
+            \{{/each}}
+            </tbody>
+        </table>
+    </script>
+
     <h3>Percent retweeted and unreviewed relative to total matches:</h3>
     <div class="row">
         <svg id="percent-reviewed-unreviewed-by-date-created-chart" height="400"></svg>
@@ -143,45 +147,45 @@
         <button class="btn btn-sm btn-info js-collapse-button" data-toggle="collapse" data-target="#stats-by-score-table"></button>
         Stats by interesting factor bucket:
     </h3>
-    <div id="stats-by-score-table" class="row collapse in">
-        <div class="col-md-12">
-            <table class="table table-hover table-condensed">
+    <div id="stats-by-score-table" class="row collapse in col-md-12"></div>
 
-                <thead>
+    <script id="stats-by-score-table-template" type="text/x-handlebars-template">
+        <table class="table table-hover table-condensed">
+            <thead>
+            <tr>
+                <th>Interesting Factor</th>
+                <th>Total matches</th>
+                <th>Attempted Approval</th>
+                <th>Auto-rejected</th>
+                <th>Retweeted</th>
+                <th>Unretweeted</th>
+                <th>Rejected</th>
+                <th>Tumblr</th>
+                <th>Unreviewed</th>
+                <th>% Unreviewed</th>
+                <th>% Retweeted</th>
+            </tr>
+            </thead>
+            <tbody>
+            \{{#each rows}}
                 <tr>
-                    <th>Interesting Factor</th>
-                    <th>Total matches</th>
-                    <th>Attempted Approval</th>
-                    <th>Auto-rejected</th>
-                    <th>Retweeted</th>
-                    <th>Unretweeted</th>
-                    <th>Rejected</th>
-                    <th>Tumblr</th>
-                    <th>Unreviewed</th>
-                    <th>% Unreviewed</th>
-                    <th>% Retweeted</th>
+                    <td>\{{score}}</td>
+                    <td>\{{matchesCreated}}</td>
+                    <td>\{{attemptedApproval}}</td>
+                    <td>\{{autoRejected}}</td>
+                    <td>\{{retweeted}}</td>
+                    <td>\{{unretweeted}}</td>
+                    <td>\{{rejected}}</td>
+                    <td>\{{postedToTumblr}}</td>
+                    <td>\{{unreviewed}}</td>
+                    <td>\{{formatNumber percentUnreviewed style="percent"}}</td>
+                    <td>\{{formatNumber percentRetweeted style="percent"}}</td>
                 </tr>
-                </thead>
-                <tbody>
-                {{#each stats.statsByInterestingFactorBucket}}
-                    <tr>
-                        <td>{{score}}</td>
-                        <td>{{matches_created}}</td>
-                        <td>{{attempted_approval}}</td>
-                        <td>{{auto_rejected}}</td>
-                        <td>{{retweeted}}</td>
-                        <td>{{unretweeted}}</td>
-                        <td>{{rejected}}</td>
-                        <td>{{posted_to_tumblr}}</td>
-                        <td>{{unreviewed}}</td>
-                        <td>{{formatNumber percentUnreviewed style="percent"}}</td>
-                        <td>{{formatNumber percentRetweeted style="percent"}}</td>
-                    </tr>
-                {{/each}}
-                </tbody>
-            </table>
-        </div>
-    </div>
+            \{{/each}}
+            </tbody>
+        </table>
+    </script>
+
     <h3>Percent retweeted and unreviewed by interesting factor bucket:</h3>
     <div class="row">
         <svg id="reviewed-unreviewed-by-score-bucket-chart" height="400"></svg>
@@ -371,7 +375,7 @@
             }
             return {
                 series: new StatsByScoreBucketSeriesCollection(stats),
-                stats: stats
+                stats: stats.reverse()
             };
         }
 
@@ -690,6 +694,14 @@
             });
         }
 
+        const $jsCollapseButtons = $(".js-collapse-button");
+        $jsCollapseButtons.text("➖");
+        $jsCollapseButtons.click(function() {
+            $(this).text(function (i, previous) {
+                return previous == '➕' ? '➖' : '➕';
+            });
+        });
+
         const byDayMatchPosted = buildStatsByDateMatchPosted();
         const byDayMatchCreated = buildStatsByDateMatchCreated();
         const byScoreBucket = buildStatsByScoreBucket();
@@ -701,13 +713,23 @@
         buildRetweetedAndUnreviewedByScoreBucketChart(byScoreBucket.series);
         buildCountsByScoreBucketChart(byScoreBucket.series);
 
-        const $jsCollapseButtons = $(".js-collapse-button");
-        $jsCollapseButtons.text("➖");
-        $jsCollapseButtons.click(function() {
-            $(this).text(function (i, previous) {
-                return previous == '➕' ? '➖' : '➕';
-            });
-        })
+        HandlebarsIntl.registerWith(Handlebars);
+
+        function renderTable($template, $target, data) {
+            const template = Handlebars.compile($template.html());
+            const html = template({rows: data});
+            $target.html(html);
+        }
+
+        renderTable($("#retweets-and-tumblr-posts-by-day-table-template"),
+                    $("#retweets-and-tumblr-posts-by-day-table"), byDayMatchPosted.stats);
+
+        renderTable($("#stats-by-date-created-table-template"),
+                    $("#stats-by-date-created-table"), byDayMatchCreated.stats);
+
+        renderTable($("#stats-by-score-table-template"),
+                    $("#stats-by-score-table"), byScoreBucket.stats)
+
     });
 
 </script>
