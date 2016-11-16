@@ -346,23 +346,24 @@
 
         function buildStatsByDateMatchPosted() {
             const stats = JSON.parse('{{{stats.retweetsAndTumblrByDayJson}}}')
-                    .map(x => new StatsByDateMatchPosted(x)).reverse();
+                    .map(x => new StatsByDateMatchPosted(x));
             const statsWithDaysFilledIn = fillInMissingDays(stats, row => row.day, row => row,
                     day => new Proxy({day: day}, defaultPropValueIsZeroHandler));
             return {
                 series: new StatsByDateMatchPostedSeriesCollection(statsWithDaysFilledIn),
-                stats: statsWithDaysFilledIn
+                stats: [...statsWithDaysFilledIn].reverse()
             };
         }
 
         function buildStatsByDateMatchCreated() {
             const stats = JSON.parse('{{{stats.statsByDateMatchCreatedJson}}}')
-                    .map(x => new StatsByDateMatchCreated(x)).reverse();
+                    .map(x => new StatsByDateMatchCreated(x));
             const statsWithDaysFilledIn = fillInMissingDays(stats, row => row.day, row => row,
                     day => new Proxy({day: day}, defaultPropValueIsZeroHandler));
             return {
                 series: new StatsByDateMatchCreatedSeriesCollection(statsWithDaysFilledIn),
-                stats: statsWithDaysFilledIn};
+                stats: [...statsWithDaysFilledIn].reverse()
+            };
         }
 
         function buildStatsByScoreBucket() {
@@ -375,7 +376,7 @@
             }
             return {
                 series: new StatsByScoreBucketSeriesCollection(stats),
-                stats: stats.reverse()
+                stats: [...stats].reverse()
             };
         }
 
