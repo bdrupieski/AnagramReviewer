@@ -261,7 +261,9 @@ router.post('/enqueue/:id', function (req, res) {
     const matchId = req.params.id;
     const orderAsShown = req.body.orderAsShown === "true";
 
-    return anagramManagement.checkExistenceAndAutoRejectIfTweetsDontExist(matchId).then(response => {
+    return anagramsDb.markAttemptedApprovalForMatch(matchId).then(x => {
+        return anagramManagement.checkExistenceAndAutoRejectIfTweetsDontExist(matchId);
+    }).then(response => {
         if (response.error) {
             res.json(response);
         } else {

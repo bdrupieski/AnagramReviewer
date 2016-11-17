@@ -74,9 +74,7 @@ exports.retweetOnePendingMatch = function() {
             const matchId = queuedMatch.match_id;
             const orderAsShown = queuedMatch.order_as_shown;
 
-            return anagramsDb.markAttemptedApprovalForMatch(matchId).then(x => {
-                return anagramsDb.getCountOfAnagramMatchesWithTweetInThisMatchAlreadyRetweeted(matchId);
-            }).then(count => {
+            return anagramsDb.getCountOfAnagramMatchesWithTweetInThisMatchAlreadyRetweeted(matchId).then(count => {
                 if (count > 0) {
                     return anagramManagement.postToTumblr(matchId, orderAsShown);
                 } else {
