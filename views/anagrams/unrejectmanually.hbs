@@ -10,7 +10,7 @@
     <tbody>
     {{#each matches}}
         <tr>
-            <td>{{formatNumber interesting maximumSignificantDigits='2'}}</td>
+            <td>{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
             <td>{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
             <td>{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>
             <td>
