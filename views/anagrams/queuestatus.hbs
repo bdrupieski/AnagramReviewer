@@ -55,6 +55,7 @@
                     <thead>
                     <tr>
                         <th>Time Queued</th>
+                        <th>Time Error</th>
                         <th>IF</th>
                         <th>T1</th>
                         <th>T2</th>
@@ -65,6 +66,7 @@
                     {{#each queueStatus.errorQueueMatches}}
                         <tr data-error-id="{{id}}">
                             <td>{{formatTime date_queued day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
+                            <td>{{formatTime date_error day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
                             <td>{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
                             <td>{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
                             <td>{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>

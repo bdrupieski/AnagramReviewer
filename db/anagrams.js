@@ -761,7 +761,8 @@ exports.updateQueuedMatchAsError = function (queuedMatchId, error) {
     const updateQueuedMatchAsErrorQuery = `
 UPDATE match_queue
 SET status = '${queuedMatchErrorStatus}',
-  message  = $2
+  message  = $2,
+  date_error = current_timestamp
 WHERE id = $1::int
 `;
 
@@ -822,6 +823,7 @@ function getQueuedMatchesWithStatus(status) {
 SELECT
   match_queue.id,
   match_queue.date_queued,
+  match_queue.date_error,
   match_queue.message,
   anagram_matches.id                 AS match_id,
   anagram_matches.interesting_factor AS interesting,
