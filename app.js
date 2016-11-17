@@ -52,7 +52,7 @@ const sessionConfig = require('./configuration/session.json');
 const cookieSession = require('cookie-session');
 app.use(cookieSession({
     secret: sessionConfig.secret,
-    cookie: { maxAge: 1000 * 60 * 60 * 30 * 365 }
+    maxAge: 24 * 60 * 60 * 1000 * 365
 }));
 app.use(passport.initialize());
 app.use(passport.session());
