@@ -7,7 +7,10 @@
         <strong>{{formatNumber queueStatus.postedCount}}</strong> posted.
     </div>
     <div class="row">
-        <strong>{{formatNumber queueStatus.errorCount}}</strong> error.
+        <strong>{{formatNumber queueStatus.errorCount}}</strong> errors.
+    </div>
+    <div class="row">
+        <strong>{{formatNumber queueStatus.errorObservedCount}}</strong> observed errors.
     </div>
     <div class="row">
         <strong>{{formatNumber queueStatus.removedCount}}</strong> removed.
@@ -60,6 +63,7 @@
                         <th>T1</th>
                         <th>T2</th>
                         <th>Message</th>
+                        <th>OK</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -71,6 +75,11 @@
                             <td>{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
                             <td>{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>
                             <td>{{message}}</td>
+                            <td>
+                                <form action='queue/markerrorok/{{id}}' method="post">
+                                    <button type="submit" class="btn btn-sm btn-warning">✓</button>
+                                </form>
+                            </td>
                         </tr>
                     {{/each}}
                     </tbody>

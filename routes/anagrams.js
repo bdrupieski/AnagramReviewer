@@ -192,6 +192,7 @@ router.get('/queuestatus', function(req, res) {
         anagramsDb.getCountOfPendingQueuedMatches(),
         anagramsDb.getCountOfPostedQueueMatches(),
         anagramsDb.getCountOfErrorQueuedMatches(),
+        anagramsDb.getCountOfObservedErrorQueuedMatches(),
         anagramsDb.getCountOfRemovedQueueMatches(),
         anagramsDb.getPendingQueuedMatches(),
         anagramsDb.getErrorQueuedMatches()
@@ -201,9 +202,10 @@ router.get('/queuestatus', function(req, res) {
             pendingCount: queueStatus[0],
             postedCount: queueStatus[1],
             errorCount: queueStatus[2],
-            removedCount: queueStatus[3],
-            pendingQueueMatches: queueStatus[4],
-            errorQueueMatches: queueStatus[5]
+            errorObservedCount: queueStatus[3],
+            removedCount: queueStatus[4],
+            pendingQueueMatches: queueStatus[5],
+            errorQueueMatches: queueStatus[6]
         };
 
         res.render('anagrams/queuestatus', {
@@ -289,6 +291,19 @@ router.post('/queue/remove/:id', function(req, res) {
 
     return anagramsDb.updateQueuedMatchAsRemoved(queuedMatchId).then(x => {
         req.flash('info', `Changed queued match ${queuedMatchId} to removed.`);
+        res.redirect('/anagrams/list');
+    }).catch(error => {
+        logger.error(error.toString());
+        req.flash('error', error.toString());
+        res.redirect('/anagrams/list');
+    });
+});
+
+router.post('/queue/markerrorok/:id', function(req, res) {
+    const queuedMatchId = req.params.id;
+
+    return anagramsDb.updateQueuedMatchAsErrorObserved(queuedMatchId).then(x => {
+        req.flash('info', `Marked queued match with error ${queuedMatchId} as observed.`);
         res.redirect('/anagrams/list');
     }).catch(error => {
         logger.error(error.toString());

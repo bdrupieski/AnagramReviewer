@@ -7,6 +7,7 @@ const oldestTopMatchesQueryType = "oldesttopmatches";
 const mostRecentMatches = "mostrecentmatches";
 const queuedMatchPendingStatus = 'pending';
 const queuedMatchErrorStatus = 'error';
+const queuedMatchErrorObservedStatus = 'error_ok';
 const queuedMatchPostedStatus = 'posted';
 const queuedMatchRemovedStatus = 'removed';
 
@@ -521,7 +522,8 @@ WHERE id = $1::int
 exports.setUnretweetedAndClearRetweetIds = function(matchId, clearTumblrPostId) {
     const setUnretweetedDateAndRetweetIds = `
 UPDATE anagram_matches
-SET date_unretweeted = current_timestamp,
+SET 
+  date_unretweeted   = current_timestamp,
   date_retweeted     = NULL,
   tweet1_retweet_id  = NULL,
   tweet2_retweet_id  = NULL
@@ -530,7 +532,8 @@ WHERE id = $1::int
 
     const setUnretweetedDateRetweetIdsTumblrPostId = `
 UPDATE anagram_matches
-SET date_unretweeted = current_timestamp,
+SET 
+  date_unretweeted   = current_timestamp,
   date_retweeted     = NULL,
   tweet1_retweet_id  = NULL,
   tweet2_retweet_id  = NULL,
@@ -743,8 +746,9 @@ LIMIT 1
 exports.updateQueuedMatchAsPosted = function (queuedMatchId) {
     const updateQueuedMatchAsPostedQuery = `
 UPDATE match_queue
-SET date_posted = current_timestamp,
-  status        = '${queuedMatchPostedStatus}'
+SET 
+  date_posted = current_timestamp,
+  status      = '${queuedMatchPostedStatus}'
 WHERE id = $1::int
 `;
 
@@ -760,8 +764,9 @@ WHERE id = $1::int
 exports.updateQueuedMatchAsError = function (queuedMatchId, error) {
     const updateQueuedMatchAsErrorQuery = `
 UPDATE match_queue
-SET status = '${queuedMatchErrorStatus}',
-  message  = $2,
+SET 
+  status     = '${queuedMatchErrorStatus}',
+  message    = $2,
   date_error = current_timestamp
 WHERE id = $1::int
 `;
@@ -775,20 +780,28 @@ WHERE id = $1::int
     });
 };
 
-exports.updateQueuedMatchAsRemoved = function (queuedMatchId) {
-    const updateQueuedMatchAsRemovedQuery = `
+function updateQueuedMatchWithStatus(queuedMatchId, status) {
+    const updateQueuedMatchWithStatusQuery = `
 UPDATE match_queue
-SET status = '${queuedMatchRemovedStatus}'
+SET status = $2::text
 WHERE id = $1::int
 `;
 
-    return pools.anagramPool.query(updateQueuedMatchAsRemovedQuery, [queuedMatchId]).then(x => {
+    return pools.anagramPool.query(updateQueuedMatchWithStatusQuery, [queuedMatchId, status]).then(x => {
         if (x.rowCount != 1) {
             throw x;
         } else {
             return x;
         }
     });
+}
+
+exports.updateQueuedMatchAsRemoved = function (queuedMatchId) {
+    return updateQueuedMatchWithStatus(queuedMatchId, queuedMatchRemovedStatus);
+};
+
+exports.updateQueuedMatchAsErrorObserved = function (queuedMatchId) {
+    return updateQueuedMatchWithStatus(queuedMatchId, queuedMatchErrorObservedStatus);
 };
 
 function getCountOfQueuedMatchesWithStatus(status) {
@@ -808,6 +821,10 @@ exports.getCountOfPendingQueuedMatches = function() {
 
 exports.getCountOfErrorQueuedMatches = function() {
     return getCountOfQueuedMatchesWithStatus(queuedMatchErrorStatus);
+};
+
+exports.getCountOfObservedErrorQueuedMatches = function() {
+    return getCountOfQueuedMatchesWithStatus(queuedMatchErrorObservedStatus);
 };
 
 exports.getCountOfPostedQueueMatches = function() {
