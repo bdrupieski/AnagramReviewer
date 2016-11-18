@@ -194,6 +194,57 @@
     <div class="row">
         <svg id="totals-by-score-bucket-chart" height="400"></svg>
     </div>
+
+    <h3>
+        <button class="btn btn-sm btn-info js-collapse-button" data-toggle="collapse"
+                data-target="#stats-by-time-of-day-match-created-table"></button>
+        Stats by time of day match created:
+    </h3>
+
+    <div id="stats-by-time-of-day-match-created-table" class="row collapse in col-md-12"></div>
+
+    <script id="stats-by-time-of-day-match-created-table-template" type="text/x-handlebars-template">
+        <table class="table table-hover table-condensed">
+            <thead>
+            <tr>
+                <th>Time of Day</th>
+                <th>Total matches</th>
+                <th>Attempted Approval</th>
+                <th>Auto-rejected</th>
+                <th>Retweeted</th>
+                <th>Unretweeted</th>
+                <th>Rejected</th>
+                <th>Tumblr</th>
+                <th>Unreviewed</th>
+                <th>% Unreviewed</th>
+                <th>% Retweeted</th>
+            </tr>
+            </thead>
+            <tbody>
+            \{{#each rows}}
+            <tr>
+                <td>\{{formatTime timeOfDay hour="numeric" minute="numeric"}}</td>
+                <td>\{{matchesCreated}}</td>
+                <td>\{{attemptedApproval}}</td>
+                <td>\{{autoRejected}}</td>
+                <td>\{{retweeted}}</td>
+                <td>\{{unretweeted}}</td>
+                <td>\{{rejected}}</td>
+                <td>\{{postedToTumblr}}</td>
+                <td>\{{unreviewed}}</td>
+                <td>\{{formatNumber percentUnreviewed style="percent"}}</td>
+                <td>\{{formatNumber percentRetweeted style="percent"}}</td>
+            </tr>
+            \{{/each}}
+            </tbody>
+        </table>
+    </script>
+
+    <h3>Totals by time of day match created:</h3>
+    <div class="row">
+        <svg id="totals-by-time-of-day-match-created-chart" height="400"></svg>
+    </div>
+
 </div>
 
 <script>
@@ -242,6 +293,12 @@
         function dateSeriesByProperty(data, ySelector) {
             return data.map(row => {
                 return {x: row.day, y: ySelector(row)}
+            });
+        }
+
+        function timeSeriesByProperty(data, ySelector) {
+            return data.map(row => {
+                return {x: row.timeOfDay, y: ySelector(row)}
             });
         }
 
@@ -313,6 +370,57 @@
             }
         }
 
+        class StatsByTimeOfDayMatchCreated {
+            constructor(row) {
+
+                const timeOfDay = new Date(0);
+                timeOfDay.setHours(row.time_of_day.hours || 0);
+                timeOfDay.setMinutes(row.time_of_day.minutes || 0);
+
+                this.timeOfDay = timeOfDay.getTime();
+
+                this.matchesCreated = Number(row.matches_created);
+                this.attemptedApproval = Number(row.attempted_approval);
+                this.autoRejected = Number(row.auto_rejected);
+                this.retweeted = Number(row.retweeted);
+                this.unretweeted = Number(row.unretweeted);
+                this.rejected = Number(row.rejected);
+                this.postedToTumblr = Number(row.posted_to_tumblr);
+
+                this.unreviewed = this.matchesCreated - this.rejected - Math.max(this.retweeted, this.postedToTumblr) + this.unretweeted;
+                this.percentUnreviewed = this.unreviewed / this.matchesCreated;
+                this.percentRetweeted = this.retweeted / this.matchesCreated;
+
+                const countOfAdditionalTumblrPostsMadeBecauseAMatchContainedAnAlreadyRetweetedTweet = this.postedToTumblr - this.retweeted;
+                const numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches =
+                        this.attemptedApproval - countOfAdditionalTumblrPostsMadeBecauseAMatchContainedAnAlreadyRetweetedTweet;
+
+                this.adjustedFailedAttemptedApprovals = numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches - this.retweeted;
+                this.percentApprovalFailure = (1 - (this.retweeted / numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches)) || 0;
+            }
+        }
+
+        class StatsByTimeOfDayMatchCreatedSeriesCollection {
+            constructor(statsByTimeOfDayMatchCreatedCollection) {
+
+                const stats = statsByTimeOfDayMatchCreatedCollection;
+
+                this.matchesCreated = timeSeriesByProperty(stats, x => x.matchesCreated);
+                this.attemptedApproval = timeSeriesByProperty(stats, x => x.attemptedApproval);
+                this.autoRejected = timeSeriesByProperty(stats, x => x.autoRejected);
+                this.retweeted = timeSeriesByProperty(stats, x => x.retweeted);
+                this.unretweeted = timeSeriesByProperty(stats, x => x.unretweeted);
+                this.rejected = timeSeriesByProperty(stats, x => x.rejected);
+                this.postedToTumblr = timeSeriesByProperty(stats, x => x.postedToTumblr);
+                this.unreviewed = timeSeriesByProperty(stats, x => x.unreviewed);
+                this.adjustedFailedAttemptedApprovals = timeSeriesByProperty(stats, x => x.adjustedFailedAttemptedApprovals);
+
+                this.percentUnreviewed = timeSeriesByProperty(stats, x => x.percentUnreviewed);
+                this.percentRetweeted = timeSeriesByProperty(stats, x => x.percentRetweeted);
+                this.percentApprovalFailure = timeSeriesByProperty(stats, x => x.percentApprovalFailure);
+            }
+        }
+
         class StatsByScoreBucket {
             constructor(row) {
                 this.score = Number(row.score);
@@ -371,6 +479,15 @@
             };
         }
 
+        function buildStatsByTimeOfDayMatchCreated() {
+            const stats = JSON.parse('{{{stats.statsByTimeOfDayMatchCreatedJson}}}')
+                    .map(x => new StatsByTimeOfDayMatchCreated(x));
+            return {
+                series: new StatsByTimeOfDayMatchCreatedSeriesCollection(stats),
+                stats: stats
+            };
+        }
+
         function buildStatsByScoreBucket() {
             const stats = JSON.parse('{{{stats.statsByInterestingFactorBucketJson}}}')
                     .map(x => new StatsByScoreBucket(x)).reverse();
@@ -385,7 +502,7 @@
             };
         }
 
-        function buildRetweetsAndTumblrPostsByDay(dayStats) {
+        function buildRetweetsAndTumblrPostsByDayChart(dayStats, cssSelector) {
 
             const data = [{
                 values: dayStats.postedToTumblr,
@@ -421,7 +538,7 @@
                         .ticks(5)
                 ;
 
-                d3.select('#retweets-and-tumblr-posts-by-day-chart')
+                d3.select(cssSelector)
                         .datum(data)
                         .call(chart);
 
@@ -431,7 +548,7 @@
             });
         }
 
-        function buildPercentApprovalFailureChart(dayStats) {
+        function buildPercentApprovalFailureChart(dayStats, cssSelector) {
             const data = [{
                 values: dayStats.percentApprovalFailure,
                 key: 'Approval Failure',
@@ -480,7 +597,7 @@
                         })
                 ;
 
-                d3.select('#percent-approval-failure-by-date-created-chart')
+                d3.select(cssSelector)
                         .datum(data)
                         .call(chart);
 
@@ -490,7 +607,7 @@
             });
         }
 
-        function buildRetweetedAndUnreviewedByDateMatchCreatedChart(dayStats) {
+        function buildRetweetedAndUnreviewedByDateMatchCreatedChart(dayStats, cssSelector) {
 
             const data = [{
                 values: dayStats.percentUnreviewed,
@@ -544,7 +661,7 @@
                         })
                 ;
 
-                d3.select('#percent-reviewed-unreviewed-by-date-created-chart')
+                d3.select(cssSelector)
                         .datum(data)
                         .call(chart);
 
@@ -554,7 +671,7 @@
             });
         }
 
-        function buildCountsByDateMatchCreatedChart(dayStats) {
+        function buildCountsByDateMatchCreatedChart(dayStats, cssSelector) {
 
             const data = [{
                 values: dayStats.unreviewed,
@@ -597,7 +714,7 @@
                         .ticks(5)
                 ;
 
-                d3.select('#counts-by-date-created-chart')
+                d3.select(cssSelector)
                         .datum(data)
                         .call(chart);
 
@@ -607,7 +724,7 @@
             });
         }
 
-        function buildRetweetedAndUnreviewedByScoreBucketChart(scoreStats) {
+        function buildRetweetedAndUnreviewedByScoreBucketChart(scoreStats, cssSelector) {
 
             const scoreBucketData = [{
                 values: scoreStats.percentRetweeted,
@@ -646,7 +763,7 @@
                         .ticks(4)
                 ;
 
-                d3.select('#reviewed-unreviewed-by-score-bucket-chart')
+                d3.select(cssSelector)
                         .datum(scoreBucketData)
                         .call(chart);
 
@@ -656,7 +773,7 @@
             });
         }
 
-        function buildCountsByScoreBucketChart(scoreStats) {
+        function buildCountsByScoreBucketChart(scoreStats, cssSelector) {
 
             const data = [{
                 values: scoreStats.retweeted,
@@ -690,7 +807,56 @@
                         .tickFormat(d3.format('i'))
                 ;
 
-                d3.select('#totals-by-score-bucket-chart')
+                d3.select(cssSelector)
+                        .datum(data)
+                        .call(chart);
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            });
+        }
+
+        function buildCountsByTimeOfDayMatchCreatedChart(timeOfDayStats, cssSelector) {
+            const data = [{
+                values: timeOfDayStats.unreviewed,
+                key: 'Unreviewed',
+            }, {
+                values: timeOfDayStats.retweeted,
+                key: 'Retweeted'
+            }, {
+                values: timeOfDayStats.matchesCreated,
+                key: "Created",
+            }, {
+                values: timeOfDayStats.adjustedFailedAttemptedApprovals,
+                key: 'Failed Attempted Approvals'
+            }];
+            nv.addGraph(() => {
+
+                const chart = nv.models.multiBarChart()
+                                .options({
+                                    duration: 300
+                                })
+                                .margin({right: 50, bottom: 70})
+                                .groupSpacing(0.4)
+                                .color(d3.scale.category10().range())
+                                .rotateLabels(45)
+                        ;
+
+                chart.xAxis
+                        .axisLabel("Time")
+                        .axisLabelDistance(30)
+                        .tickFormat((d) => {
+                            return d3.time.format('%I:%M %p')(new Date(d))
+                        })
+                ;
+
+                chart.yAxis
+                        .axisLabel('Count')
+                        .tickFormat(d3.format('i'))
+                ;
+
+                d3.select(cssSelector)
                         .datum(data)
                         .call(chart);
 
@@ -711,13 +877,15 @@
         const byDayMatchPosted = buildStatsByDateMatchPosted();
         const byDayMatchCreated = buildStatsByDateMatchCreated();
         const byScoreBucket = buildStatsByScoreBucket();
+        const byTimeOfDayMatchCreated = buildStatsByTimeOfDayMatchCreated();
 
-        buildRetweetsAndTumblrPostsByDay(byDayMatchPosted.series);
-        buildRetweetedAndUnreviewedByDateMatchCreatedChart(byDayMatchCreated.series);
-        buildPercentApprovalFailureChart(byDayMatchCreated.series);
-        buildCountsByDateMatchCreatedChart(byDayMatchCreated.series);
-        buildRetweetedAndUnreviewedByScoreBucketChart(byScoreBucket.series);
-        buildCountsByScoreBucketChart(byScoreBucket.series);
+        buildRetweetsAndTumblrPostsByDayChart(byDayMatchPosted.series, '#retweets-and-tumblr-posts-by-day-chart');
+        buildRetweetedAndUnreviewedByDateMatchCreatedChart(byDayMatchCreated.series, '#percent-reviewed-unreviewed-by-date-created-chart');
+        buildPercentApprovalFailureChart(byDayMatchCreated.series, '#percent-approval-failure-by-date-created-chart');
+        buildCountsByDateMatchCreatedChart(byDayMatchCreated.series, '#counts-by-date-created-chart');
+        buildRetweetedAndUnreviewedByScoreBucketChart(byScoreBucket.series, '#reviewed-unreviewed-by-score-bucket-chart');
+        buildCountsByScoreBucketChart(byScoreBucket.series, '#totals-by-score-bucket-chart');
+        buildCountsByTimeOfDayMatchCreatedChart(byTimeOfDayMatchCreated.series, '#totals-by-time-of-day-match-created-chart');
 
         HandlebarsIntl.registerWith(Handlebars);
 
@@ -734,7 +902,10 @@
                     $("#stats-by-date-created-table"), byDayMatchCreated.stats);
 
         renderTable($("#stats-by-score-table-template"),
-                    $("#stats-by-score-table"), byScoreBucket.stats)
+                    $("#stats-by-score-table"), byScoreBucket.stats);
+
+        renderTable($("#stats-by-time-of-day-match-created-table-template"),
+                    $("#stats-by-time-of-day-match-created-table"), byTimeOfDayMatchCreated.stats);
 
     });
 

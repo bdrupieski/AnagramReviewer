@@ -321,6 +321,33 @@ ORDER BY score DESC;
     });
 };
 
+exports.getStatsByTimeOfDayMatchCreated = function(minuteInterval = 5) {
+
+    const interval = clamp(minuteInterval, 1, 60);
+
+    const statsByDateMatchCreatedTimeOfDayQuery = `
+SELECT
+  DISTINCT ON (time_of_day)
+  date_part('hour', anagram_matches.date_created) * INTERVAL '1 hour' +
+  (date_part('minute', anagram_matches.date_created) :: INT / ${interval} * INTERVAL '${interval} min') AS time_of_day,
+  count(1) OVER w AS matches_created,
+  sum(CASE WHEN anagram_matches.attempted_approval = true THEN 1 ELSE 0 END) OVER w AS attempted_approval,
+  sum(CASE WHEN anagram_matches.auto_rejected = true THEN 1 ELSE 0 END) OVER w AS auto_rejected,
+  count(anagram_matches.date_retweeted) OVER w AS retweeted,
+  count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
+  sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
+  count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr
+FROM anagram_matches
+WINDOW w AS (
+  PARTITION BY date_part('hour', anagram_matches.date_created) * INTERVAL '1 hour' +
+               (date_part('minute', anagram_matches.date_created) :: INT / ${interval} * INTERVAL '${interval} min') )
+ORDER BY time_of_day;
+`;
+    return pools.anagramPool.query(statsByDateMatchCreatedTimeOfDayQuery).then(x => {
+        return x.rows;
+    });
+};
+
 exports.getRetweetsAndTumblrPostsByDay = function (numberOfPastDays = 30) {
 
     numberOfPastDays = Math.max(numberOfPastDays, 5);

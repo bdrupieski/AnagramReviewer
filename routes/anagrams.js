@@ -70,6 +70,7 @@ router.get('/statistics', function(req, res) {
 
     const interestingFactorCutoff = req.query.interestingfactor || 0.67;
     const numberOfLastDaysToGetMatchesCreatedPerDay = req.query.days || 15;
+    const minuteInterval = req.query.minutes || 5;
 
     Promise.all([
         anagramsDb.getCountOfAnagramMatches(),
@@ -81,7 +82,8 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getDateLastMatchCreated(),
         anagramsDb.getRetweetsAndTumblrPostsByDay(numberOfLastDaysToGetMatchesCreatedPerDay),
         anagramsDb.getStatsByDateMatchCreated(numberOfLastDaysToGetMatchesCreatedPerDay),
-        anagramsDb.getStatsByInterestingFactorBucket()
+        anagramsDb.getStatsByInterestingFactorBucket(),
+        anagramsDb.getStatsByTimeOfDayMatchCreated(minuteInterval),
     ]).then(stats => {
         const formattedStats = {
             countOfMatches: stats[0],
@@ -90,13 +92,15 @@ router.get('/statistics', function(req, res) {
             countOfNotRejectedAndNotApprovedMatchesAboveCutoff: stats[3],
             countOfRetweetedMatches: stats[4],
             countOfRejectedMatches: stats[5],
-            interestingFactorCutoff: interestingFactorCutoff,
             dateLastMatchCreated: stats[6],
             retweetsAndTumblrByDay: stats[7],
             statsByDateMatchCreated: stats[8],
-            numberOfDaysToGetMatchesPerDay: numberOfLastDaysToGetMatchesCreatedPerDay,
-            statsByInterestingFactorBucket: stats[9]
+            statsByInterestingFactorBucket: stats[9],
+            statsByTimeOfDayMatchCreated: stats[10],
         };
+
+        formattedStats.interestingFactorCutoff = interestingFactorCutoff;
+        formattedStats.numberOfDaysToGetMatchesPerDay = numberOfLastDaysToGetMatchesCreatedPerDay;
 
         formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoffIsOne =
             formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff == 1;
@@ -106,6 +110,7 @@ router.get('/statistics', function(req, res) {
 
         formattedStats.retweetsAndTumblrByDayJson = JSON.stringify(formattedStats.retweetsAndTumblrByDay);
         formattedStats.statsByDateMatchCreatedJson = JSON.stringify(formattedStats.statsByDateMatchCreated);
+        formattedStats.statsByTimeOfDayMatchCreatedJson = JSON.stringify(formattedStats.statsByTimeOfDayMatchCreated);
         formattedStats.statsByInterestingFactorBucketJson = JSON.stringify(formattedStats.statsByInterestingFactorBucket);
 
         return formattedStats;
