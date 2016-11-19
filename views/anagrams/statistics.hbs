@@ -568,7 +568,6 @@
                                 .margin({right: 50, bottom: 70})
                                 .groupSpacing(0.4)
                                 .color(d3.scale.category10().range())
-                                .rotateLabels(45)
                         ;
 
                 chart.xAxis
@@ -617,7 +616,6 @@
                         .tickFormat((d) => {
                             return d3.time.format('%x')(new Date(d))
                         })
-                        .rotateLabels(45)
                 ;
 
                 chart.x2Axis.tickFormat((d) => {
@@ -681,7 +679,6 @@
                         .tickFormat((d) => {
                             return d3.time.format('%x')(new Date(d))
                         })
-                        .rotateLabels(45)
                 ;
 
                 chart.x2Axis.tickFormat((d) => {
@@ -743,12 +740,10 @@
                                 .margin({right: 50, bottom: 70})
                                 .groupSpacing(0.4)
                                 .color(d3.scale.category10().range())
-                                .rotateLabels(45)
                         ;
 
                 chart.xAxis
                         .axisLabel("Date")
-                        .axisLabelDistance(30)
                         .tickFormat((d) => {
                             return d3.time.format('%x')(new Date(d))
                         })
@@ -887,12 +882,10 @@
                                 .margin({right: 50, bottom: 70})
                                 .groupSpacing(0.4)
                                 .color(d3.scale.category10().range())
-                                .rotateLabels(45)
                         ;
 
                 chart.xAxis
                         .axisLabel("Time")
-                        .axisLabelDistance(30)
                         .tickFormat((d) => {
                             return d3.time.format('%I:%M %p')(new Date(d))
                         })
