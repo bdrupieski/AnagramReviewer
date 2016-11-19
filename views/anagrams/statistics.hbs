@@ -28,6 +28,25 @@
 
         not rejected, not retweeted, and not posted to tumblr.
     </div>
+    <div class="row">
+        There
+
+        {{#if stats.countOfPendingQueuedMatchesIsOne}}
+            is
+        {{else}}
+            are
+        {{/if}}
+
+        <strong>{{formatNumber stats.countOfPendingQueuedMatches}}</strong>
+
+        {{#if stats.countOfPendingQueuedMatchesIsOne}}
+            match
+        {{else}}
+            matches
+        {{/if}}
+
+        queued to be posted.
+    </div>
     <h3>Fun</h3>
     <div class="row">
         There are <strong>{{formatNumber stats.countOfMatches}}</strong> total matches over approximately

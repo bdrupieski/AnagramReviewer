@@ -77,6 +77,7 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getApproximateCountOfTweets(),
         anagramsDb.getCountOfMatchesWithInterestingFactorGreaterThan(interestingFactorCutoff),
         anagramsDb.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterThan(interestingFactorCutoff),
+        anagramsDb.getCountOfPendingQueuedMatches(),
         anagramsDb.getCountOfRetweetedMatches(),
         anagramsDb.getCountOfRejectedMatches(),
         anagramsDb.getDateLastMatchCreated(),
@@ -90,13 +91,14 @@ router.get('/statistics', function(req, res) {
             approximateCountOfTweets: stats[1],
             countOfMatchesAboveCutoff: stats[2],
             countOfNotRejectedAndNotApprovedMatchesAboveCutoff: stats[3],
-            countOfRetweetedMatches: stats[4],
-            countOfRejectedMatches: stats[5],
-            dateLastMatchCreated: stats[6],
-            retweetsAndTumblrByDay: stats[7],
-            statsByDateMatchCreated: stats[8],
-            statsByInterestingFactorBucket: stats[9],
-            statsByTimeOfDayMatchCreated: stats[10],
+            countOfPendingQueuedMatches: stats[4],
+            countOfRetweetedMatches: stats[5],
+            countOfRejectedMatches: stats[6],
+            dateLastMatchCreated: stats[7],
+            retweetsAndTumblrByDay: stats[8],
+            statsByDateMatchCreated: stats[9],
+            statsByInterestingFactorBucket: stats[10],
+            statsByTimeOfDayMatchCreated: stats[11],
         };
 
         formattedStats.interestingFactorCutoff = interestingFactorCutoff;
@@ -104,6 +106,7 @@ router.get('/statistics', function(req, res) {
 
         formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoffIsOne =
             formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff == 1;
+        formattedStats.countOfPendingQueuedMatchesIsOne = formattedStats.countOfPendingQueuedMatches == 1;
 
         formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.countOfMatches;
         formattedStats.countOfRetweetedTweets = formattedStats.countOfRetweetedMatches * 2;
