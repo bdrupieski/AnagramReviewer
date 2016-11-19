@@ -103,6 +103,7 @@ router.get('/statistics', function(req, res) {
 
         formattedStats.interestingFactorCutoff = interestingFactorCutoff;
         formattedStats.numberOfDaysToGetMatchesPerDay = numberOfLastDaysToGetMatchesCreatedPerDay;
+        formattedStats.minuteInterval = minuteInterval;
 
         formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoffIsOne =
             formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff == 1;
@@ -126,6 +127,13 @@ router.get('/statistics', function(req, res) {
         req.flash('error', err.toString());
         res.redirect('/anagrams/list');
     });
+});
+
+router.post('/statistics', function(req, res) {
+    const interestingFactor = req.body.interestingfactor;
+    const days = req.body.days;
+    const minutes = req.body.minutes;
+    res.redirect(`/anagrams/statistics?interestingfactor=${interestingFactor}&days=${days}&minutes=${minutes}`);
 });
 
 router.get('/unretweetmanually', function(req, res) {
