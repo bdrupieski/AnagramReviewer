@@ -632,7 +632,7 @@
             };
         }
 
-        function buildRetweetsAndTumblrPostsByDayChart(dayStats, cssSelector) {
+        function buildChartRetweetsAndTumblrPostsByDay(dayStats, cssSelector) {
             const data = [{
                 values: dayStats.postedToTumblr,
                 key: 'Tumblr',
@@ -665,7 +665,7 @@
             });
         }
 
-        function buildPercentApprovalFailureChart(dayStats, cssSelector) {
+        function buildChartDateMatchCreatedPercentApprovalFailure(dayStats, cssSelector) {
             const data = [{
                 values: dayStats.percentApprovalFailure,
                 key: 'Approval Failure',
@@ -711,7 +711,7 @@
             });
         }
 
-        function buildRetweetedAndUnreviewedByDateMatchCreatedChart(dayStats, cssSelector) {
+        function buildChartRetweetedAndUnreviewedByDateMatchCreated(dayStats, cssSelector) {
             const data = [{
                 values: dayStats.percentUnreviewed,
                 key: "Unreviewed",
@@ -759,7 +759,7 @@
             });
         }
 
-        function buildCountsByDateMatchCreatedChart(dayStats, cssSelector) {
+        function buildChartDateMatchCreatedCounts(dayStats, cssSelector) {
             const data = [{
                 values: dayStats.unreviewed,
                 key: 'Unreviewed',
@@ -798,7 +798,7 @@
             });
         }
 
-        function buildAverageInterestingFactorByActionTakenChart(scoreStats, cssSelector) {
+        function buildChartDayMatchCreatedAverageInterestingFactor(scoreStats, cssSelector) {
             const data = [{
                 values: scoreStats.averageInterestingFactor,
                 key: 'All',
@@ -850,7 +850,7 @@
             });
         }
 
-        function buildRetweetedAndUnreviewedByScoreBucketChart(scoreStats, cssSelector) {
+        function buildChartScoreBucketRetweetedAndUnreviewed(scoreStats, cssSelector) {
             const data = [{
                 values: scoreStats.percentRetweeted,
                 key: 'Retweeted'
@@ -887,7 +887,7 @@
             });
         }
 
-        function buildCountsByScoreBucketChart(scoreStats, cssSelector) {
+        function buildChartScoreBucketCounts(scoreStats, cssSelector) {
             const data = [{
                 values: scoreStats.retweeted,
                 key: "Retweeted",
@@ -917,7 +917,7 @@
             });
         }
 
-        function buildCountsByTimeOfDayMatchCreatedChart(timeOfDayStats, cssSelector) {
+        function buildChartTimeOfDayMatchCreatedCounts(timeOfDayStats, cssSelector) {
             const data = [{
                 values: timeOfDayStats.unreviewed,
                 key: 'Unreviewed',
@@ -951,7 +951,7 @@
             });
         }
 
-        function buildAverageInterestingFactorByTimeOfDayMatchCreatedChart(timeOfDayStats, cssSelector) {
+        function buildChartTimeOfDayMatchCreatedAverageInterestingFactor(timeOfDayStats, cssSelector) {
             const data = [{
                 values: timeOfDayStats.averageInterestingFactor,
                 key: 'All',
@@ -1001,28 +1001,30 @@
             });
         });
 
-        const byDayMatchPosted = buildStatsByDateMatchPosted();
-        const byDayMatchCreated = buildStatsByDateMatchCreated();
-        const byScoreBucket = buildStatsByScoreBucket();
-        const byTimeOfDayMatchCreated = buildStatsByTimeOfDayMatchCreated();
-
-        buildRetweetsAndTumblrPostsByDayChart(byDayMatchPosted.series, '#retweets-and-tumblr-posts-by-day-chart');
-        buildRetweetedAndUnreviewedByDateMatchCreatedChart(byDayMatchCreated.series, '#percent-reviewed-unreviewed-by-date-created-chart');
-        buildPercentApprovalFailureChart(byDayMatchCreated.series, '#percent-approval-failure-by-date-created-chart');
-        buildCountsByDateMatchCreatedChart(byDayMatchCreated.series, '#counts-by-date-created-chart');
-        buildAverageInterestingFactorByActionTakenChart(byDayMatchCreated.series, '#average-interesting-factor-by-action-taken-chart');
-        buildRetweetedAndUnreviewedByScoreBucketChart(byScoreBucket.series, '#reviewed-unreviewed-by-score-bucket-chart');
-        buildCountsByScoreBucketChart(byScoreBucket.series, '#totals-by-score-bucket-chart');
-        buildCountsByTimeOfDayMatchCreatedChart(byTimeOfDayMatchCreated.series, '#totals-by-time-of-day-match-created-chart');
-        buildAverageInterestingFactorByTimeOfDayMatchCreatedChart(byTimeOfDayMatchCreated.series, '#average-interesting-factor-by-time-of-day-match-created-chart');
-
-        HandlebarsIntl.registerWith(Handlebars);
-
         function renderTable($template, $target, data) {
             const template = Handlebars.compile($template.html());
             const html = template({rows: data});
             $target.html(html);
         }
+
+        HandlebarsIntl.registerWith(Handlebars);
+
+        const byDayMatchPosted = buildStatsByDateMatchPosted();
+        buildChartRetweetsAndTumblrPostsByDay(byDayMatchPosted.series, '#retweets-and-tumblr-posts-by-day-chart');
+
+        const byDayMatchCreated = buildStatsByDateMatchCreated();
+        buildChartRetweetedAndUnreviewedByDateMatchCreated(byDayMatchCreated.series, '#percent-reviewed-unreviewed-by-date-created-chart');
+        buildChartDateMatchCreatedPercentApprovalFailure(byDayMatchCreated.series, '#percent-approval-failure-by-date-created-chart');
+        buildChartDateMatchCreatedCounts(byDayMatchCreated.series, '#counts-by-date-created-chart');
+        buildChartDayMatchCreatedAverageInterestingFactor(byDayMatchCreated.series, '#average-interesting-factor-by-action-taken-chart');
+
+        const byScoreBucket = buildStatsByScoreBucket();
+        buildChartScoreBucketRetweetedAndUnreviewed(byScoreBucket.series, '#reviewed-unreviewed-by-score-bucket-chart');
+        buildChartScoreBucketCounts(byScoreBucket.series, '#totals-by-score-bucket-chart');
+
+        const byTimeOfDayMatchCreated = buildStatsByTimeOfDayMatchCreated();
+        buildChartTimeOfDayMatchCreatedCounts(byTimeOfDayMatchCreated.series, '#totals-by-time-of-day-match-created-chart');
+        buildChartTimeOfDayMatchCreatedAverageInterestingFactor(byTimeOfDayMatchCreated.series, '#average-interesting-factor-by-time-of-day-match-created-chart');
 
         renderTable($("#retweets-and-tumblr-posts-by-day-table-template"),
                     $("#retweets-and-tumblr-posts-by-day-table"), byDayMatchPosted.stats);
