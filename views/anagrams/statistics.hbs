@@ -401,6 +401,26 @@
                 this.postedToTumblr = Number(row.posted_to_tumblr);
                 this.postedToTumblrAverageInterestingFactor = row.average_interesting_factor_tumblr;
             }
+
+            static defaultPropValueHandler() {
+
+                const nullProps = [
+                    'retweetedAverageInterestingFactor',
+                    'postedToTumblrAverageInterestingFactor',
+                ];
+
+                return {
+                    get: (target, name) => {
+                        if (name in target) {
+                            return target[name];
+                        } else if (nullProps.includes(name)) {
+                            return null;
+                        } else {
+                            return 0;
+                        }
+                    }
+                };
+            }
         }
 
         class StatsByDateMatchPostedSeriesCollection {
@@ -410,7 +430,7 @@
                 this.retweeted = dateSeriesByProperty(stats, x => x.retweeted);
                 this.retweetedAverageInterestingFactor = dateSeriesByProperty(stats, x => x.retweetedAverageInterestingFactor);
                 this.postedToTumblr = dateSeriesByProperty(stats, x => x.postedToTumblr);
-                this.tumblrAverageInterestingFactor = dateSeriesByProperty(stats, x => x.tumblrAverageInterestingFactor);
+                this.postedToTumblrAverageInterestingFactor = dateSeriesByProperty(stats, x => x.postedToTumblrAverageInterestingFactor);
             }
         }
 
@@ -591,7 +611,7 @@
             const stats = JSON.parse('{{{stats.retweetsAndTumblrByDayJson}}}')
                     .map(x => new StatsByDateMatchPosted(x));
             const statsWithDaysFilledIn = fillInMissingDays(stats, row => row.day, row => row,
-                    day => new Proxy({day: day}, defaultPropValueIsZeroHandler));
+                    day => new Proxy({day: day}, StatsByDateMatchPosted.defaultPropValueHandler()));
             return {
                 series: new StatsByDateMatchPostedSeriesCollection(statsWithDaysFilledIn),
                 stats: [...statsWithDaysFilledIn].reverse()
@@ -636,28 +656,45 @@
             const data = [{
                 values: dayStats.postedToTumblr,
                 key: 'Tumblr',
+                type: 'bar',
+                yAxis: 1,
             }, {
                 values: dayStats.retweeted,
                 key: 'Retweeted',
+                type: 'bar',
+                yAxis: 1,
+            }, {
+                values: dayStats.retweetedAverageInterestingFactor,
+                key: "Retweeted IF",
+                type: 'line',
+                yAxis: 2,
+            }, {
+                values: dayStats.postedToTumblrAverageInterestingFactor,
+                key: "Tumblr IF",
+                type: 'line',
+                yAxis: 2,
             }];
-
             nv.addGraph(() => {
-                const chart = nv.models.multiBarChart()
-                                .options({
-                                    duration: 300
-                                })
-                                .margin({right: 50, bottom: 70})
-                                .groupSpacing(0.4)
-                                .color(d3.scale.category10().range());
+                const chart = nv.models.multiChart()
+                        .options({
+                            duration: 300
+                        })
+                        .margin({right: 50, bottom: 70})
+                        .color(d3.scale.category10().range());
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
-                            return d3.time.format('%x')(new Date(d))
-                        })
-                        .ticks(10);
-                chart.yAxis.axisLabel('Count')
-                        .tickFormat(d3.format('i'))
-                        .ticks(5);
+                            return d3.time.format('%x')(new Date(d));
+                        });
+                chart.yAxis1.axisLabel('Count').tickFormat((d) => {
+                    // hack to get around chart.tooltip.valueFormatter not seeming to work for multiChart
+                    let format = 'i';
+                    if (d < 1 && d > 0) {
+                        format = '.2f';
+                    }
+                    return d3.format(format)(d);
+                });
+                chart.yAxis2.axisLabel('Interesting Factor').tickFormat(d3.format('.2f'));
 
                 d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
