@@ -287,7 +287,11 @@ SELECT
   count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
   sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
   count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr,
-  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN 1 ELSE 0 END) OVER w AS unreviewed
+  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN 1 ELSE 0 END) OVER w AS unreviewed,
+  avg(anagram_matches.interesting_factor) over w as average_interesting_factor,
+  avg(CASE WHEN anagram_matches.attempted_approval = true THEN anagram_matches.interesting_factor END) over w as attempted_approval_average_interesting_factor,
+  avg(CASE WHEN anagram_matches.rejected = true THEN anagram_matches.interesting_factor END) over w as rejected_average_interesting_factor,
+  avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
 FROM anagram_matches
 WINDOW w AS (
   PARTITION BY date(anagram_matches.date_created) )
@@ -339,7 +343,11 @@ SELECT
   count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
   sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
   count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr,
-  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN 1 ELSE 0 END) OVER w AS unreviewed
+  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN 1 ELSE 0 END) OVER w AS unreviewed,
+  avg(anagram_matches.interesting_factor) over w as average_interesting_factor,
+  avg(CASE WHEN anagram_matches.attempted_approval = true THEN anagram_matches.interesting_factor END) over w as attempted_approval_average_interesting_factor,
+  avg(CASE WHEN anagram_matches.rejected = true THEN anagram_matches.interesting_factor END) over w as rejected_average_interesting_factor,
+  avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
 FROM anagram_matches
 WINDOW w AS (
   PARTITION BY date_part('hour', anagram_matches.date_created) * INTERVAL '1 hour' +
@@ -357,20 +365,24 @@ exports.getRetweetsAndTumblrPostsByDay = function (numberOfPastDays = 30) {
 
     const retweetsAndTumblrPostsByDayQuery = `
 SELECT
-  COALESCE(retweeted.day, tumblr.day) as day,
-  COALESCE(count_retweeted, 0) as retweeted,
-  COALESCE(count_posted_tumblr, 0) as posted_to_tumblr
+  COALESCE(retweeted.day, tumblr.day)               AS day,
+  COALESCE(count_retweeted, 0)                      AS retweeted,
+  COALESCE(count_posted_tumblr, 0)                  AS posted_to_tumblr,
+  COALESCE(average_interesting_factor_retweeted, 0) AS average_interesting_factor_retweeted,
+  COALESCE(average_interesting_factor_tumblr, 0)    AS average_interesting_factor_tumblr
 FROM (SELECT
-        date(anagram_matches.date_retweeted) AS day,
-        count(1)                             AS count_retweeted
+        date(anagram_matches.date_retweeted)    AS day,
+        count(1)                                AS count_retweeted,
+        avg(anagram_matches.interesting_factor) AS average_interesting_factor_retweeted
       FROM anagram_matches
-      WHERE date(date_retweeted) > current_date - interval '${numberOfPastDays}' day
+      WHERE date_retweeted IS NOT NULL
       GROUP BY day) AS retweeted
   FULL OUTER JOIN (SELECT
                      date(anagram_matches.date_posted_tumblr) AS day,
-                     count(1)                                 AS count_posted_tumblr
+                     count(1)                                 AS count_posted_tumblr,
+                     avg(anagram_matches.interesting_factor)  AS average_interesting_factor_tumblr
                    FROM anagram_matches
-                   WHERE date(date_posted_tumblr) > current_date - interval '${numberOfPastDays}' day
+                   WHERE date_posted_tumblr IS NOT NULL
                    GROUP BY day) AS tumblr ON retweeted.day = tumblr.day
 ORDER BY day DESC
 `;

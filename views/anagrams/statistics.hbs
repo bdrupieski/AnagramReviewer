@@ -73,7 +73,7 @@
             matches
         {{/if}}
 
-        queued to be posted.
+        <a href="/anagrams/queuestatus">queued</a> to be posted.
     </div>
     <h3>Fun</h3>
     <div class="row">
@@ -104,7 +104,7 @@
         Retweets and Tumblr posts made by day for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:
     </h3>
     <div class="row">
-        <div id="retweets-and-tumblr-posts-by-day-table" class="col-md-5 collapse in"></div>
+        <div id="retweets-and-tumblr-posts-by-day-table" class="col-md-7 collapse in"></div>
 
         <script id="retweets-and-tumblr-posts-by-day-table-template" type="text/x-handlebars-template">
             <table class="table table-hover table-condensed">
@@ -112,24 +112,29 @@
                 <tr>
                     <th>Day</th>
                     <th>Retweets</th>
+                    <th>Retweets Average Interesting Factor</th>
                     <th>Tumblr posts</th>
+                    <th>Tumblr Average Interesting Factor</th>
                 </tr>
                 </thead>
                 <tbody>
                 \{{#each rows}}
                 <tr>
-                    <td>\{{formatTime day day="numeric" month="long" year="numeric"}}</td>
+                    <td>\{{formatTime day day="numeric" month="numeric" year="numeric"}}</td>
                     <td>\{{retweeted}}</td>
+                    <td>\{{safeFormatNumber retweetedAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
                     <td>\{{postedToTumblr}}</td>
+                    <td>\{{safeFormatNumber postedToTumblrAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
                 </tr>
                 \{{/each}}
                 </tbody>
             </table>
         </script>
+    </div>
 
-        <div class="col-md-7">
-            <svg id="retweets-and-tumblr-posts-by-day-chart" height="400"></svg>
-        </div>
+    <h3>Retweets and Tumblr posts made by day for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:</h3>
+    <div class="row">
+        <svg id="retweets-and-tumblr-posts-by-day-chart" height="400"></svg>
     </div>
 
     <h3>
@@ -144,13 +149,17 @@
             <tr>
                 <th>Day</th>
                 <th>Matches created</th>
+                <th>Average Interesting Factor</th>
                 <th>Attempted Approval</th>
+                <th>Attempted Approval Average Interesting Factor</th>
                 <th>Auto-rejected</th>
                 <th>Retweeted</th>
                 <th>Unretweeted</th>
                 <th>Rejected</th>
+                <th>Rejected Average Interesting Factor</th>
                 <th>Tumblr</th>
                 <th>Unreviewed</th>
+                <th>Unreviewed Average Interesting Factor</th>
                 <th>% Unreviewed</th>
                 <th>% Retweeted</th>
                 <th>% Approval Failure</th>
@@ -159,18 +168,22 @@
             <tbody>
             \{{#each rows}}
                 <tr>
-                    <td>\{{formatTime day day="numeric" month="long" year="numeric"}}</td>
+                    <td>\{{formatTime day day="numeric" month="numeric" year="numeric"}}</td>
                     <td>\{{matchesCreated}}</td>
+                    <td>\{{safeFormatNumber averageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
                     <td>\{{attemptedApproval}}</td>
+                    <td>\{{safeFormatNumber attemptedApprovalAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
                     <td>\{{autoRejected}}</td>
                     <td>\{{retweeted}}</td>
                     <td>\{{unretweeted}}</td>
                     <td>\{{rejected}}</td>
+                    <td>\{{safeFormatNumber rejectedAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
                     <td>\{{postedToTumblr}}</td>
                     <td>\{{unreviewed}}</td>
-                    <td>\{{formatNumber percentUnreviewed style="percent"}}</td>
-                    <td>\{{formatNumber percentRetweeted style="percent"}}</td>
-                    <td>\{{formatNumber percentApprovalFailure style="percent"}}</td>
+                    <td>\{{safeFormatNumber unreviewedAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
+                    <td>\{{safeFormatNumber percentUnreviewed style="percent"}}</td>
+                    <td>\{{safeFormatNumber percentRetweeted style="percent"}}</td>
+                    <td>\{{safeFormatNumber percentApprovalFailure style="percent"}}</td>
                 </tr>
             \{{/each}}
             </tbody>
@@ -188,6 +201,10 @@
     <h3>Percent approval failure out of all approval attempts:</h3>
     <div class="row">
         <svg id="percent-approval-failure-by-date-created-chart" height="400"></svg>
+    </div>
+    <h3>Average interesting factor by action:</h3>
+    <div class="row">
+        <svg id="average-interesting-factor-by-action-taken-chart" height="400"></svg>
     </div>
 
     <h3>
@@ -216,7 +233,7 @@
             <tbody>
             \{{#each rows}}
                 <tr>
-                    <td>\{{formatNumber score minimumFractionDigits="2"}}</td>
+                    <td>\{{safeFormatNumber score minimumFractionDigits="2"}}</td>
                     <td>\{{matchesCreated}}</td>
                     <td>\{{attemptedApproval}}</td>
                     <td>\{{autoRejected}}</td>
@@ -225,8 +242,8 @@
                     <td>\{{rejected}}</td>
                     <td>\{{postedToTumblr}}</td>
                     <td>\{{unreviewed}}</td>
-                    <td>\{{formatNumber percentUnreviewed style="percent"}}</td>
-                    <td>\{{formatNumber percentRetweeted style="percent"}}</td>
+                    <td>\{{safeFormatNumber percentUnreviewed style="percent"}}</td>
+                    <td>\{{safeFormatNumber percentRetweeted style="percent"}}</td>
                 </tr>
             \{{/each}}
             </tbody>
@@ -256,13 +273,17 @@
             <tr>
                 <th>Time of Day</th>
                 <th>Total matches</th>
+                <th>Average Interesting Factor</th>
                 <th>Attempted Approval</th>
+                <th>Attempted Approval Average Interesting Factor</th>
                 <th>Auto-rejected</th>
                 <th>Retweeted</th>
                 <th>Unretweeted</th>
                 <th>Rejected</th>
+                <th>Rejected Average Interesting Factor</th>
                 <th>Tumblr</th>
                 <th>Unreviewed</th>
+                <th>Unreviewed Average Interesting Factor</th>
                 <th>% Unreviewed</th>
                 <th>% Retweeted</th>
             </tr>
@@ -272,15 +293,19 @@
             <tr>
                 <td>\{{formatTime timeOfDay hour="numeric" minute="numeric"}}</td>
                 <td>\{{matchesCreated}}</td>
+                <td>\{{safeFormatNumber averageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
                 <td>\{{attemptedApproval}}</td>
+                <td>\{{safeFormatNumber attemptedApprovalAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
                 <td>\{{autoRejected}}</td>
                 <td>\{{retweeted}}</td>
                 <td>\{{unretweeted}}</td>
                 <td>\{{rejected}}</td>
+                <td>\{{safeFormatNumber rejectedAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
                 <td>\{{postedToTumblr}}</td>
                 <td>\{{unreviewed}}</td>
-                <td>\{{formatNumber percentUnreviewed style="percent"}}</td>
-                <td>\{{formatNumber percentRetweeted style="percent"}}</td>
+                <td>\{{safeFormatNumber unreviewedAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
+                <td>\{{safeFormatNumber percentUnreviewed style="percent"}}</td>
+                <td>\{{safeFormatNumber percentRetweeted style="percent"}}</td>
             </tr>
             \{{/each}}
             </tbody>
@@ -292,10 +317,23 @@
         <svg id="totals-by-time-of-day-match-created-chart" height="400"></svg>
     </div>
 
+    <h3>Average interesting factor by time of day match created:</h3>
+    <div class="row">
+        <svg id="average-interesting-factor-by-time-of-day-match-created-chart" height="400"></svg>
+    </div>
 </div>
 
 <script>
     $(() => {
+
+        function safeFormatNumber(num, format, options) {
+            if (num === null || num === undefined) {
+                return new Handlebars.SafeString("");
+            } else {
+                return Handlebars.helpers.formatNumber(num, format, options);
+            }
+        }
+        Handlebars.registerHelper('safeFormatNumber', safeFormatNumber);
 
         const defaultPropValueIsZeroHandler = {
             get: (target, name) => {
@@ -359,7 +397,9 @@
             constructor(row) {
                 this.day = new Date(row.day);
                 this.retweeted = Number(row.retweeted);
+                this.retweetedAverageInterestingFactor = row.average_interesting_factor_retweeted;
                 this.postedToTumblr = Number(row.posted_to_tumblr);
+                this.postedToTumblrAverageInterestingFactor = row.average_interesting_factor_tumblr;
             }
         }
 
@@ -368,7 +408,9 @@
                 const stats = statsByDateMatchPostedCollection;
 
                 this.retweeted = dateSeriesByProperty(stats, x => x.retweeted);
+                this.retweetedAverageInterestingFactor = dateSeriesByProperty(stats, x => x.retweetedAverageInterestingFactor);
                 this.postedToTumblr = dateSeriesByProperty(stats, x => x.postedToTumblr);
+                this.tumblrAverageInterestingFactor = dateSeriesByProperty(stats, x => x.tumblrAverageInterestingFactor);
             }
         }
 
@@ -383,6 +425,10 @@
                 this.rejected = Number(row.rejected);
                 this.postedToTumblr = Number(row.posted_to_tumblr);
                 this.unreviewed = Number(row.unreviewed);
+                this.averageInterestingFactor = row.average_interesting_factor;
+                this.attemptedApprovalAverageInterestingFactor = row.attempted_approval_average_interesting_factor;
+                this.rejectedAverageInterestingFactor = row.rejected_average_interesting_factor;
+                this.unreviewedAverageInterestingFactor = row.unreviewed_average_interesting_factor;
 
                 this.percentUnreviewed = this.unreviewed / this.matchesCreated;
                 this.percentRetweeted = this.retweeted / this.matchesCreated;
@@ -393,6 +439,31 @@
 
                 this.adjustedFailedAttemptedApprovals = numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches - this.retweeted;
                 this.percentApprovalFailure = (1 - (this.retweeted / numberOfAttemptedApprovalsNotCountingKnownUnretweetableMatches)) || 0;
+            }
+
+            static defaultPropValueHandler() {
+
+                const nullProps = [
+                    'averageInterestingFactor',
+                    'attemptedApprovalAverageInterestingFactor',
+                    'rejectedAverageInterestingFactor',
+                    'unreviewedAverageInterestingFactor',
+                    'percentUnreviewed',
+                    'percentRetweeted',
+                    'percentApprovalFailure'
+                ];
+
+                return {
+                    get: (target, name) => {
+                        if (name in target) {
+                            return target[name];
+                        } else if (nullProps.includes(name)) {
+                            return null;
+                        } else {
+                            return 0;
+                        }
+                    }
+                };
             }
         }
 
@@ -410,6 +481,10 @@
                 this.postedToTumblr = dateSeriesByProperty(stats, x => x.postedToTumblr);
                 this.unreviewed = dateSeriesByProperty(stats, x => x.unreviewed);
                 this.adjustedFailedAttemptedApprovals = dateSeriesByProperty(stats, x => x.adjustedFailedAttemptedApprovals);
+                this.averageInterestingFactor = dateSeriesByProperty(stats, x => x.averageInterestingFactor);
+                this.attemptedApprovalAverageInterestingFactor = dateSeriesByProperty(stats, x => x.attemptedApprovalAverageInterestingFactor);
+                this.rejectedAverageInterestingFactor = dateSeriesByProperty(stats, x => x.rejectedAverageInterestingFactor);
+                this.unreviewedAverageInterestingFactor = dateSeriesByProperty(stats, x => x.unreviewedAverageInterestingFactor);
 
                 this.percentUnreviewed = dateSeriesByProperty(stats, x => x.percentUnreviewed);
                 this.percentRetweeted = dateSeriesByProperty(stats, x => x.percentRetweeted);
@@ -434,6 +509,10 @@
                 this.rejected = Number(row.rejected);
                 this.postedToTumblr = Number(row.posted_to_tumblr);
                 this.unreviewed = Number(row.unreviewed);
+                this.averageInterestingFactor = row.average_interesting_factor;
+                this.attemptedApprovalAverageInterestingFactor = row.attempted_approval_average_interesting_factor;
+                this.rejectedAverageInterestingFactor = row.rejected_average_interesting_factor;
+                this.unreviewedAverageInterestingFactor = row.unreviewed_average_interesting_factor;
 
                 this.percentUnreviewed = this.unreviewed / this.matchesCreated;
                 this.percentRetweeted = this.retweeted / this.matchesCreated;
@@ -461,6 +540,10 @@
                 this.postedToTumblr = timeSeriesByProperty(stats, x => x.postedToTumblr);
                 this.unreviewed = timeSeriesByProperty(stats, x => x.unreviewed);
                 this.adjustedFailedAttemptedApprovals = timeSeriesByProperty(stats, x => x.adjustedFailedAttemptedApprovals);
+                this.averageInterestingFactor = timeSeriesByProperty(stats, x => x.averageInterestingFactor);
+                this.attemptedApprovalAverageInterestingFactor = timeSeriesByProperty(stats, x => x.attemptedApprovalAverageInterestingFactor);
+                this.rejectedAverageInterestingFactor = timeSeriesByProperty(stats, x => x.rejectedAverageInterestingFactor);
+                this.unreviewedAverageInterestingFactor = timeSeriesByProperty(stats, x => x.unreviewedAverageInterestingFactor);
 
                 this.percentUnreviewed = timeSeriesByProperty(stats, x => x.percentUnreviewed);
                 this.percentRetweeted = timeSeriesByProperty(stats, x => x.percentRetweeted);
@@ -519,7 +602,7 @@
             const stats = JSON.parse('{{{stats.statsByDateMatchCreatedJson}}}')
                     .map(x => new StatsByDateMatchCreated(x));
             const statsWithDaysFilledIn = fillInMissingDays(stats, row => row.day, row => row,
-                    day => new Proxy({day: day}, defaultPropValueIsZeroHandler));
+                    day => new Proxy({day: day}, StatsByDateMatchCreated.defaultPropValueHandler()));
             return {
                 series: new StatsByDateMatchCreatedSeriesCollection(statsWithDaysFilledIn),
                 stats: [...statsWithDaysFilledIn].reverse()
@@ -608,7 +691,7 @@
                                     useInteractiveGuideline: true,
                                     duration: 300,
                                 })
-                                .margin({bottom: 90, right: 70})
+                                .margin({bottom: 50, right: 70})
                         ;
 
                 chart.xAxis
@@ -671,7 +754,7 @@
                                     forceY: [0, 1],
                                 })
                                 .color(d3.scale.category10().range())
-                                .margin({bottom: 90, right: 70})
+                                .margin({bottom: 50, right: 70})
                         ;
 
                 chart.xAxis
@@ -766,9 +849,75 @@
             });
         }
 
+        function buildAverageInterestingFactorByActionTakenChart(scoreStats, cssSelector) {
+
+            const data = [{
+                values: scoreStats.averageInterestingFactor,
+                key: 'All',
+            }, {
+                values: scoreStats.attemptedApprovalAverageInterestingFactor,
+                key: 'Attempted Approval'
+            }, {
+                values: scoreStats.rejectedAverageInterestingFactor,
+                key: "Rejected",
+            }, {
+                values: scoreStats.unreviewedAverageInterestingFactor,
+                key: 'Unreviewed'
+            }];
+
+            nv.addGraph(() => {
+
+                const chart = nv.models.lineWithFocusChart()
+                                .options({
+                                    useInteractiveGuideline : true,
+                                    duration: 300,
+                                    forceY: [0, 1],
+                                })
+                                .color(d3.scale.category10().range())
+                                .margin({bottom: 50, right: 70})
+                        ;
+
+                chart.xAxis
+                        .axisLabel("Date")
+                        .tickFormat((d) => {
+                            return d3.time.format('%x')(new Date(d))
+                        })
+                ;
+
+                chart.x2Axis.tickFormat((d) => {
+                    return d3.time.format('%x')(new Date(d))
+                });
+
+                chart.yAxis
+                        .axisLabel("Interesting Factor")
+                        .tickFormat((d) => {
+                            if (d == null) {
+                                return 'N/A';
+                            }
+                            return d3.format('.2f')(d);
+                        })
+                ;
+
+                chart.y2Axis.tickFormat((d) => {
+                    if (d == null) {
+                        return 'N/A';
+                    }
+                    return d3.format('.2f')(d);
+                });
+
+                d3.select(cssSelector)
+                        .datum(data)
+                        .call(chart);
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            });
+        }
+
         function buildRetweetedAndUnreviewedByScoreBucketChart(scoreStats, cssSelector) {
 
-            const scoreBucketData = [{
+            const data = [{
                 values: scoreStats.percentRetweeted,
                 key: 'Retweeted'
             }, {
@@ -806,7 +955,7 @@
                 ;
 
                 d3.select(cssSelector)
-                        .datum(scoreBucketData)
+                        .datum(data)
                         .call(chart);
 
                 nv.utils.windowResize(chart.update);
@@ -879,7 +1028,6 @@
                                 .options({
                                     duration: 300
                                 })
-                                .margin({right: 50, bottom: 70})
                                 .groupSpacing(0.4)
                                 .color(d3.scale.category10().range())
                         ;
@@ -894,6 +1042,60 @@
                 chart.yAxis
                         .axisLabel('Count')
                         .tickFormat(d3.format('i'))
+                ;
+
+                d3.select(cssSelector)
+                        .datum(data)
+                        .call(chart);
+
+                nv.utils.windowResize(chart.update);
+
+                return chart;
+            });
+        }
+
+        function buildAverageInterestingFactorByTimeOfDayMatchCreatedChart(timeOfDayStats, cssSelector) {
+            const data = [{
+                values: timeOfDayStats.averageInterestingFactor,
+                key: 'All',
+            }, {
+                values: timeOfDayStats.attemptedApprovalAverageInterestingFactor,
+                key: 'Attempted Approval'
+            }, {
+                values: timeOfDayStats.rejectedAverageInterestingFactor,
+                key: "Rejected",
+            }, {
+                values: timeOfDayStats.unreviewedAverageInterestingFactor,
+                key: 'Unreviewed'
+            }];
+
+            nv.addGraph(() => {
+
+                const chart = nv.models.lineChart()
+                                .options({
+                                    useInteractiveGuideline : true,
+                                    duration: 300,
+                                    forceY: [0, 1],
+                                })
+                                .margin({right: 50})
+                                .color(d3.scale.category10().range())
+                        ;
+
+                chart.xAxis
+                        .axisLabel("Time")
+                        .tickFormat((d) => {
+                            return d3.time.format('%I:%M %p')(new Date(d))
+                        })
+                ;
+
+                chart.yAxis
+                        .axisLabel("Interesting Factor")
+                        .tickFormat((d) => {
+                            if (d == null) {
+                                return 'N/A';
+                            }
+                            return d3.format('.2f')(d);
+                        })
                 ;
 
                 d3.select(cssSelector)
@@ -923,9 +1125,11 @@
         buildRetweetedAndUnreviewedByDateMatchCreatedChart(byDayMatchCreated.series, '#percent-reviewed-unreviewed-by-date-created-chart');
         buildPercentApprovalFailureChart(byDayMatchCreated.series, '#percent-approval-failure-by-date-created-chart');
         buildCountsByDateMatchCreatedChart(byDayMatchCreated.series, '#counts-by-date-created-chart');
+        buildAverageInterestingFactorByActionTakenChart(byDayMatchCreated.series, '#average-interesting-factor-by-action-taken-chart');
         buildRetweetedAndUnreviewedByScoreBucketChart(byScoreBucket.series, '#reviewed-unreviewed-by-score-bucket-chart');
         buildCountsByScoreBucketChart(byScoreBucket.series, '#totals-by-score-bucket-chart');
         buildCountsByTimeOfDayMatchCreatedChart(byTimeOfDayMatchCreated.series, '#totals-by-time-of-day-match-created-chart');
+        buildAverageInterestingFactorByTimeOfDayMatchCreatedChart(byTimeOfDayMatchCreated.series, '#average-interesting-factor-by-time-of-day-match-created-chart');
 
         HandlebarsIntl.registerWith(Handlebars);
 
@@ -946,7 +1150,6 @@
 
         renderTable($("#stats-by-time-of-day-match-created-table-template"),
                     $("#stats-by-time-of-day-match-created-table"), byTimeOfDayMatchCreated.stats);
-
     });
 
 </script>
