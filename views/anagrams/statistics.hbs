@@ -107,7 +107,7 @@
         <div id="retweets-and-tumblr-posts-by-day-table" class="col-md-7 collapse in"></div>
 
         <script id="retweets-and-tumblr-posts-by-day-table-template" type="text/x-handlebars-template">
-            <table class="table table-hover table-condensed">
+            <table class="table table-hover table-condensed js-sticky-header">
                 <thead>
                 <tr>
                     <th>Day</th>
@@ -144,7 +144,7 @@
     <div id="stats-by-date-created-table" class="row collapse in col-md-12"></div>
 
     <script id="stats-by-date-created-table-template" type="text/x-handlebars-template">
-        <table class="table table-hover table-condensed">
+        <table class="table table-hover table-condensed js-sticky-header">
             <thead>
             <tr>
                 <th>Day</th>
@@ -211,7 +211,7 @@
         <button class="btn btn-sm btn-info js-collapse-button" data-toggle="collapse" data-target="#stats-by-score-table"></button>
         Stats by interesting factor bucket:
     </h3>
-    <div id="stats-by-score-table" class="row collapse in col-md-12"></div>
+    <div id="stats-by-score-table" class="row collapse in js-sticky-header"></div>
 
     <script id="stats-by-score-table-template" type="text/x-handlebars-template">
         <table class="table table-hover table-condensed">
@@ -268,7 +268,7 @@
     <div id="stats-by-time-of-day-match-created-table" class="row collapse in col-md-12"></div>
 
     <script id="stats-by-time-of-day-match-created-table-template" type="text/x-handlebars-template">
-        <table class="table table-hover table-condensed">
+        <table class="table table-hover table-condensed js-sticky-header">
             <thead>
             <tr>
                 <th>Time of Day</th>
@@ -1074,6 +1074,14 @@
 
         renderTable($("#stats-by-time-of-day-match-created-table-template"),
                     $("#stats-by-time-of-day-match-created-table"), byTimeOfDayMatchCreated.stats);
+
+        $(".js-sticky-header").stickyTableHeaders();
     });
 
 </script>
+<style type="text/css">
+    .tableFloatingHeaderOriginal th {
+        background-color: #fff;
+        border-bottom: 1px solid #DDD;
+    }
+</style>
