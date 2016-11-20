@@ -633,7 +633,6 @@
         }
 
         function buildRetweetsAndTumblrPostsByDayChart(dayStats, cssSelector) {
-
             const data = [{
                 values: dayStats.postedToTumblr,
                 key: 'Tumblr',
@@ -643,36 +642,25 @@
             }];
 
             nv.addGraph(() => {
-
                 const chart = nv.models.multiBarChart()
                                 .options({
                                     duration: 300
                                 })
                                 .margin({right: 50, bottom: 70})
                                 .groupSpacing(0.4)
-                                .color(d3.scale.category10().range())
-                        ;
+                                .color(d3.scale.category10().range());
 
-                chart.xAxis
-                        .axisLabel("Date")
+                chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
                             return d3.time.format('%x')(new Date(d))
                         })
-                        .ticks(10)
-                ;
-
-                chart.yAxis
-                        .axisLabel('Count')
+                        .ticks(10);
+                chart.yAxis.axisLabel('Count')
                         .tickFormat(d3.format('i'))
-                        .ticks(5)
-                ;
+                        .ticks(5);
 
-                d3.select(cssSelector)
-                        .datum(data)
-                        .call(chart);
-
+                d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
-
                 return chart;
             });
         }
@@ -691,52 +679,39 @@
                                     useInteractiveGuideline: true,
                                     duration: 300,
                                 })
-                                .margin({bottom: 50, right: 70})
-                        ;
+                                .margin({bottom: 50, right: 70});
 
-                chart.xAxis
-                        .axisLabel("Date")
+                chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
                             return d3.time.format('%x')(new Date(d))
-                        })
-                ;
-
+                        });
                 chart.x2Axis.tickFormat((d) => {
                     return d3.time.format('%x')(new Date(d))
                 });
 
-                chart.yAxis
-                        .axisLabel('Percent')
+                chart.yAxis.axisLabel('Percent')
                         .tickFormat((d) => {
                             if (d == null) {
                                 return 'N/A';
                             }
                             return d3.format('.2%')(d);
                         })
-                        .ticks(4)
-                ;
-
+                        .ticks(4);
                 chart.y2Axis
                         .tickFormat((d) => {
                             if (d == null) {
                                 return 'N/A';
                             }
                             return d3.format('.2%')(d);
-                        })
-                ;
+                        });
 
-                d3.select(cssSelector)
-                        .datum(data)
-                        .call(chart);
-
+                d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
-
                 return chart;
             });
         }
 
         function buildRetweetedAndUnreviewedByDateMatchCreatedChart(dayStats, cssSelector) {
-
             const data = [{
                 values: dayStats.percentUnreviewed,
                 key: "Unreviewed",
@@ -746,7 +721,6 @@
             }];
 
             nv.addGraph(() => {
-
                 const chart = nv.models.lineWithFocusChart()
                                 .options({
                                     useInteractiveGuideline: true,
@@ -754,52 +728,38 @@
                                     forceY: [0, 1],
                                 })
                                 .color(d3.scale.category10().range())
-                                .margin({bottom: 50, right: 70})
-                        ;
+                                .margin({bottom: 50, right: 70});
 
-                chart.xAxis
-                        .axisLabel("Date")
+                chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
                             return d3.time.format('%x')(new Date(d))
-                        })
-                ;
-
+                        });
                 chart.x2Axis.tickFormat((d) => {
                     return d3.time.format('%x')(new Date(d))
                 });
 
-                chart.yAxis
-                        .axisLabel('Percent')
+                chart.yAxis.axisLabel('Percent')
                         .tickFormat((d) => {
                             if (d == null) {
                                 return 'N/A';
                             }
                             return d3.format('.2%')(d);
                         })
-                        .ticks(4)
-                ;
-
-                chart.y2Axis
-                        .tickFormat((d) => {
+                        .ticks(4);
+                chart.y2Axis.tickFormat((d) => {
                             if (d == null) {
                                 return 'N/A';
                             }
                             return d3.format('.2%')(d);
-                        })
-                ;
+                        });
 
-                d3.select(cssSelector)
-                        .datum(data)
-                        .call(chart);
-
+                d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
-
                 return chart;
             });
         }
 
         function buildCountsByDateMatchCreatedChart(dayStats, cssSelector) {
-
             const data = [{
                 values: dayStats.unreviewed,
                 key: 'Unreviewed',
@@ -815,42 +775,30 @@
             }];
 
             nv.addGraph(() => {
-
                 const chart = nv.models.multiBarChart()
                                 .options({
                                     duration: 300
                                 })
                                 .margin({right: 50, bottom: 70})
                                 .groupSpacing(0.4)
-                                .color(d3.scale.category10().range())
-                        ;
+                                .color(d3.scale.category10().range());
 
-                chart.xAxis
-                        .axisLabel("Date")
+                chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
                             return d3.time.format('%x')(new Date(d))
                         })
-                        .ticks(10)
-                ;
-
+                        .ticks(10);
                 chart.yAxis
                         .axisLabel('Count')
                         .tickFormat(d3.format('i'))
-                        .ticks(5)
-                ;
-
-                d3.select(cssSelector)
-                        .datum(data)
-                        .call(chart);
-
+                        .ticks(5);
+                d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
-
                 return chart;
             });
         }
 
         function buildAverageInterestingFactorByActionTakenChart(scoreStats, cssSelector) {
-
             const data = [{
                 values: scoreStats.averageInterestingFactor,
                 key: 'All',
@@ -866,7 +814,6 @@
             }];
 
             nv.addGraph(() => {
-
                 const chart = nv.models.lineWithFocusChart()
                                 .options({
                                     useInteractiveGuideline : true,
@@ -874,30 +821,22 @@
                                     forceY: [0, 1],
                                 })
                                 .color(d3.scale.category10().range())
-                                .margin({bottom: 50, right: 70})
-                        ;
+                                .margin({bottom: 50, right: 70});
 
-                chart.xAxis
-                        .axisLabel("Date")
+                chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
                             return d3.time.format('%x')(new Date(d))
-                        })
-                ;
-
+                        });
                 chart.x2Axis.tickFormat((d) => {
                     return d3.time.format('%x')(new Date(d))
                 });
-
-                chart.yAxis
-                        .axisLabel("Interesting Factor")
+                chart.yAxis.axisLabel("Interesting Factor")
                         .tickFormat((d) => {
                             if (d == null) {
                                 return 'N/A';
                             }
                             return d3.format('.2f')(d);
-                        })
-                ;
-
+                        });
                 chart.y2Axis.tickFormat((d) => {
                     if (d == null) {
                         return 'N/A';
@@ -905,18 +844,13 @@
                     return d3.format('.2f')(d);
                 });
 
-                d3.select(cssSelector)
-                        .datum(data)
-                        .call(chart);
-
+                d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
-
                 return chart;
             });
         }
 
         function buildRetweetedAndUnreviewedByScoreBucketChart(scoreStats, cssSelector) {
-
             const data = [{
                 values: scoreStats.percentRetweeted,
                 key: 'Retweeted'
@@ -926,7 +860,6 @@
             }];
 
             nv.addGraph(() => {
-
                 const chart = nv.models.lineChart()
                                 .options({
                                     useInteractiveGuideline : true,
@@ -934,38 +867,27 @@
                                     forceY: [0, 1],
                                     forceX: [0.4, 1]
                                 })
-                                .color(d3.scale.category10().range())
-                        ;
+                                .color(d3.scale.category10().range());
 
-                chart.xAxis
-                        .axisLabel("Interesting Factor")
+                chart.xAxis.axisLabel("Interesting Factor")
                         .tickFormat(d3.format('.2f'))
-                        .ticks(10)
-                ;
-
-                chart.yAxis
-                        .axisLabel('Percent')
+                        .ticks(10);
+                chart.yAxis.axisLabel('Percent')
                         .tickFormat((d) => {
                             if (d == null) {
                                 return 'N/A';
                             }
                             return d3.format('.2%')(d);
                         })
-                        .ticks(4)
-                ;
+                        .ticks(4);
 
-                d3.select(cssSelector)
-                        .datum(data)
-                        .call(chart);
-
+                d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
-
                 return chart;
             });
         }
 
         function buildCountsByScoreBucketChart(scoreStats, cssSelector) {
-
             const data = [{
                 values: scoreStats.retweeted,
                 key: "Retweeted",
@@ -981,29 +903,16 @@
             }];
 
             nv.addGraph(() => {
-
                 const chart = nv.models.multiBarChart()
-                                .options({
-                                    duration: 300,
-                                })
-                                .color(d3.scale.category10().range())
-                        ;
+                        .options({
+                            duration: 300,
+                        })
+                        .color(d3.scale.category10().range());
 
-                chart.xAxis
-                        .axisLabel("Date")
-                ;
-
-                chart.yAxis
-                        .axisLabel('Count')
-                        .tickFormat(d3.format('i'))
-                ;
-
-                d3.select(cssSelector)
-                        .datum(data)
-                        .call(chart);
-
+                chart.xAxis.axisLabel("Date");
+                chart.yAxis.axisLabel('Count').tickFormat(d3.format('i'));
+                d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
-
                 return chart;
             });
         }
@@ -1023,33 +932,21 @@
                 key: 'Failed Attempted Approvals'
             }];
             nv.addGraph(() => {
-
                 const chart = nv.models.multiBarChart()
                                 .options({
                                     duration: 300
                                 })
                                 .groupSpacing(0.4)
-                                .color(d3.scale.category10().range())
-                        ;
+                                .color(d3.scale.category10().range());
 
-                chart.xAxis
-                        .axisLabel("Time")
+                chart.xAxis.axisLabel("Time")
                         .tickFormat((d) => {
                             return d3.time.format('%I:%M %p')(new Date(d))
-                        })
-                ;
+                        });
+                chart.yAxis.axisLabel('Count').tickFormat(d3.format('i'));
 
-                chart.yAxis
-                        .axisLabel('Count')
-                        .tickFormat(d3.format('i'))
-                ;
-
-                d3.select(cssSelector)
-                        .datum(data)
-                        .call(chart);
-
+                d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
-
                 return chart;
             });
         }
@@ -1070,7 +967,6 @@
             }];
 
             nv.addGraph(() => {
-
                 const chart = nv.models.lineChart()
                                 .options({
                                     useInteractiveGuideline : true,
@@ -1078,32 +974,21 @@
                                     forceY: [0, 1],
                                 })
                                 .margin({right: 50})
-                                .color(d3.scale.category10().range())
-                        ;
+                                .color(d3.scale.category10().range());
 
-                chart.xAxis
-                        .axisLabel("Time")
+                chart.xAxis.axisLabel("Time")
                         .tickFormat((d) => {
                             return d3.time.format('%I:%M %p')(new Date(d))
-                        })
-                ;
-
-                chart.yAxis
-                        .axisLabel("Interesting Factor")
+                        });
+                chart.yAxis.axisLabel("Interesting Factor")
                         .tickFormat((d) => {
                             if (d == null) {
                                 return 'N/A';
                             }
                             return d3.format('.2f')(d);
-                        })
-                ;
-
-                d3.select(cssSelector)
-                        .datum(data)
-                        .call(chart);
-
+                        });
+                d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
-
                 return chart;
             });
         }
