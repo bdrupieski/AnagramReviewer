@@ -66,8 +66,8 @@ schedule.scheduleJob("*/1 * * * *", function () {
     tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(59);
 });
 
-// every 15 minutes on :00, :15, :30, :45
-schedule.scheduleJob("*/15 * * * *", function () {
+// every 20 minutes on :00, :20, :40
+schedule.scheduleJob("*/20 * * * *", function () {
     tasks.retweetOnePendingMatch();
 });
 
