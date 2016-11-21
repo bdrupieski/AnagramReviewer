@@ -86,20 +86,20 @@
                 <th>enqueue</th>
             </tr>
             </thead>
-            <tbody data-bind="template: { foreach: anagramMatches }">
+            <tbody data-bind="template: { foreach: anagramMatches, beforeRemove: hideMatchRow }">
 
             <tr data-bind="attr: { id: id }">
-                <td data-bind="text: interestingFactor"></td>
-                <td><span data-bind="text: t1OriginalText"></span> <a data-bind="attr: { href : t1Link }">link</a>
+                <td class="col-md-1" data-bind="text: interestingFactor"></td>
+                <td class="col-md-6"><span data-bind="text: t1OriginalText"></span> <a data-bind="attr: { href : t1Link }">link</a>
                     <br><br><span
                             data-bind="text: t2OriginalText"></span> <a data-bind="attr: { href : t2Link }">link</a>
                 </td>
-                <td>
+                <td class="col-md-1">
                     <button type="submit" class="btn btn-danger"
                             data-bind="click: $parent.rejectMatch, attr: { 'data-match': id }">✘
                     </button>
                 </td>
-                <td>
+                <td class="col-md-2">
                     <button type="submit" class="btn btn-success" title="approve in order as shown"
                             data-bind="click: $parent.approveMatchAsShownOrder, attr: { 'data-match': id }">⇉
                     </button>
@@ -107,7 +107,7 @@
                             data-bind="click: $parent.approveMatchReverseOrder, attr: { 'data-match': id }">⤮
                     </button>
                 </td>
-                <td>
+                <td class="col-md-2">
                     <button type="submit" class="btn btn-info" title="enqueue in order as shown"
                             data-bind="click: $parent.enqueueMatchAsShownOrder, attr: { 'data-match': id }">⇉
                     </button>
@@ -245,8 +245,8 @@
             this.getMoreMatchesIfListIsRunningLow = function () {
                 if (this.anagramMatches().length < 5) {
                     this.getMoreAnagrams().then(moreAnagramMatches => {
-                        let merged = _.unionWith(this.anagramMatches(), moreAnagramMatches, (x, y) => x.id == y.id);
-                        this.anagramMatches(merged);
+                        const newMatches = _.differenceBy(moreAnagramMatches, this.anagramMatches(), (x) => x.id);
+                        this.anagramMatches.push(...newMatches);
                     }).catch(err => {
                         $.growl.error({message: err});
                         console.log(err);
@@ -256,7 +256,7 @@
 
             this.seedData = function () {
                 this.getMoreAnagrams().then(seedAnagramMatches => {
-                    this.anagramMatches(seedAnagramMatches)
+                    this.anagramMatches.push(...seedAnagramMatches);
                 }).catch(err => {
                     $.growl.error({message: err});
                     console.log(err);
@@ -278,6 +278,16 @@
                 this.clearAllMatches();
                 this.seedData();
             });
+
+            this.hideMatchRow = function (elem) {
+                $(elem).children('td, th')
+                        .animate({padding: 0}, 300)
+                        .wrapInner('<div />')
+                        .children()
+                        .slideUp(200, function () {
+                            $(this).closest('tr').remove();
+                        });
+            };
 
             return this;
         };
