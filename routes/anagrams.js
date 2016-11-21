@@ -70,7 +70,7 @@ router.get('/statistics', function(req, res) {
 
     const interestingFactorCutoff = Number(req.query.interestingfactor) || 0.67;
     const numberOfLastDaysToGetMatchesCreatedPerDay = Number(req.query.days) || 15;
-    const minuteInterval = Number(req.query.minutes) || 5;
+    const minuteInterval = Number(req.query.minutes) || 15;
 
     Promise.all([
         anagramsDb.getCountOfAnagramMatches(),
