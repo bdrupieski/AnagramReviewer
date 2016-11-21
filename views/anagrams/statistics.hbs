@@ -170,7 +170,11 @@
                 <tr>
                     <td>\{{formatTime day day="numeric" month="numeric" year="numeric"}}</td>
                     <td>\{{matchesCreated}}</td>
-                    <td>\{{safeFormatNumber averageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
+                    <td>
+                        <a href='#' data-show-interesting-factor-distrubution data-match-created='\{{day}}'>
+                            \{{safeFormatNumber averageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}
+                        </a>
+                    </td>
                     <td>\{{attemptedApproval}}</td>
                     <td>\{{safeFormatNumber attemptedApprovalAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
                     <td>\{{autoRejected}}</td>
@@ -321,6 +325,27 @@
     <div class="row">
         <svg id="average-interesting-factor-by-time-of-day-match-created-chart" height="400"></svg>
     </div>
+
+    <div class="modal fade" id="interesting-factors-for-day-chart-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">Interesting Factor distribution for <span
+                            id="interesting-factors-for-day-chart-modal-title"></span></h4>
+                </div>
+                <div class="modal-body">
+                    <svg id="interesting-factors-for-day-chart" height="400"></svg>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -397,9 +422,9 @@
             constructor(row) {
                 this.day = new Date(row.day);
                 this.retweeted = Number(row.retweeted);
-                this.retweetedAverageInterestingFactor = row.average_interesting_factor_retweeted;
+                this.retweetedAverageInterestingFactor = row.average_interesting_factor_retweeted || null;
                 this.postedToTumblr = Number(row.posted_to_tumblr);
-                this.postedToTumblrAverageInterestingFactor = row.average_interesting_factor_tumblr;
+                this.postedToTumblrAverageInterestingFactor = row.average_interesting_factor_tumblr || null;
             }
 
             static defaultPropValueHandler() {
@@ -604,6 +629,28 @@
 
                 this.percentUnreviewed = scoreSeriesByProperty(stats, x => x.percentUnreviewed);
                 this.percentRetweeted = scoreSeriesByProperty(stats, x => x.percentRetweeted);
+            }
+        }
+
+        class InterestingFactorsForDay {
+            constructor(row) {
+                this.score = Number(row.interesting_factor);
+                this.total = Number(row.total);
+                this.rejected = Number(row.rejected);
+                this.unreviewed = Number(row.unreviewed);
+                this.reviewed = this.total - this.rejected - this.unreviewed;
+            }
+        }
+
+        class InterestingFactorsForDaySeriesCollection {
+            constructor(interestingFactorsForDay) {
+
+                const scores = interestingFactorsForDay;
+
+                this.total = scoreSeriesByProperty(scores, x => x.total);
+                this.rejected = scoreSeriesByProperty(scores, x => x.rejected);
+                this.unreviewed = scoreSeriesByProperty(scores, x => x.unreviewed);
+                this.reviewed = scoreSeriesByProperty(scores, x => x.reviewed);
             }
         }
 
@@ -1030,6 +1077,39 @@
             });
         }
 
+        function buildChartInterestingFactorDistributionForDay(scoreDistributionStats, cssSelector) {
+            const data = [{
+                values: scoreDistributionStats.total,
+                key: 'Total',
+                disabled: true,
+            }, {
+                values: scoreDistributionStats.unreviewed,
+                key: "Unreviewed",
+            }, {
+                values: scoreDistributionStats.reviewed,
+                key: 'Reviewed',
+            }, {
+                values: scoreDistributionStats.rejected,
+                key: 'Rejected',
+            }];
+
+            nv.addGraph(() => {
+                const chart = nv.models.multiBarChart()
+                        .options({
+                            duration: 300,
+                        })
+                        .margin({right: 50})
+                        .color(d3.scale.category10().range());
+
+                chart.xAxis.axisLabel("Interesting Factor").tickFormat(d3.format('.2f'));
+                chart.yAxis.axisLabel("Count").tickFormat(d3.format('i'));
+                d3.select(cssSelector).datum(data).call(chart);
+                nv.utils.windowResize(chart.update);
+                window.dispatchEvent(new Event('resize'));
+                return chart;
+            });
+        }
+
         const $jsCollapseButtons = $(".js-collapse-button");
         $jsCollapseButtons.text("➖");
         $jsCollapseButtons.click(function() {
@@ -1076,6 +1156,35 @@
                     $("#stats-by-time-of-day-match-created-table"), byTimeOfDayMatchCreated.stats);
 
         $(".js-sticky-header").stickyTableHeaders();
+
+        $("#interesting-factors-for-day-chart-modal").on('shown.bs.modal', function () {
+            // trigger nvd3 to redraw chart once it's visible
+            window.dispatchEvent(new Event('resize'));
+        });
+
+        $("[data-show-interesting-factor-distrubution]").click((e) => {
+            $.blockUI({message: '<h4>Loading...</h4>'});
+            const dateString = $(e.target).data("match-created");
+            const encodedDateString = encodeURIComponent(dateString);
+            $.getJSON(`/anagrams/interestingfactorsforday/${encodedDateString}`).done(data => {
+                if (data.error) {
+                    $.growl.error({message: data.error});
+                } else if (data.interestingFactors) {
+                    const scores = data.interestingFactors.map(x => new InterestingFactorsForDay(x));
+                    const series = new InterestingFactorsForDaySeriesCollection(scores);
+                    buildChartInterestingFactorDistributionForDay(series, '#interesting-factors-for-day-chart');
+
+                    $("#interesting-factors-for-day-chart-modal-title").text(data.date);
+                    $("#interesting-factors-for-day-chart-modal").modal();
+                }
+            }).fail((jqxhr, textStatus, error) => {
+                $.growl.error({message: error});
+            }).always(() => {
+                $.unblockUI();
+            });
+
+            return false;
+        });
     });
 
 </script>

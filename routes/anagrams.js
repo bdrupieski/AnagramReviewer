@@ -136,6 +136,16 @@ router.post('/statistics', function(req, res) {
     res.redirect(`/anagrams/statistics?interestingfactor=${interestingFactor}&days=${days}&minutes=${minutes}`);
 });
 
+router.get('/interestingfactorsforday/:dateString', function (req, res) {
+    const date = new Date(req.params.dateString).toLocaleDateString("en-US");
+    anagramsDb.getInterestingFactorsForMatchesCreatedOnDate(date).then(interestingFactors => {
+        res.json({interestingFactors: interestingFactors, date: date});
+    }).catch(error => {
+        logger.error(error.toString());
+        res.json({error: error});
+    });
+});
+
 router.get('/unretweetmanually', function(req, res) {
     anagramsDb.getMostRecentRetweetedMatches().then(matches => {
         res.render('anagrams/unretweetmanually', {

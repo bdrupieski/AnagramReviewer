@@ -734,6 +734,23 @@ DELETE FROM tweets WHERE id = ANY($1);
     });
 };
 
+exports.getInterestingFactorsForMatchesCreatedOnDate = function(formattedDate) {
+    const getInterestingFactorsForMatchesCreatedOnDateQuery = `
+SELECT DISTINCT ON (interesting_factor)
+  trunc(anagram_matches.interesting_factor :: NUMERIC, 2) AS interesting_factor,
+  count(anagram_matches.interesting_factor) OVER w AS total,
+  sum(CASE WHEN anagram_matches.rejected = TRUE THEN 1 ELSE 0 END) OVER w AS rejected,
+  sum(CASE WHEN anagram_matches.rejected = FALSE AND anagram_matches.attempted_approval = FALSE THEN 1 ELSE 0 END) OVER w AS unreviewed
+FROM anagram_matches
+WHERE date(date_created) = '${formattedDate}'
+WINDOW w AS (
+  PARTITION BY trunc(anagram_matches.interesting_factor :: NUMERIC, 2) )
+`;
+    return pools.anagramPool.query(getInterestingFactorsForMatchesCreatedOnDateQuery).then(x => {
+        return x.rows;
+    });
+};
+
 exports.enqueueMatch = function(matchId, orderAsShown) {
     const enqueueMatchQuery = `
 INSERT INTO match_queue (match_id, order_as_shown) VALUES ($1::int, $2::bool)
