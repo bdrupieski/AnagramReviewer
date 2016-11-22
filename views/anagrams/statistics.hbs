@@ -991,10 +991,14 @@
                         .options({
                             duration: 300,
                         })
-                        .color(d3.scale.category10().range());
+                        .color(d3.scale.category10().range())
+                        .reduceXTicks(false);
 
-                chart.xAxis.axisLabel("Date");
-                chart.yAxis.axisLabel('Count').tickFormat(d3.format('i'));
+                chart.xAxis.axisLabel("Interesting Factor")
+                        .tickFormat(d3.format('.2f'))
+                        .tickValues(_.range(0.4, 1.05, 0.05).map(x => Math.round(x * 100) / 100));
+                chart.yAxis.axisLabel("Count")
+                        .tickFormat(d3.format('i'));
                 d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
                 return chart;
@@ -1017,16 +1021,17 @@
             }];
             nv.addGraph(() => {
                 const chart = nv.models.multiBarChart()
-                                .options({
-                                    duration: 300
-                                })
-                                .groupSpacing(0.4)
-                                .color(d3.scale.category10().range());
+                        .options({
+                            duration: 300
+                        })
+                        .color(d3.scale.category10().range())
+                        .reduceXTicks(false);
 
                 chart.xAxis.axisLabel("Time")
                         .tickFormat((d) => {
                             return d3.time.format('%I:%M %p')(new Date(d))
-                        });
+                        })
+                        .tickValues(_.range(0, 24, 2).map(x => new Date(0).setHours(x)));
                 chart.yAxis.axisLabel('Count').tickFormat(d3.format('i'));
 
                 d3.select(cssSelector).datum(data).call(chart);
@@ -1063,7 +1068,8 @@
                 chart.xAxis.axisLabel("Time")
                         .tickFormat((d) => {
                             return d3.time.format('%I:%M %p')(new Date(d))
-                        });
+                        })
+                        .tickValues(_.range(0, 24, 2).map(x => new Date(0).setHours(x)));
                 chart.yAxis.axisLabel("Interesting Factor")
                         .tickFormat((d) => {
                             if (d == null) {
