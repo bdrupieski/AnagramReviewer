@@ -10,7 +10,7 @@
             <div class="col-sm-3">
                 <div class="input-group input-group-sm">
                     <span class="input-group-addon">Interesting Factor Cutoff</span>
-                    <input type="number" class="form-control" name="interestingfactor" step="0.01" min="0" max="1" value="{{stats.interestingFactorCutoff}}">
+                    <input type="number" class="form-control" data-fraction-digits="2" name="interestingfactor" step="0.01" min="0" max="1" value="{{stats.interestingFactorCutoff}}">
                 </div>
             </div>
             <div class="col-sm-3">
@@ -46,7 +46,7 @@
             matches
         {{/if}}
 
-        with an interesting factor above <strong>{{stats.interestingFactorCutoff}}</strong> that
+        with an interesting factor above <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong> that
 
         {{#if stats.countOfNotRejectedAndNotApprovedMatchesAboveCutoffIsOne}}
             is
@@ -84,7 +84,7 @@
     <div class="row">
         There are <strong>{{formatNumber stats.countOfMatchesAboveCutoff}}</strong> matches with an interesting factor
         above
-        <strong>{{stats.interestingFactorCutoff}}</strong>.
+        <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>.
     </div>
     <div class="row">
         <strong>{{formatNumber stats.countOfRetweetedMatches}}</strong> matches have been retweeted.
@@ -1191,6 +1191,15 @@
 
             return false;
         });
+
+        $("[data-fraction-digits]").on("input", (e) => {
+            const $input = $(e.target);
+            const asNum = parseFloat($input.val());
+            const numFractionDigits = $input.data("fraction-digits");
+            if (asNum && numFractionDigits) {
+                $input.val(asNum.toFixed(numFractionDigits))
+            }
+        })
     });
 
 </script>
