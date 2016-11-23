@@ -860,12 +860,12 @@
 
             nv.addGraph(() => {
                 const chart = nv.models.multiBarChart()
-                                .options({
-                                    duration: 300
-                                })
-                                .margin({right: 50, bottom: 70})
-                                .groupSpacing(0.4)
-                                .color(d3.scale.category10().range());
+                        .options({
+                            duration: 300
+                        })
+                        .stacked(true)
+                        .margin({right: 50, bottom: 70})
+                        .color(d3.scale.category10().range());
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
@@ -991,6 +991,7 @@
                         .options({
                             duration: 300,
                         })
+                        .stacked(true)
                         .color(d3.scale.category10().range())
                         .reduceXTicks(false);
 
@@ -1024,6 +1025,7 @@
                         .options({
                             duration: 300
                         })
+                        .stacked(true)
                         .color(d3.scale.category10().range())
                         .reduceXTicks(false);
 
@@ -1104,6 +1106,7 @@
                         .options({
                             duration: 300,
                         })
+                        .stacked(true)
                         .margin({right: 50})
                         .color(d3.scale.category10().range());
 
