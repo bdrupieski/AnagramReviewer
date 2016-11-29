@@ -8,10 +8,13 @@ exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfO
     logger.info(`starting clean up of ${numberOfOldestTweetsToCheckAtOnce} old tweets.`);
 
     twitter.getShowIdRateLimit().then(showIdRateLimit => {
-        const numberToCheck = Math.min(showIdRateLimit.remaining, numberOfOldestTweetsToCheckAtOnce);
-        const numberOfCallsThatWillBeLeft = showIdRateLimit.remaining - numberToCheck;
-        if (numberOfCallsThatWillBeLeft < 15) {
-            logger.info(`only ${showIdRateLimit.remaining} left for show/:id. skipping check of ${numberOfOldestTweetsToCheckAtOnce} tweets.`);
+
+        const numberOfMinimumCallsToLeaveLeftover = 10;
+        const numberToCheck = determineNumberOfTweetsToCheck(showIdRateLimit.remaining,
+            numberOfMinimumCallsToLeaveLeftover, numberOfOldestTweetsToCheckAtOnce);
+
+        if (numberToCheck <= 0) {
+            logger.info(`${showIdRateLimit.remaining} remaining for show/:id. skipping check of ${numberOfOldestTweetsToCheckAtOnce} (${numberToCheck}) tweets.`);
         } else {
             logger.info(`${showIdRateLimit.remaining} show/:id remaining. checking ${numberToCheck} tweets.`);
             return anagramsDb.getOldestUnreviewedTweets(numberToCheck).then(storedTweets => {
@@ -24,8 +27,7 @@ exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfO
                     const existingTweets = tweetsAndExistence.filter(x => x.exists).map(x => x.tweet.id);
                     const nonexistingTweets = tweetsAndExistence.filter(x => !x.exists).map(x => x.tweet.id);
 
-                    logger.info(`${existingTweets.length} tweets still exist`);
-                    logger.info(`deleting ${nonexistingTweets.length} non-existent tweets: [ ${nonexistingTweets.join(', ')} ]`);
+                    logger.info(`${existingTweets.length} tweets still exist. deleting ${nonexistingTweets.length} non-existent tweets: [ ${nonexistingTweets.join(', ')} ]`);
 
                     return anagramsDb.updateTweetsExistenceChecked(existingTweets).then(x => {
                         logger.info(`updated ${x.rowCount} tweets as still existing.`);
@@ -47,6 +49,16 @@ exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfO
         logger.error(error);
     });
 };
+
+function determineNumberOfTweetsToCheck(callsRemaining, callsToLeaveAvailable, numToCheck) {
+    if (callsRemaining <= callsToLeaveAvailable) {
+        return 0;
+    } else if (callsRemaining - numToCheck > callsToLeaveAvailable) {
+        return numToCheck;
+    } else if (callsRemaining - numToCheck <= callsToLeaveAvailable) {
+        return callsRemaining - callsToLeaveAvailable;
+    }
+}
 
 function determineIfTweetExists(statusId) {
     return twitter.getTweet(statusId).then(tweet => {
