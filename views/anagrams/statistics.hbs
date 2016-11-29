@@ -1202,7 +1202,7 @@
             if (asNum && numFractionDigits) {
                 $input.val(asNum.toFixed(numFractionDigits))
             }
-        })
+        }).trigger("input");
     });
 
 </script>

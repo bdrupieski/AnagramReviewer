@@ -18,7 +18,8 @@ router.get('/list', function (req, res) {
 
     return anagramsDb.getCountOfErrorQueuedMatches().then(count => {
         const responseData = {
-            title: 'Anagrams'
+            title: 'Anagrams',
+            defaultInterestingFactor: anagramsDb.defaultInterestingFactor
         };
 
         if (count > 0) {
@@ -68,7 +69,7 @@ function formatRateLimit(rateLimitCategory, key) {
 
 router.get('/statistics', function(req, res) {
 
-    const interestingFactorCutoff = Number(req.query.interestingfactor) || 0.67;
+    const interestingFactorCutoff = Number(req.query.interestingfactor) || anagramsDb.defaultInterestingFactor;
     const numberOfLastDaysToGetMatchesCreatedPerDay = Number(req.query.days) || 15;
     const minuteInterval = Number(req.query.minutes) || 15;
 

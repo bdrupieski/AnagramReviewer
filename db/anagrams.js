@@ -1,7 +1,7 @@
 const pools = require('./poolProvider');
 
 const maxMatchLimit = 50;
-const defaultInterestingFactor = 0.67;
+const defaultInterestingFactor = 0.60;
 const topMatchesQueryType = "topmatches";
 const oldestTopMatchesQueryType = "oldesttopmatches";
 const mostRecentMatches = "mostrecentmatches";
@@ -12,6 +12,8 @@ const queuedMatchPostedStatus = 'posted';
 const queuedMatchRemovedStatus = 'removed';
 
 const topMatchQueryTypes = [topMatchesQueryType, oldestTopMatchesQueryType, mostRecentMatches];
+
+exports.defaultInterestingFactor = defaultInterestingFactor;
 
 exports.findMatches = function (topMatchQueryType, limit = maxMatchLimit, interestingFactorCutoff = defaultInterestingFactor) {
 
