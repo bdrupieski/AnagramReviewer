@@ -4,7 +4,7 @@ const passport = require('passport');
 const passportConfig = require('../services/passport');
 const userDb = require('../db/users');
 const bcrypt = require('../services/bcryptPromisified');
-const logger = require('winston');
+const logger = require('../services/logger');
 
 router.get('/', function (req, res) {
     res.redirect('account/login');

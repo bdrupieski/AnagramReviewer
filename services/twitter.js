@@ -1,6 +1,6 @@
 const Twitter = require('twitter');
 const twitterConfig = require('./../configuration/twitter.json');
-const logger = require('winston');
+const logger = require('./logger');
 const _ = require('lodash');
 
 const client = new Twitter({

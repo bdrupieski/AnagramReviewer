@@ -1,11 +1,11 @@
 const twitter = require('./twitter');
 const anagramsDb = require('../db/anagrams');
 const anagramManagement = require('../services/anagramManagement');
-const logger = require('winston');
+const logger = require('./logger');
 const _ = require('lodash');
 
 exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfOldestTweetsToCheckAtOnce) {
-    logger.info(`starting clean up of ${numberOfOldestTweetsToCheckAtOnce} old tweets.`);
+    logger.debug(`starting clean up of ${numberOfOldestTweetsToCheckAtOnce} old tweets.`);
 
     twitter.getShowIdRateLimit().then(showIdRateLimit => {
 
@@ -30,19 +30,19 @@ exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfO
                     logger.info(`${existingTweets.length} tweets still exist. deleting ${nonexistingTweets.length} non-existent tweets: [ ${nonexistingTweets.join(', ')} ]`);
 
                     return anagramsDb.updateTweetsExistenceChecked(existingTweets).then(x => {
-                        logger.info(`updated ${x.rowCount} tweets as still existing.`);
+                        logger.debug(`updated ${x.rowCount} tweets as still existing.`);
                         return anagramsDb.deleteMatchesWithTweetIds(nonexistingTweets);
                     }).then(x => {
-                        logger.info(`deleted ${x.rowCount} matches.`);
+                        logger.debug(`deleted ${x.rowCount} matches.`);
                         return anagramsDb.deleteTweets(nonexistingTweets);
                     }).then(x => {
-                        logger.info(`deleted ${x.rowCount} tweets.`);
+                        logger.debug(`deleted ${x.rowCount} tweets.`);
                     });
                 });
             }).then(x => {
                 return twitter.getShowIdRateLimit();
             }).then(showIdRateLimit => {
-                logger.info(`${showIdRateLimit.remaining} show/:id remaining.`);
+                logger.debug(`${showIdRateLimit.remaining} show/:id remaining.`);
             });
         }
     }).catch(error => {

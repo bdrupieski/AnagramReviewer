@@ -1,6 +1,6 @@
 const anagramsDb = require('../db/anagrams');
 const twitter = require("../services/twitter");
-const logger = require('winston');
+const logger = require('./logger');
 const tumblr = require("../services/tumblr");
 const _ = require("lodash");
 

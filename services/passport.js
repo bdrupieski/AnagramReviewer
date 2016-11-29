@@ -1,7 +1,7 @@
 const userDb = require("../db/users");
 const passport = require('passport');
 const Strategy = require('passport-local').Strategy;
-const logger = require('winston');
+const logger = require('./logger');
 const bcrypt = require('./bcryptPromisified');
 
 exports.configure = function () {

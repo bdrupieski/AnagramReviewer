@@ -5,24 +5,7 @@ const favicon = require('serve-favicon');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
 const flash = require('connect-flash');
-const winston = require('winston');
 const schedule = require('node-schedule');
-
-winston.add(winston.transports.File, {
-    name: 'info',
-    filename: 'info.log',
-    dirname: 'logs',
-    maxsize: 2000000,
-    level: 'info'
-});
-
-winston.add(winston.transports.File, {
-    name: 'error',
-    filename: 'error.log',
-    dirname: 'logs',
-    maxsize: 2000000,
-    level: 'error'
-});
 
 const routes = require('./routes/index');
 const account = require('./routes/account');
