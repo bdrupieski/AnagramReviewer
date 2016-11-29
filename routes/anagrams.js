@@ -148,7 +148,7 @@ router.get('/interestingfactorsforday/:dateString', function (req, res) {
 });
 
 router.get('/unretweetmanually', function(req, res) {
-    anagramsDb.getMostRecentRetweetedMatches().then(matches => {
+    anagramsDb.getMostRecentRetweetedMatches(500).then(matches => {
         res.render('anagrams/unretweetmanually', {
             matches: matches
         });
@@ -189,7 +189,7 @@ router.post('/unretweetmanually/:id', function(req, res) {
 });
 
 router.get('/unrejectmanually', function(req, res) {
-    anagramsDb.getMostRecentRejectedMatches().then(matches => {
+    anagramsDb.getMostRecentRejectedMatches(500).then(matches => {
         res.render('anagrams/unrejectmanually', {
             matches: matches
         });

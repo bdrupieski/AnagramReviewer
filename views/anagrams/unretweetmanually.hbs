@@ -10,10 +10,10 @@
     <tbody>
     {{#each matches}}
         <tr>
-            <td>{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
-            <td>{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
-            <td>{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>
-            <td>
+            <td class="col-md-1">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
+            <td class="col-md-3">{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
+            <td class="col-md-3">{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>
+            <td class="col-md-4">
                 <div class="row">
                     <div class="col-sm-6">
                         <form action='unretweetmanually/{{id}}' method="post">
