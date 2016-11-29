@@ -434,9 +434,9 @@ exports.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterTh
 SELECT count(1)
 FROM anagram_matches
 WHERE interesting_factor > $1::float
-      AND anagram_matches.rejected = FALSE
-      AND anagram_matches.date_retweeted IS NULL
-      AND anagram_matches.tumblr_post_id IS NULL
+  AND rejected = FALSE
+  AND date_retweeted IS NULL
+  AND tumblr_post_id IS NULL
 `;
     return pools.anagramPool.query(notRejectedAndNotApprovedAnagramMatchCountQuery, [interestingFactorCutoff]).then(x => {
         return Number(x.rows[0].count);
@@ -449,7 +449,7 @@ exports.getCountOfRetweetedMatches = function () {
 SELECT count(1)
 FROM anagram_matches
 WHERE date_retweeted IS NOT NULL
-      AND date_unretweeted IS NULL;
+  AND date_unretweeted IS NULL;
 `;
     return pools.anagramPool.query(retweetedMatchCountQuery).then(x => {
         return Number(x.rows[0].count);
@@ -535,8 +535,8 @@ FROM anagram_matches
   INNER JOIN tweets t1 ON anagram_matches.tweet1_id = t1.id
   INNER JOIN tweets t2 ON anagram_matches.tweet2_id = t2.id
 WHERE anagram_matches.date_retweeted IS NOT NULL
-      AND anagram_matches.date_unretweeted IS NULL
-      AND anagram_matches.date_posted_tumblr IS NULL
+  AND anagram_matches.date_unretweeted IS NULL
+  AND anagram_matches.date_posted_tumblr IS NULL
 ORDER BY anagram_matches.date_retweeted
 LIMIT $1::int
 `;
@@ -614,8 +614,8 @@ SELECT
   tweet2.status_id                   AS t2_statusid
 FROM
   anagram_matches
-  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.ID
-  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.ID
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
 WHERE anagram_matches.date_retweeted IS NOT NULL
 ORDER BY anagram_matches.date_retweeted DESC
 LIMIT $1::int;
@@ -640,13 +640,13 @@ SELECT
   tweet2.status_id                   AS t2_statusid
 FROM
   anagram_matches
-  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.ID
-  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.ID
-WHERE date_rejected IS NOT NULL
-      AND anagram_matches.rejected = TRUE
-      AND anagram_matches.tweet1_retweet_id IS NULL
-      AND anagram_matches.tweet2_retweet_id IS NULL
-ORDER BY date_rejected DESC
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+WHERE anagram_matches.date_rejected IS NOT NULL
+  AND anagram_matches.rejected = TRUE
+  AND anagram_matches.tweet1_retweet_id IS NULL
+  AND anagram_matches.tweet2_retweet_id IS NULL
+ORDER BY anagram_matches.date_rejected DESC
 LIMIT $1::int;
 `;
 
@@ -662,8 +662,8 @@ WITH unreviewedMatchTweetIds AS (SELECT
                                    anagram_matches.tweet2_id
                                  FROM anagram_matches
                                  WHERE anagram_matches.attempted_approval = FALSE
-                                       AND anagram_matches.date_retweeted IS NULL
-                                       AND anagram_matches.date_posted_tumblr IS NULL),
+                                   AND anagram_matches.date_retweeted IS NULL
+                                   AND anagram_matches.date_posted_tumblr IS NULL),
     unreviewedTweetIds AS (SELECT tweet1_id AS id
                            FROM unreviewedMatchTweetIds
                            UNION
@@ -790,11 +790,11 @@ SELECT
 FROM match_queue
   INNER JOIN anagram_matches ON match_queue.match_id = anagram_matches.id
 WHERE match_queue.status = '${queuedMatchPendingStatus}'
-      AND match_queue.match_id NOT IN (SELECT match_id
-                                       FROM match_queue
-                                       WHERE status = '${queuedMatchPendingStatus}'
-                                       GROUP BY match_id
-                                       HAVING count(1) > 1)
+  AND match_queue.match_id NOT IN (SELECT match_id
+                                   FROM match_queue
+                                   WHERE status = '${queuedMatchPendingStatus}'
+                                   GROUP BY match_id
+                                   HAVING count(1) > 1)
 ORDER BY date_queued
 LIMIT 1
 `;
