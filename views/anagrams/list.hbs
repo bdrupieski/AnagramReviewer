@@ -246,13 +246,15 @@
 
             this.getMoreMatchesIfListIsRunningLow = function () {
                 if (this.anagramMatches().length < 5) {
-                    this.getMoreAnagrams().then(moreAnagramMatches => {
+                    return this.getMoreAnagrams().then(moreAnagramMatches => {
                         const newMatches = _.differenceBy(moreAnagramMatches, this.anagramMatches(), (x) => x.id);
                         this.anagramMatches.push(...newMatches);
                     }).catch(err => {
                         $.growl.error({message: err});
                         console.log(err);
-                    })
+                    });
+                } else {
+                    return Promise.resolve(false);
                 }
             };
 
@@ -290,6 +292,15 @@
                             $(this).closest('tr').remove();
                         });
             };
+
+            this.poll = function() {
+                setTimeout(() => {
+                    this.getMoreMatchesIfListIsRunningLow().then(x => {
+                        this.poll();
+                    });
+                }, 30000);
+            };
+            this.poll();
 
             return this;
         };
