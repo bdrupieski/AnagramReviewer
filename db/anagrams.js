@@ -263,6 +263,23 @@ LIMIT 1
     });
 };
 
+exports.getAnagramMatchWithTweetInfo = function(id) {
+    const anagramMatchWithTweetInfoByIdQuery = `
+SELECT anagram_matches.*,
+  t1.original_text as t1_original_text,
+  t2.original_text as t2_original_text,
+  t1.stripped_sorted_text
+FROM anagram_matches
+  INNER JOIN tweets t1 ON t1.id = anagram_matches.tweet1_id
+  INNER JOIN tweets t2 ON t2.id = anagram_matches.tweet2_id
+WHERE anagram_matches.id = $1::int
+LIMIT 1
+`;
+    return pools.anagramPool.query(anagramMatchWithTweetInfoByIdQuery, [id]).then(x => {
+        return x.rows[0];
+    });
+};
+
 exports.getTweetsForMatch = function (matchId) {
     return exports.getAnagramMatch(matchId).then(match => {
         return Promise.all([getTweet(match.tweet1_id), getTweet(match.tweet2_id)]);

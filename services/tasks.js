@@ -14,7 +14,7 @@ exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfO
             numberOfMinimumCallsToLeaveLeftover, numberOfOldestTweetsToCheckAtOnce);
 
         if (numberToCheck <= 0) {
-            logger.info(`${showIdRateLimit.remaining} remaining for show/:id. skipping check of ${numberOfOldestTweetsToCheckAtOnce} (${numberToCheck}) tweets.`);
+            logger.info(`${showIdRateLimit.remaining} remaining for show/:id. skipping check of ${numberOfOldestTweetsToCheckAtOnce} tweets. Would have attempted ${numberToCheck}.`);
         } else {
             logger.info(`${showIdRateLimit.remaining} show/:id remaining. checking ${numberToCheck} tweets.`);
             return anagramsDb.getOldestUnreviewedTweets(numberToCheck).then(storedTweets => {

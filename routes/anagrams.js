@@ -36,6 +36,16 @@ router.get('/list', function (req, res) {
     });
 });
 
+router.get('/fullmatch/:matchId', function (req, res) {
+    const matchId = req.params.matchId;
+    anagramsDb.getAnagramMatchWithTweetInfo(matchId).then(match => {
+        res.json({match: match});
+    }).catch(error => {
+        logger.error(error.toString());
+        res.json({error: error});
+    });
+});
+
 router.get('/ratelimits', function(req, res) {
     twitter.getAppAndStatusRateLimits().then(rateLimits => {
         res.render('anagrams/ratelimits', {

@@ -46,7 +46,7 @@ passportConfig.configure();
 
 // every minute on the minute
 schedule.scheduleJob("*/1 * * * *", function () {
-    tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(60);
+    tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(59);
 });
 
 // every 20 minutes on :00, :20, :40
