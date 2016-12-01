@@ -310,9 +310,9 @@
                     return this.getMoreAnagrams().then(moreAnagramMatches => {
                         const newMatches = _.differenceBy(moreAnagramMatches, this.anagramMatches(), x => x.id);
                         this.anagramMatches.push(...newMatches);
-                    }).catch(err => {
-                        $.growl.error({message: err});
-                        console.log(err);
+                    }).catch(error => {
+                        $.growl.error({message: error});
+                        console.log(error);
                     });
                 } else {
                     return Promise.resolve(false);
@@ -322,9 +322,9 @@
             this.seedData = function () {
                 this.getMoreAnagrams().then(seedAnagramMatches => {
                     this.anagramMatches.push(...seedAnagramMatches);
-                }).catch(err => {
-                    $.growl.error({message: err});
-                    console.log(err);
+                }).catch(error => {
+                    $.growl.error({message: error});
+                    console.log(error);
                 });
             };
 
@@ -386,6 +386,9 @@
                     const html = anagramMatchTemplate(fullMatch);
                     $("#anagram-match-template-content").html(html);
                     $("#anagram-match-modal").modal();
+                }).catch(error => {
+                    $.growl.error({message: error});
+                    console.log(error);
                 });
             };
 
