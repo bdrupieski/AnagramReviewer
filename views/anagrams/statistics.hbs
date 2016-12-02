@@ -721,13 +721,20 @@
                 type: 'line',
                 yAxis: 2,
             }];
+
+            const highestYAxis1Value = Math.max(
+                    _.maxBy(dayStats.postedToTumblr, row => row.y).y,
+                    _.maxBy(dayStats.retweeted, row => row.y).y
+                    );
+
             nv.addGraph(() => {
                 const chart = nv.models.multiChart()
                         .options({
                             duration: 300
                         })
                         .margin({right: 80, bottom: 70})
-                        .color(d3.scale.category10().range());
+                        .color(d3.scale.category10().range())
+                        .yDomain1([0, highestYAxis1Value + 1]);
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
