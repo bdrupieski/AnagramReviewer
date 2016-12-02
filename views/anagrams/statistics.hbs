@@ -770,7 +770,8 @@
                                     useInteractiveGuideline: true,
                                     duration: 300,
                                 })
-                                .margin({bottom: 50, right: 70});
+                                .margin({bottom: 50, right: 70})
+                                .yDomain([0, 1]);
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
