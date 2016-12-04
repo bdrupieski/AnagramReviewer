@@ -17,7 +17,7 @@ exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfO
             logger.info(`${showIdRateLimit.remaining} remaining for show/:id. skipping check of ${numberOfOldestTweetsToCheckAtOnce} tweets. Would have attempted ${numberToCheck}.`);
         } else {
             logger.info(`${showIdRateLimit.remaining} show/:id remaining. checking ${numberToCheck} tweets.`);
-            return anagramsDb.getOldestUnreviewedTweets(numberToCheck).then(storedTweets => {
+            return anagramsDb.getOldestTweetsNotInMatch(numberToCheck).then(storedTweets => {
                 return Promise.all(storedTweets.map(x => determineIfTweetExists(x.status_id))).then(existences => {
                     const tweetsAndExistence = _
                         .zipWith(storedTweets, existences, (tweet, exists) => {
@@ -27,13 +27,10 @@ exports.deleteFromDatabaseTheOldestTweetsThatNoLongerExist = function (numberOfO
                     const existingTweets = tweetsAndExistence.filter(x => x.exists).map(x => x.tweet.id);
                     const nonexistingTweets = tweetsAndExistence.filter(x => !x.exists).map(x => x.tweet.id);
 
-                    logger.info(`${existingTweets.length} tweets still exist. deleting ${nonexistingTweets.length} non-existent tweets: [ ${nonexistingTweets.join(', ')} ]`);
+                    logger.info(`${existingTweets.length} tweets still exist. deleting ${nonexistingTweets.length} non-existent tweets: ( ${nonexistingTweets.map(x => `'${x}'`).join(", ")} )`);
 
                     return anagramsDb.updateTweetsExistenceChecked(existingTweets).then(x => {
                         logger.debug(`updated ${x.rowCount} tweets as still existing.`);
-                        return anagramsDb.deleteMatchesWithTweetIds(nonexistingTweets);
-                    }).then(x => {
-                        logger.debug(`deleted ${x.rowCount} matches.`);
                         return anagramsDb.deleteTweets(nonexistingTweets);
                     }).then(x => {
                         logger.debug(`deleted ${x.rowCount} tweets.`);
