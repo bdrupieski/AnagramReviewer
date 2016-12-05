@@ -139,39 +139,40 @@
             </button>
             <h4 class="modal-title">Match \{{id}}</h4>
         </div>
-        <div class="modal-body container">
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Tweet 1</label>
+        <div class="modal-body container-fluid">
+            <div class="form-group row">
+                <label class="col-sm-4 control-label">Tweet 1:</label>
                 <span>\{{t1_original_text}}</span>
             </div>
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Tweet 2</label>
+            <div class="form-group row">
+                <label class="col-sm-4 control-label">Tweet 2:</label>
                 <span>\{{t2_original_text}}</span>
             </div>
             <br>
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Stripped sorted text</label>
+            <div class="form-group row">
+                <label class="col-sm-4 control-label">Stripped sorted text:</label>
                 <span>\{{stripped_sorted_text}}</span>
             </div>
             <br>
-            <div class="form-group">
-                <label class="col-sm-4 control-label">1 - (Longest common substring to total length)</label>
+            <br>
+            <div class="form-group row">
+                <label class="col-sm-7 control-label">1 - (Longest common substring / total length):</label>
                 <span>\{{formatNumber inverse_lcs_length_to_total_length_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
                     (1 - (\{{longest_common_substring_length_stripped_text}}/\{{stripped_sorted_text_length}}))</span>
             </div>
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Different word count to total word count</label>
+            <div class="form-group row">
+                <label class="col-sm-7 control-label">Different word count / total word count:</label>
                 <span>\{{formatNumber different_word_count_to_total_word_count_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
                     (\{{word_count_difference}}/\{{total_words}})</span>
             </div>
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Edit distance to total length</label>
+            <div class="form-group row">
+                <label class="col-sm-7 control-label">Edit distance / total length:</label>
                 <span>\{{formatNumber edit_distance_to_length_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
                     (\{{edit_distance_stripped_text}}/\{{stripped_sorted_text_length}})</span>
             </div>
             <br>
-            <div class="form-group">
-                <label class="col-sm-4 control-label">Interesting factor</label>
+            <div class="form-group row">
+                <label class="col-sm-7 control-label">Interesting factor:</label>
                 <span>\{{formatNumber interesting_factor minimumFractionDigits="2" maximumFractionDigits="2"}}</span>
             </div>
         </div>
