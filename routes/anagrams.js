@@ -157,6 +157,15 @@ router.get('/interestingfactorsforday/:dateString', function (req, res) {
     });
 });
 
+router.get('/exacttweetcount', function(req, res) {
+    anagramsDb.getExactCountOfTweets().then(count => {
+        res.json({count: count});
+    }).catch(error => {
+        logger.error(error.toString());
+        res.json({error: error});
+    });
+});
+
 router.get('/unretweetmanually', function(req, res) {
     anagramsDb.getMostRecentRetweetedMatches(500).then(matches => {
         res.render('anagrams/unretweetmanually', {

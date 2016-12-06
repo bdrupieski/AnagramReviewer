@@ -78,8 +78,8 @@
     <h3>Fun</h3>
     <div class="row">
         There are <strong>{{formatNumber stats.countOfMatches}}</strong> total matches over approximately
-        <strong>{{formatNumber stats.approximateCountOfTweets}}</strong> tweets. That's about
-        <strong>{{formatNumber stats.tweetsPerMatch maximumFractionDigits="0"}}</strong> tweets per match!
+        <a id="exact-tweet-link" href="#"><strong>{{formatNumber stats.approximateCountOfTweets}}</strong></a> tweets.
+        That's about <strong>{{formatNumber stats.tweetsPerMatch maximumFractionDigits="0"}}</strong> tweets per match!
     </div>
     <div class="row">
         There are <strong>{{formatNumber stats.countOfMatchesAboveCutoff}}</strong> matches with an interesting factor
@@ -338,6 +338,25 @@
                 </div>
                 <div class="modal-body">
                     <svg id="interesting-factors-for-day-chart" height="400"></svg>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="exact-tweet-count-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">Exact number of tweets</h4>
+                </div>
+                <div class="modal-body">
+                    <span id="exact-number-of-tweets"></span> tweets.
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -1179,7 +1198,7 @@
             window.dispatchEvent(new Event('resize'));
         });
 
-        $("[data-show-interesting-factor-distrubution]").click((e) => {
+        $("[data-show-interesting-factor-distrubution]").click(e => {
             $.blockUI({message: '<h4>Loading...</h4>'});
             const dateString = $(e.target).data("match-created");
             const encodedDateString = encodeURIComponent(dateString);
@@ -1203,7 +1222,7 @@
             return false;
         });
 
-        $("[data-fraction-digits]").on("input", (e) => {
+        $("[data-fraction-digits]").on("input", e => {
             const $input = $(e.target);
             const asNum = parseFloat($input.val());
             const numFractionDigits = $input.data("fraction-digits");
@@ -1211,6 +1230,22 @@
                 $input.val(asNum.toFixed(numFractionDigits))
             }
         }).trigger("input");
+
+        $("#exact-tweet-link").click(() => {
+            $.blockUI({message: '<h4>Loading...</h4>'});
+            $.getJSON(`/anagrams/exacttweetcount`).done(data => {
+                if (data.error) {
+                    $.growl.error({message: data.error});
+                } else if (data.count) {
+                    $("#exact-number-of-tweets").text(Number(data.count).toLocaleString());
+                    $("#exact-tweet-count-modal").modal();
+                }
+            }).fail((jqxhr, textStatus, error) => {
+                $.growl.error({message: error});
+            }).always(() => {
+                $.unblockUI();
+            });
+        });
     });
 
 </script>

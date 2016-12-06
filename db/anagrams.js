@@ -429,6 +429,15 @@ SELECT reltuples AS approximate_row_count FROM pg_class WHERE relname = 'tweets'
     });
 };
 
+exports.getExactCountOfTweets = function () {
+    const exactTweetCountQuery = `
+SELECT count(1) AS tweet_count FROM tweets;
+`;
+    return pools.anagramPool.query(exactTweetCountQuery).then(x => {
+        return Number(x.rows[0].tweet_count);
+    });
+};
+
 exports.getCountOfMatchesWithInterestingFactorGreaterThan = function (interestingFactorCutoff = defaultInterestingFactor) {
 
     interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
