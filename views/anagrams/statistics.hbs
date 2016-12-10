@@ -99,6 +99,11 @@
         There should be <strong>{{stats.countOfRetweetedTweets}}</strong> retweeted tweets.
     </div>
     <div class="row">
+        <strong>{{formatNumber stats.sumRetweetedMatchesOverPastDays}}</strong> matches have been retweeted over the past
+            <strong>{{formatNumber stats.numberOfDaysToGetMatchesPerDay}}</strong> days for an average of
+            <strong>{{formatNumber stats.averageRetweetedMatchesPerDay maximumFractionDigits="1"}}</strong> matches/day retweeted.
+    </div>
+    <div class="row">
         <strong>{{formatNumber stats.countOfRejectedMatches}}</strong> matches have been rejected.
     </div>
     <div class="row">

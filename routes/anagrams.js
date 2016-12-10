@@ -7,6 +7,7 @@ const logger = require('../services/logger');
 const tumblr = require("../services/tumblr");
 const countdown = require("countdown");
 const anagramManagement = require('../services/anagramManagement');
+const _ = require("lodash");
 
 router.get('/*', passportConfig.isLoggedIn);
 
@@ -122,6 +123,8 @@ router.get('/statistics', function(req, res) {
 
         formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.countOfMatches;
         formattedStats.countOfRetweetedTweets = formattedStats.countOfRetweetedMatches * 2;
+        formattedStats.sumRetweetedMatchesOverPastDays = _.sum(formattedStats.retweetsAndTumblrByDay.map(x => Number(x.retweeted)));
+        formattedStats.averageRetweetedMatchesPerDay = formattedStats.sumRetweetedMatchesOverPastDays / formattedStats.numberOfDaysToGetMatchesPerDay;
 
         formattedStats.retweetsAndTumblrByDayJson = JSON.stringify(formattedStats.retweetsAndTumblrByDay);
         formattedStats.statsByDateMatchCreatedJson = JSON.stringify(formattedStats.statsByDateMatchCreated);
