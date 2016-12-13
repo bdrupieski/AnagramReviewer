@@ -63,6 +63,102 @@
     {{{body}}}
 
 </div> <!-- /container -->
+
+<div class="modal fade" id="anagram-match-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" id="anagram-match-template-content" role="document"/></div>
+</div>
+
+<script id="anagram-match-template" type="text/x-handlebars-template">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span>&times;</span>
+            </button>
+            <h4 class="modal-title">Match \{{id}}</h4>
+        </div>
+        <div class="modal-body container-fluid">
+            <div class="form-group row">
+                <label class="col-sm-4 control-label">Tweet 1:</label>
+                <span>\{{t1_original_text}}</span>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-4 control-label">Tweet 2:</label>
+                <span>\{{t2_original_text}}</span>
+            </div>
+            <br>
+            <div class="form-group row">
+                <label class="col-sm-4 control-label">Stripped sorted text:</label>
+                <span>\{{stripped_sorted_text}}</span>
+            </div>
+            <br>
+            <br>
+            <div class="form-group row">
+                <label class="col-sm-7 control-label">1 - (Longest common substring / total length):</label>
+                <span>\{{formatNumber inverse_lcs_length_to_total_length_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
+                    (1 - (\{{longest_common_substring_length_stripped_text}}/\{{stripped_sorted_text_length}}))</span>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-7 control-label">Different word count / total word count:</label>
+                <span>\{{formatNumber different_word_count_to_total_word_count_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
+                    (\{{word_count_difference}}/\{{total_words}})</span>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-7 control-label">Edit distance / total length:</label>
+                <span>\{{formatNumber edit_distance_to_length_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
+                    (\{{edit_distance_stripped_text}}/\{{stripped_sorted_text_length}})</span>
+            </div>
+            <br>
+            <div class="form-group row">
+                <label class="col-sm-7 control-label">Interesting factor:</label>
+                <span>\{{formatNumber interesting_factor minimumFractionDigits="2" maximumFractionDigits="2"}}</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+</script>
+<script>
+
+    $(() => {
+
+        HandlebarsIntl.registerWith(Handlebars);
+        const anagramMatchTemplate = Handlebars.compile($("#anagram-match-template").html());
+
+        function getFullMatch(id) {
+            return new Promise((resolve, reject) => {
+                $.getJSON(`fullmatch/${id}`).done(data => {
+                    if (data.match) {
+                        return resolve(data.match);
+                    } else if (data.error) {
+                        return reject(data.error);
+                    } else {
+                        return reject("unknown error when retrieving tweets");
+                    }
+                }).fail((jqxhr, textStatus, error) => {
+                    return reject(error);
+                });
+            });
+        }
+
+        function showScorePopUp(matchId) {
+            getFullMatch(matchId).then(fullMatch => {
+                fullMatch.stripped_sorted_text_length = fullMatch.stripped_sorted_text.length;
+                const html = anagramMatchTemplate(fullMatch);
+                $("#anagram-match-template-content").html(html);
+                $("#anagram-match-modal").modal();
+            }).catch(error => {
+                $.growl.error({message: error});
+                console.log(error);
+            });
+        }
+
+        window.anagrams = {};
+        window.anagrams.showScorePopUp = showScorePopUp;
+    });
+
+</script>
+
 </body>
 </html>
 

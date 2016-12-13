@@ -10,7 +10,7 @@
     <tbody>
     {{#each matches}}
         <tr>
-            <td class="col-md-1">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
+            <td class="col-md-1"><a href="#" data-match data-match-id="{{id}}">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
             <td class="col-md-5">{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
             <td class="col-md-5">{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>
             <td class="col-md-1">
@@ -22,3 +22,12 @@
     {{/each}}
     </tbody>
 </table>
+
+<script>
+    $(() => {
+        $("[data-match]").click(e => {
+            const id = $(e.target).data("match-id");
+            anagrams.showScorePopUp(id);
+        });
+    });
+</script>
