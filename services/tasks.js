@@ -1,5 +1,6 @@
 const twitter = require('./twitter');
 const anagramsDb = require('../db/anagrams');
+const matchQueueDb = require("../db/matchQueue");
 const anagramManagement = require('../services/anagramManagement');
 const logger = require('./logger');
 const _ = require('lodash');
@@ -74,7 +75,7 @@ function determineIfTweetExists(statusId) {
 }
 
 exports.retweetOnePendingMatch = function() {
-    return anagramsDb.getNextPendingQueuedMatchToDequeue().then(queuedMatches => {
+    return matchQueueDb.getNextPendingQueuedMatchToDequeue().then(queuedMatches => {
         if (queuedMatches.length == 0) {
             console.log("no pending matches to dequeue");
         } else {
@@ -97,7 +98,7 @@ exports.retweetOnePendingMatch = function() {
                         throw x;
                     }
                 } else {
-                    return anagramsDb.updateQueuedMatchAsPosted(queuedMatchId);
+                    return matchQueueDb.updateQueuedMatchAsPosted(queuedMatchId);
                 }
             }).then(x => {
                 logger.info(`successfully dequeued and posted ${queuedMatchId} for match ${matchId}`);
@@ -106,7 +107,7 @@ exports.retweetOnePendingMatch = function() {
                     console.log(`rate limited when dequeuing ${queuedMatchId} for match ${matchId}`);
                 } else {
                     logger.error(error);
-                    return anagramsDb.updateQueuedMatchAsError(queuedMatchId, error).then(x => {
+                    return matchQueueDb.updateQueuedMatchAsError(queuedMatchId, error).then(x => {
                         logger.error(`error when dequeuing ${queuedMatchId} for ${matchId}. changed status to error.`);
                     }).catch(error => {
                         logger.error(`error when updating ${queuedMatchId} for ${matchId} into error status.`);

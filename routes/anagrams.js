@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const anagramsDb = require('../db/anagrams');
+const matchQueueDb = require('../db/matchQueue');
 const passportConfig = require("../services/passport");
 const twitter = require("../services/twitter");
 const logger = require('../services/logger');
@@ -17,7 +18,7 @@ router.get('/', function (req, res) {
 
 router.get('/list', function (req, res) {
 
-    return anagramsDb.getCountOfErrorQueuedMatches().then(count => {
+    return matchQueueDb.getCountOfErrorQueuedMatches().then(count => {
         const responseData = {
             title: 'Anagrams',
             defaultInterestingFactor: anagramsDb.defaultInterestingFactor
@@ -89,7 +90,7 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getApproximateCountOfTweets(),
         anagramsDb.getCountOfMatchesWithInterestingFactorGreaterThan(interestingFactorCutoff),
         anagramsDb.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterThan(interestingFactorCutoff),
-        anagramsDb.getCountOfPendingQueuedMatches(),
+        matchQueueDb.getCountOfPendingQueuedMatches(),
         anagramsDb.getCountOfRetweetedMatches(),
         anagramsDb.getCountOfRejectedMatches(),
         anagramsDb.getDateLastMatchCreated(),
@@ -238,13 +239,13 @@ router.post('/unrejectmanually/:id', function(req, res) {
 
 router.get('/queuestatus', function(req, res) {
     return Promise.all([
-        anagramsDb.getCountOfPendingQueuedMatches(),
-        anagramsDb.getCountOfPostedQueueMatches(),
-        anagramsDb.getCountOfErrorQueuedMatches(),
-        anagramsDb.getCountOfObservedErrorQueuedMatches(),
-        anagramsDb.getCountOfRemovedQueueMatches(),
-        anagramsDb.getPendingQueuedMatches(),
-        anagramsDb.getErrorQueuedMatches()
+        matchQueueDb.getCountOfPendingQueuedMatches(),
+        matchQueueDb.getCountOfPostedQueueMatches(),
+        matchQueueDb.getCountOfErrorQueuedMatches(),
+        matchQueueDb.getCountOfObservedErrorQueuedMatches(),
+        matchQueueDb.getCountOfRemovedQueueMatches(),
+        matchQueueDb.getPendingQueuedMatches(),
+        matchQueueDb.getErrorQueuedMatches()
     ]).then(queueStatus => {
 
         const formattedQueueStatus = {
@@ -318,11 +319,11 @@ router.post('/enqueue/:id', function (req, res) {
         if (response.error) {
             res.json(response);
         } else {
-            return anagramsDb.getPendingQueuedCountForMatch(matchId).then(count => {
+            return matchQueueDb.getPendingQueuedCountForMatch(matchId).then(count => {
                 if (count > 0) {
                     throw `${count} existing pending queued matches for ${matchId}`;
                 } else {
-                    return anagramsDb.enqueueMatch(matchId, orderAsShown);
+                    return matchQueueDb.enqueueMatch(matchId, orderAsShown);
                 }
             }).then(x => {
                 res.json({successMessage: `Enqueued ${matchId}.`, remove: true});
@@ -338,7 +339,7 @@ router.post('/queue/remove/:id', function(req, res) {
 
     const queuedMatchId = req.params.id;
 
-    return anagramsDb.updateQueuedMatchAsRemoved(queuedMatchId).then(x => {
+    return matchQueueDb.updateQueuedMatchAsRemoved(queuedMatchId).then(x => {
         req.flash('info', `Changed queued match ${queuedMatchId} to removed.`);
         res.redirect('/anagrams/list');
     }).catch(error => {
@@ -351,7 +352,7 @@ router.post('/queue/remove/:id', function(req, res) {
 router.post('/queue/markerrorok/:id', function(req, res) {
     const queuedMatchId = req.params.id;
 
-    return anagramsDb.updateQueuedMatchAsErrorObserved(queuedMatchId).then(x => {
+    return matchQueueDb.updateQueuedMatchAsErrorObserved(queuedMatchId).then(x => {
         req.flash('info', `Marked queued match with error ${queuedMatchId} as observed.`);
         res.redirect('/anagrams/list');
     }).catch(error => {
