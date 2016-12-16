@@ -147,7 +147,7 @@
                 return this;
             };
 
-            const recoveryErrorIdSeed = 1;
+            let recoveryErrorIdSeed = 1;
             let RecoveryError = function (error, recoveryError, anagramMatch) {
                 this.id = recoveryErrorIdSeed++;
                 this.error = error;
