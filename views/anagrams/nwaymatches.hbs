@@ -1,0 +1,31 @@
+<div class="container-fluid">
+
+    <h2>Parameters:</h2>
+
+    <div class="row">
+        <form action="nwaymatches" method="post">
+            <div class="col-sm-1">
+                <button type="submit" class="btn btn-primary btn-sm">Reload</button>
+            </div>
+            <div class="col-sm-4">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">Minimum number of matches per group</span>
+                    <input type="number" class="form-control" min="2" max="10000" name="minmatchespergroup" value="{{minMatchesPerGroup}}">
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <h2>Matches:</h2>
+    {{#each matches}}
+        <h4>{{strippedText}}</h4>
+        <ul>
+            {{#each originalText}}
+                <li>
+                    {{this}}
+                </li>
+            {{/each}}
+        </ul>
+    {{/each}}
+
+</div>

@@ -750,6 +750,37 @@ WINDOW w AS (
     });
 };
 
+exports.getNWayMatches = function(minimumNumberOfMatchesInGroup) {
+    minimumNumberOfMatchesInGroup = clamp(minimumNumberOfMatchesInGroup, 2, 10000);
+    const getNWayMatchesQuery = `
+WITH tweetGroups AS (WITH matchGroups AS (SELECT
+                                            t1.stripped_sorted_text,
+                                            count(1) AS countOfMatches
+                                          FROM anagram_matches
+                                            INNER JOIN tweets t1 ON anagram_matches.tweet1_id = t1.id
+                                          GROUP BY t1.stripped_sorted_text
+                                          ORDER BY countOfMatches DESC)
+SELECT
+  original_text,
+  tweets.stripped_sorted_text,
+  count(tweets.stripped_sorted_text)
+  OVER w AS number_of_matches_in_group
+FROM tweets
+  INNER JOIN matchGroups ON tweets.stripped_sorted_text = matchGroups.stripped_sorted_text
+WINDOW w AS (
+  PARTITION BY tweets.stripped_sorted_text )
+)
+SELECT
+  original_text,
+  stripped_sorted_text
+FROM tweetGroups
+WHERE number_of_matches_in_group > $1::int;
+`;
+    return pools.anagramPool.query(getNWayMatchesQuery, [minimumNumberOfMatchesInGroup]).then(x => {
+        return x.rows;
+    });
+};
+
 function clamp(x, a, b) {
     return Math.max(a, Math.min(x, b));
 }

@@ -170,6 +170,41 @@ router.get('/exacttweetcount', function(req, res) {
     });
 });
 
+router.get('/nwaymatches', function(req, res) {
+
+    const minMatchesPerGroup = Number(req.query.minmatchespergroup) || 5;
+
+    anagramsDb.getNWayMatches(minMatchesPerGroup).then(matches => {
+
+        matchesInGroups = _.chain(matches)
+            .groupBy(x => x.stripped_sorted_text)
+            .toPairs()
+            .map(x => {
+                const obj =  {
+                    strippedText: x[0],
+                    originalText: _.map(x[1], y => y.original_text)
+                };
+                obj.count = obj.originalText.length;
+                return obj;
+            })
+            .value();
+
+        res.render('anagrams/nwaymatches', {
+            minMatchesPerGroup: minMatchesPerGroup,
+            matches: matchesInGroups
+        });
+    }).catch(err => {
+        logger.error(err.toString());
+        req.flash('error', err.toString());
+        res.redirect('/anagrams/list');
+    });
+});
+
+router.post('/nwaymatches', function(req, res) {
+    const minMatchesPerGroup = req.body.minmatchespergroup;
+    res.redirect(`/anagrams/nwaymatches?minmatchespergroup=${minMatchesPerGroup}`);
+});
+
 router.get('/unretweetmanually', function(req, res) {
     anagramsDb.getMostRecentRetweetedMatches(500).then(matches => {
         res.render('anagrams/unretweetmanually', {
