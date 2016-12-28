@@ -702,7 +702,7 @@
             const stats = JSON.parse('{{{stats.statsByInterestingFactorBucketJson}}}')
                     .map(x => new StatsByScoreBucket(x)).reverse();
 
-            var lastBucket = () => stats[stats.length - 1];
+            const lastBucket = () => stats[stats.length - 1];
             while (lastBucket().score != 1.0) {
                 stats.push(new Proxy({score: lastBucket().score + 0.01}, defaultPropValueIsZeroHandler));
             }
@@ -923,7 +923,6 @@
                                 .options({
                                     useInteractiveGuideline : true,
                                     duration: 300,
-                                    forceY: [0, 1],
                                 })
                                 .color(d3.scale.category10().range())
                                 .margin({bottom: 50, right: 70});
