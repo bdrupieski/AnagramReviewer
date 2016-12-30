@@ -135,6 +135,7 @@ router.get('/statistics', function(req, res) {
         formattedStats.statsByDateMatchCreatedJson = JSON.stringify(formattedStats.statsByDateMatchCreated);
         formattedStats.statsByTimeOfDayMatchCreatedJson = JSON.stringify(formattedStats.statsByTimeOfDayMatchCreated);
         formattedStats.statsByInterestingFactorBucketJson = JSON.stringify(formattedStats.statsByInterestingFactorBucket);
+        formattedStats.scoreSurplusForApprovedMatchesByInterestingFactorBucketJson = JSON.stringify(formattedStats.scoreSurplusForApprovedMatchesByInterestingFactorBucket);
 
         return formattedStats;
     }).then(stats => {

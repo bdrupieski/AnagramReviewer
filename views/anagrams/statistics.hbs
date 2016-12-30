@@ -383,30 +383,43 @@
         </div>
     </div>
 
-    <h3>Average score surplus for approved matches by interesting factor bucket:</h3>
+    <h3>
+        <button class="btn btn-sm btn-info js-collapse-button" data-toggle="collapse"
+                data-target="#score-surplus-by-interesting-factor-table"></button>
+        Average score surplus for approved matches by interesting factor bucket:
+    </h3>
+
     <div class="row">
-        <div class="col-md-8">
-            <table class="table table-hover table-condensed js-sticky-header">
-                <thead>
-                <tr>
-                    <th>Interesting factor bucket</th>
-                    <th>Longest common substring ratio</th>
-                    <th>Word count difference ratio</th>
-                    <th>Edit distance ratio</th>
-                </tr>
-                </thead>
-                <tbody>
-                {{#each stats.scoreSurplusForApprovedMatchesByInterestingFactorBucket}}
-                    <tr>
-                        <td>{{safeFormatNumber interesting_factor maximumFractionDigits="2"}}</td>
-                        <td class="js-color-based-on-number-value">{{safeFormatNumber lcs_approved_surplus maximumFractionDigits="4"}}</td>
-                        <td class="js-color-based-on-number-value">{{safeFormatNumber wc_approved_surplus maximumFractionDigits="4"}}</td>
-                        <td class="js-color-based-on-number-value">{{safeFormatNumber ed_approved_surplus maximumFractionDigits="4"}}</td>
-                    </tr>
-                {{/each}}
-                </tbody>
-            </table>
-        </div>
+        <div id="score-surplus-by-interesting-factor-table" class="collapse in col-md-8"></div>
+    </div>
+
+    <script id="score-surplus-by-interesting-factor-table-template" type="text/x-handlebars-template">
+        <table class="table table-hover table-condensed js-sticky-header">
+            <thead>
+            <tr>
+                <th>Interesting factor bucket</th>
+                <th>Longest common substring ratio</th>
+                <th>Word count difference ratio</th>
+                <th>Edit distance ratio</th>
+            </tr>
+            </thead>
+            <tbody>
+            \{{#each rows}}
+            <tr>
+                <td>\{{safeFormatNumber score maximumFractionDigits="2"}}</td>
+                <td class="js-color-based-on-number-value">\{{safeFormatNumber lcsApprovedSurplus maximumFractionDigits="4"}}</td>
+                <td class="js-color-based-on-number-value">\{{safeFormatNumber wcApprovedSurplus maximumFractionDigits="4"}}</td>
+                <td class="js-color-based-on-number-value">\{{safeFormatNumber edApprovedSurplus maximumFractionDigits="4"}}</td>
+            </tr>
+            \{{/each}}
+            </tbody>
+        </table>
+    </script>
+
+    <h3>Average score surplus for approved matches by interesting factor bucket:</h3>
+
+    <div class="row">
+        <svg id="score-surplus-by-bucket-chart" height="400"></svg>
     </div>
 
 </div>
@@ -759,6 +772,36 @@
             return {
                 series: new StatsByScoreBucketSeriesCollection(stats),
                 stats: [...stats].reverse()
+            };
+        }
+
+        class ScoreSurplusForInterestingFactor {
+            constructor(row) {
+                this.score = Number(row.interesting_factor);
+                this.lcsApprovedSurplus = row.lcs_approved_surplus;
+                this.wcApprovedSurplus = row.wc_approved_surplus;
+                this.edApprovedSurplus = row.ed_approved_surplus;
+            }
+        }
+
+        class ScoreSurplusForInterestingFactorSeriesCollection {
+            constructor(scoreSurplusForInterestingFactorCollection) {
+
+                const stats = scoreSurplusForInterestingFactorCollection;
+
+                this.lcsApprovedSurplus = scoreSeriesByProperty(stats, x => x.lcsApprovedSurplus);
+                this.wcApprovedSurplus = scoreSeriesByProperty(stats, x => x.wcApprovedSurplus);
+                this.edApprovedSurplus = scoreSeriesByProperty(stats, x => x.edApprovedSurplus);
+            }
+        }
+
+        function buildScoreSurplusByBucket() {
+            const stats = JSON.parse('{{{stats.scoreSurplusForApprovedMatchesByInterestingFactorBucketJson}}}')
+                    .map(x => new ScoreSurplusForInterestingFactor(x));
+
+            return {
+                series: new ScoreSurplusForInterestingFactorSeriesCollection(stats),
+                stats: [...stats.reverse()]
             };
         }
 
@@ -1189,6 +1232,42 @@
             });
         }
 
+        function buildChartScoreSurplusByBucket(scoreSurplusByBucket, cssSelector) {
+            const data = [{
+                values: scoreSurplusByBucket.lcsApprovedSurplus,
+                key: 'longest common substring',
+            }, {
+                values: scoreSurplusByBucket.wcApprovedSurplus,
+                key: "word count",
+            }, {
+                values: scoreSurplusByBucket.edApprovedSurplus,
+                key: 'edit distance',
+            }];
+
+            nv.addGraph(() => {
+                const chart = nv.models.lineChart()
+                        .options({
+                            useInteractiveGuideline : true,
+                            duration: 300,
+                        })
+                        .color(d3.scale.category10().range());
+
+                chart.xAxis.axisLabel("Interesting Factor")
+                        .tickFormat(d3.format('.2f'));
+                chart.yAxis.axisLabel('Score Surplus')
+                        .tickFormat((d) => {
+                            if (d == null) {
+                                return 'N/A';
+                            }
+                            return d3.format('.2%')(d);
+                        });
+
+                d3.select(cssSelector).datum(data).call(chart);
+                nv.utils.windowResize(chart.update);
+                return chart;
+            });
+        }
+
         const $jsCollapseButtons = $(".js-collapse-button");
         $jsCollapseButtons.text("➖");
         $jsCollapseButtons.click(function() {
@@ -1222,6 +1301,9 @@
         buildChartTimeOfDayMatchCreatedCounts(byTimeOfDayMatchCreated.series, '#totals-by-time-of-day-match-created-chart');
         buildChartTimeOfDayMatchCreatedAverageInterestingFactor(byTimeOfDayMatchCreated.series, '#average-interesting-factor-by-time-of-day-match-created-chart');
 
+        const scoreSurplusByBucket = buildScoreSurplusByBucket();
+        buildChartScoreSurplusByBucket(scoreSurplusByBucket.series, '#score-surplus-by-bucket-chart');
+
         renderTable($("#retweets-and-tumblr-posts-by-day-table-template"),
                     $("#retweets-and-tumblr-posts-by-day-table"), byDayMatchPosted.stats);
 
@@ -1233,6 +1315,9 @@
 
         renderTable($("#stats-by-time-of-day-match-created-table-template"),
                     $("#stats-by-time-of-day-match-created-table"), byTimeOfDayMatchCreated.stats);
+
+        renderTable($("#score-surplus-by-interesting-factor-table-template"),
+                    $("#score-surplus-by-interesting-factor-table"), scoreSurplusByBucket.stats);
 
         $(".js-sticky-header").stickyTableHeaders();
 
