@@ -366,7 +366,7 @@
         </div>
     </div>
 
-    <h3>Average score surplus for approved matches:</h3>
+    <h3>Average score surplus for approved matches with an interesting factor above {{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}:</h3>
     <div class="row">
         <div class="col-md-8">
             <table class="table table-condensed table-bordered">
@@ -380,10 +380,10 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <td class="active">{{safeFormatNumber stats.scoreSurplusForApprovedMatches.ifApprovedSurplus maximumFractionDigits="4"}}</td>
-                    <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.lcsApprovedSurplus maximumFractionDigits="4"}}</td>
-                    <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.wcApprovedSurplus maximumFractionDigits="4"}}</td>
-                    <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.edApprovedSurplus maximumFractionDigits="4"}}</td>
+                    <td class="active">{{safeFormatNumber stats.scoreSurplusForApprovedMatches.ifApprovedSurplus minimumFractionDigits="3" maximumFractionDigits="3"}}</td>
+                    <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.lcsApprovedSurplus minimumFractionDigits="3" maximumFractionDigits="3"}}</td>
+                    <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.wcApprovedSurplus minimumFractionDigits="3" maximumFractionDigits="3"}}</td>
+                    <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.edApprovedSurplus minimumFractionDigits="3" maximumFractionDigits="3"}}</td>
                 </tr>
                 </tbody>
             </table>

@@ -98,7 +98,7 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getStatsByDateMatchCreated(numberOfLastDaysToGetMatchesCreatedPerDay),
         anagramsDb.getStatsByInterestingFactorBucket(),
         anagramsDb.getStatsByTimeOfDayMatchCreated(minuteInterval),
-        anagramsDb.averageScoreSurplusForApprovedMatches(),
+        anagramsDb.averageScoreSurplusForApprovedMatches(interestingFactorCutoff),
         anagramsDb.averageScoreSurplusForApprovedMatchesByInterestingFactorScoreBucket(),
     ]).then(stats => {
         const formattedStats = {

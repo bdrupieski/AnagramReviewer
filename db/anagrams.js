@@ -781,7 +781,10 @@ WHERE number_of_matches_in_group > $1::int;
     });
 };
 
-exports.averageScoreSurplusForApprovedMatches = function() {
+exports.averageScoreSurplusForApprovedMatches = function(interestingFactorCutoff = defaultInterestingFactor) {
+
+    interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
+
     const approvedSurplusQuery = `
 WITH scores_attempted_approval AS (SELECT
                                      avg(anagram_matches.interesting_factor)                             AS interesting_factor,
@@ -790,14 +793,17 @@ WITH scores_attempted_approval AS (SELECT
                                      avg(anagram_matches.edit_distance_to_length_ratio)                  AS ed_ratio
                                    FROM anagram_matches
                                    WHERE
-                                     anagram_matches.attempted_approval IS TRUE AND anagram_matches.rejected IS FALSE),
+                                     anagram_matches.attempted_approval IS TRUE
+                                     AND anagram_matches.rejected IS FALSE
+                                     AND anagram_matches.interesting_factor > $1::float),
     scores_rejected AS (SELECT
                           avg(anagram_matches.interesting_factor)                             AS interesting_factor,
                           avg(anagram_matches.inverse_lcs_length_to_total_length_ratio)       AS lcs_ratio,
                           avg(anagram_matches.different_word_count_to_total_word_count_ratio) AS wc_ratio,
                           avg(anagram_matches.edit_distance_to_length_ratio)                  AS ed_ratio
                         FROM anagram_matches
-                        WHERE anagram_matches.rejected IS TRUE)
+                        WHERE anagram_matches.rejected IS TRUE
+                              AND anagram_matches.interesting_factor > $1::float)
 SELECT
   scores_attempted_approval.interesting_factor - scores_rejected.interesting_factor AS if_approved_surplus,
   scores_attempted_approval.lcs_ratio - scores_rejected.lcs_ratio                   AS lcs_approved_surplus,
@@ -806,7 +812,7 @@ SELECT
 FROM scores_attempted_approval, scores_rejected;
 `;
 
-    return pools.anagramPool.query(approvedSurplusQuery).then(x => {
+    return pools.anagramPool.query(approvedSurplusQuery, [interestingFactorCutoff]).then(x => {
         const row = x.rows[0];
         return {
             ifApprovedSurplus: row.if_approved_surplus,
