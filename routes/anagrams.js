@@ -94,6 +94,7 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getCountOfRetweetedMatches(),
         anagramsDb.getCountOfRejectedMatches(),
         anagramsDb.getDateLastMatchCreated(),
+        anagramsDb.averageScoreSurplusForApprovedMatches(),
         anagramsDb.getRetweetsAndTumblrPostsByDay(numberOfLastDaysToGetMatchesCreatedPerDay),
         anagramsDb.getStatsByDateMatchCreated(numberOfLastDaysToGetMatchesCreatedPerDay),
         anagramsDb.getStatsByInterestingFactorBucket(),
@@ -108,10 +109,11 @@ router.get('/statistics', function(req, res) {
             countOfRetweetedMatches: stats[5],
             countOfRejectedMatches: stats[6],
             dateLastMatchCreated: stats[7],
-            retweetsAndTumblrByDay: stats[8],
-            statsByDateMatchCreated: stats[9],
-            statsByInterestingFactorBucket: stats[10],
-            statsByTimeOfDayMatchCreated: stats[11],
+            scoreSurplusForApprovedMatches: stats[8],
+            retweetsAndTumblrByDay: stats[9],
+            statsByDateMatchCreated: stats[10],
+            statsByInterestingFactorBucket: stats[11],
+            statsByTimeOfDayMatchCreated: stats[12],
         };
 
         formattedStats.interestingFactorCutoff = interestingFactorCutoff;

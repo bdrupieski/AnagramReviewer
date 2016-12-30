@@ -359,6 +359,30 @@
         </div>
     </div>
 
+    <h3>Average score surplus for approved matches:</h3>
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table table-condensed table-bordered">
+                <thead>
+                <tr>
+                    <th>Interesting factor</th>
+                    <th>Longest common substring ratio</th>
+                    <th>Word count difference ratio</th>
+                    <th>Edit distance ratio</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="active">{{formatNumber stats.scoreSurplusForApprovedMatches.ifApprovedSurplus maximumFractionDigits="4"}}</td>
+                    <td>{{formatNumber stats.scoreSurplusForApprovedMatches.lcsApprovedSurplus maximumFractionDigits="4"}}</td>
+                    <td>{{formatNumber stats.scoreSurplusForApprovedMatches.wcApprovedSurplus maximumFractionDigits="4"}}</td>
+                    <td>{{formatNumber stats.scoreSurplusForApprovedMatches.edApprovedSurplus maximumFractionDigits="4"}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <script>
