@@ -118,32 +118,32 @@
     </h3>
     <div class="row">
         <div id="retweets-and-tumblr-posts-by-day-table" class="col-md-7 collapse in"></div>
-
-        <script id="retweets-and-tumblr-posts-by-day-table-template" type="text/x-handlebars-template">
-            <table class="table table-hover table-condensed js-sticky-header">
-                <thead>
-                <tr>
-                    <th>Day</th>
-                    <th>Retweets</th>
-                    <th>Retweets Average Interesting Factor</th>
-                    <th>Tumblr posts</th>
-                    <th>Tumblr Average Interesting Factor</th>
-                </tr>
-                </thead>
-                <tbody>
-                \{{#each rows}}
-                <tr>
-                    <td>\{{formatTime day day="numeric" month="numeric" year="numeric"}}</td>
-                    <td>\{{retweeted}}</td>
-                    <td>\{{safeFormatNumber retweetedAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
-                    <td>\{{postedToTumblr}}</td>
-                    <td>\{{safeFormatNumber postedToTumblrAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
-                </tr>
-                \{{/each}}
-                </tbody>
-            </table>
-        </script>
     </div>
+
+    <script id="retweets-and-tumblr-posts-by-day-table-template" type="text/x-handlebars-template">
+        <table class="table table-hover table-condensed js-sticky-header">
+            <thead>
+            <tr>
+                <th>Day</th>
+                <th>Retweets</th>
+                <th>Retweets Average Interesting Factor</th>
+                <th>Tumblr posts</th>
+                <th>Tumblr Average Interesting Factor</th>
+            </tr>
+            </thead>
+            <tbody>
+            \{{#each rows}}
+            <tr>
+                <td>\{{formatTime day day="numeric" month="numeric" year="numeric"}}</td>
+                <td>\{{retweeted}}</td>
+                <td>\{{safeFormatNumber retweetedAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
+                <td>\{{postedToTumblr}}</td>
+                <td>\{{safeFormatNumber postedToTumblrAverageInterestingFactor minimumFractionDigits="2" maximumFractionDigits="2"}}</td>
+            </tr>
+            \{{/each}}
+            </tbody>
+        </table>
+    </script>
 
     <h3>Retweets and Tumblr posts made by day for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:</h3>
     <div class="row">
@@ -154,7 +154,9 @@
         <button class="btn btn-sm btn-info js-collapse-button" data-toggle="collapse" data-target="#stats-by-date-created-table"></button>
         Stats by date match created for the past <strong>{{stats.numberOfDaysToGetMatchesPerDay}}</strong> days:
     </h3>
-    <div id="stats-by-date-created-table" class="row collapse in col-md-12"></div>
+    <div class="row">
+        <div id="stats-by-date-created-table" class="collapse in col-md-12"></div>
+    </div>
 
     <script id="stats-by-date-created-table-template" type="text/x-handlebars-template">
         <table class="table table-hover table-condensed js-sticky-header">
@@ -228,10 +230,13 @@
         <button class="btn btn-sm btn-info js-collapse-button" data-toggle="collapse" data-target="#stats-by-score-table"></button>
         Stats by interesting factor bucket:
     </h3>
-    <div id="stats-by-score-table" class="row collapse in js-sticky-header"></div>
+
+    <div class="row">
+        <div id="stats-by-score-table" class="collapse in col-md-12"></div>
+    </div>
 
     <script id="stats-by-score-table-template" type="text/x-handlebars-template">
-        <table class="table table-hover table-condensed">
+        <table class="table table-hover table-condensed js-sticky-header">
             <thead>
             <tr>
                 <th>Interesting Factor</th>
@@ -282,7 +287,9 @@
         Stats by time of day match created:
     </h3>
 
-    <div id="stats-by-time-of-day-match-created-table" class="row collapse in col-md-12"></div>
+    <div class="row">
+        <div id="stats-by-time-of-day-match-created-table" class="collapse in col-md-12"></div>
+    </div>
 
     <script id="stats-by-time-of-day-match-created-table-template" type="text/x-handlebars-template">
         <table class="table table-hover table-condensed js-sticky-header">
