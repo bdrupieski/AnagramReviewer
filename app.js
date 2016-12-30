@@ -17,6 +17,8 @@ const app = express();
 const handlebarsIntl = require('handlebars-intl');
 const hbs = require('hbs');
 handlebarsIntl.registerWith(hbs);
+require("./services/handlebarsHelpers").registerCustomHelpers();
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 

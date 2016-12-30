@@ -373,11 +373,37 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <td class="active">{{formatNumber stats.scoreSurplusForApprovedMatches.ifApprovedSurplus maximumFractionDigits="4"}}</td>
-                    <td>{{formatNumber stats.scoreSurplusForApprovedMatches.lcsApprovedSurplus maximumFractionDigits="4"}}</td>
-                    <td>{{formatNumber stats.scoreSurplusForApprovedMatches.wcApprovedSurplus maximumFractionDigits="4"}}</td>
-                    <td>{{formatNumber stats.scoreSurplusForApprovedMatches.edApprovedSurplus maximumFractionDigits="4"}}</td>
+                    <td class="active">{{safeFormatNumber stats.scoreSurplusForApprovedMatches.ifApprovedSurplus maximumFractionDigits="4"}}</td>
+                    <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.lcsApprovedSurplus maximumFractionDigits="4"}}</td>
+                    <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.wcApprovedSurplus maximumFractionDigits="4"}}</td>
+                    <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.edApprovedSurplus maximumFractionDigits="4"}}</td>
                 </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h3>Average score surplus for approved matches by interesting factor bucket:</h3>
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table table-hover table-condensed js-sticky-header">
+                <thead>
+                <tr>
+                    <th>Interesting factor bucket</th>
+                    <th>Longest common substring ratio</th>
+                    <th>Word count difference ratio</th>
+                    <th>Edit distance ratio</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each stats.scoreSurplusForApprovedMatchesByInterestingFactorBucket}}
+                    <tr>
+                        <td>{{safeFormatNumber interesting_factor maximumFractionDigits="2"}}</td>
+                        <td class="js-color-based-on-number-value">{{safeFormatNumber lcs_approved_surplus maximumFractionDigits="4"}}</td>
+                        <td class="js-color-based-on-number-value">{{safeFormatNumber wc_approved_surplus maximumFractionDigits="4"}}</td>
+                        <td class="js-color-based-on-number-value">{{safeFormatNumber ed_approved_surplus maximumFractionDigits="4"}}</td>
+                    </tr>
+                {{/each}}
                 </tbody>
             </table>
         </div>
@@ -1260,6 +1286,16 @@
             }).fail((jqxhr, textStatus, error) => {
                 $.growl.error({message: error});
             });
+        });
+
+        $(".js-color-based-on-number-value").each((index, element) => {
+            $el = $(element);
+            const numberValue = Number($el.text());
+            if (numberValue > 0) {
+                $el.addClass("success");
+            } else if (numberValue < 0) {
+                $el.addClass("danger");
+            }
         });
     });
 

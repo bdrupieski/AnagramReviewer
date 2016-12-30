@@ -817,6 +817,45 @@ FROM scores_attempted_approval, scores_rejected;
     });
 };
 
+exports.averageScoreSurplusForApprovedMatchesByInterestingFactorScoreBucket = function() {
+    const approvedScoreSurplusByInterestingFactorBucketQuery = `
+WITH score_buckets AS (SELECT DISTINCT ON (interesting_factor)
+                         trunc(anagram_matches.interesting_factor :: NUMERIC, 2) AS interesting_factor,
+                         avg(CASE WHEN anagram_matches.attempted_approval IS TRUE AND anagram_matches.rejected IS FALSE
+                           THEN anagram_matches.inverse_lcs_length_to_total_length_ratio END)
+                         OVER w   AS lcs_ratio_attempted,
+                         avg(CASE WHEN anagram_matches.rejected IS TRUE
+                           THEN anagram_matches.inverse_lcs_length_to_total_length_ratio END)
+                         OVER w   AS lcs_ratio_rejected,
+                         avg(CASE WHEN anagram_matches.attempted_approval IS TRUE AND anagram_matches.rejected IS FALSE
+                           THEN anagram_matches.different_word_count_to_total_word_count_ratio END)
+                         OVER w   AS wc_ratio_attempted,
+                         avg(CASE WHEN anagram_matches.rejected IS TRUE
+                           THEN anagram_matches.different_word_count_to_total_word_count_ratio END)
+                         OVER w   AS wc_ratio_rejected,
+                         avg(CASE WHEN anagram_matches.attempted_approval IS TRUE AND anagram_matches.rejected IS FALSE
+                           THEN anagram_matches.edit_distance_to_length_ratio END)
+                         OVER w   AS ed_ratio_attempted,
+                         avg(CASE WHEN anagram_matches.rejected IS TRUE
+                           THEN anagram_matches.edit_distance_to_length_ratio END)
+                         OVER w   AS ed_ratio_rejected
+                       FROM anagram_matches
+                       WINDOW w AS (
+                         PARTITION BY trunc(anagram_matches.interesting_factor :: NUMERIC, 2)
+                       ))
+SELECT
+  interesting_factor,
+  lcs_ratio_attempted - lcs_ratio_rejected AS lcs_approved_surplus,
+  wc_ratio_attempted - wc_ratio_rejected   AS wc_approved_surplus,
+  ed_ratio_attempted - ed_ratio_rejected   AS ed_approved_surplus
+FROM score_buckets;
+`;
+
+    return pools.anagramPool.query(approvedScoreSurplusByInterestingFactorBucketQuery).then(x => {
+        return x.rows;
+    });
+};
+
 function clamp(x, a, b) {
     return Math.max(a, Math.min(x, b));
 }
