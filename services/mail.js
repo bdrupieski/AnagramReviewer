@@ -1,7 +1,8 @@
-const mailgunConfig = require("../configuration/mailgun.json");
-const siteConfig = require("../configuration/site.json");
+const config = require("../config.json");
+const mailgunConfig = config.mailgun;
+const siteConfig = config.site;
+const passwordResetConfig = config.passwordReset;
 const mailgun = require('mailgun-js')({apiKey: mailgunConfig.apiKey, domain: mailgunConfig.domain});
-const passwordResetConfig = require('../configuration/passwordReset.json');
 
 exports.sendPasswordResetEmail = function(emailAddress, resetToken) {
 

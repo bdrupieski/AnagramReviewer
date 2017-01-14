@@ -30,10 +30,8 @@ app.use(require('cookie-parser')());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const passport = require('passport');
-const Strategy = require('passport-local').Strategy;
-const userDb = require("./db/users");
 
-const sessionConfig = require('./configuration/session.json');
+const sessionConfig = require('./config.json').session;
 const cookieSession = require('cookie-session');
 app.use(cookieSession({
     secret: sessionConfig.secret,

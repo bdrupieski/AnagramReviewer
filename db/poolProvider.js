@@ -1,21 +1,20 @@
 const pg = require('pg');
-const dbConfig = require("../configuration/db.json");
+const dbConfig = require("../config.json").database;
 
-function poolFromConfig(dbConfig) {
-    const config = {
-        user: dbConfig.user,
-        database: dbConfig.databaseName,
-        password: dbConfig.password,
-        host: dbConfig.host,
-        port: dbConfig.port,
-        max: dbConfig.maxConnections,
-        idleTimeoutMillis: dbConfig.timeoutMilliseconds,
-    };
-    return new pg.Pool(config);
+function poolFromConfig(config) {
+    return new pg.Pool({
+        user: config.user,
+        database: config.databaseName,
+        password: config.password,
+        host: config.host,
+        port: config.port,
+        max: config.maxConnections,
+        idleTimeoutMillis: config.timeoutMilliseconds,
+    });
 }
 
-const userPool = poolFromConfig(dbConfig.reviewerDatabase);
-const anagramPool = poolFromConfig(dbConfig.anagramDatabase);
+const userPool = poolFromConfig(dbConfig.reviewer);
+const anagramPool = poolFromConfig(dbConfig.anagram);
 
 exports.userPool = userPool;
 exports.anagramPool = anagramPool;

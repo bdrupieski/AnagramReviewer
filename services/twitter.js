@@ -1,5 +1,5 @@
 const Twitter = require('twitter');
-const twitterConfig = require('./../configuration/twitter.json');
+const twitterConfig = require('./../config.json').twitter;
 const logger = require('./logger');
 const _ = require('lodash');
 

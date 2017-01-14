@@ -1,5 +1,5 @@
 const tumblr = require('tumblr.js');
-const tumblrConfig = require('../configuration/tumblr.json');
+const tumblrConfig = require('../config.json').tumblr;
 
 const client = tumblr.createClient({
     credentials: {

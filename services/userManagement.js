@@ -3,7 +3,7 @@ const bcryptPromisified = require('../services/bcryptPromisified');
 const validator = require('validator');
 const crypto = require('crypto');
 const mail = require('./mail');
-const passwordResetConfig = require('../configuration/passwordReset.json');
+const passwordResetConfig = require('../config.json').passwordReset;
 
 exports.createUser = function(username, email, password) {
 
