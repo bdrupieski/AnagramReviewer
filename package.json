@@ -18,6 +18,7 @@
     "handlebars-intl": "^1.1.2",
     "hbs": "^4.0.1",
     "lodash": "^4.16.4",
+    "mailgun-js": "^0.8.0",
     "morgan": "~1.7.0",
     "node-schedule": "^1.2.0",
     "passport": "^0.3.2",

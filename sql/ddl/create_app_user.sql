@@ -24,3 +24,12 @@ ALTER TABLE public.app_user
 GRANT INSERT, SELECT, UPDATE ON TABLE public.app_user TO anagram_reviewer_app;
 
 GRANT ALL ON TABLE public.app_user TO postgres;
+
+-- Index: app_user_email_uindex
+
+-- DROP INDEX public.app_user_email_uindex;
+
+CREATE UNIQUE INDEX app_user_email_uindex
+    ON public.app_user USING btree
+    (email COLLATE pg_catalog."default")
+TABLESPACE pg_default;
