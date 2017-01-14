@@ -26,6 +26,7 @@
     "serve-favicon": "~2.3.0",
     "tumblr.js": "^1.1.1",
     "twitter": "^1.4.0",
+    "validator": "^6.2.1",
     "winston": "^2.2.0"
   },
   "devDependencies": {

@@ -15,3 +15,7 @@ exports.findByUsername = function (username) {
 exports.updatePasswordHash = function(id, newPasswordHash) {
     return pools.userPool.query("update app_user set passwordhash = $1::text where id = $2::int", [newPasswordHash, id]);
 };
+
+exports.createUser = function(username, email, passwordHash) {
+    return pools.userPool.query("insert into app_user (username, email, passwordhash) values ($1::text, $2::text, $3::text)", [username, email, passwordHash]);
+};
