@@ -693,6 +693,22 @@ LIMIT $1::int;
     });
 };
 
+exports.getDateOfOldestTweetWhoseExistenceHasNotBeenChecked = function() {
+    const oldestExistenceNotCheckedQuery = `
+SELECT date_existence_last_checked
+FROM tweets
+WHERE tweets.id NOT IN (SELECT tweet1_id
+                        FROM anagram_matches) AND
+      tweets.id NOT IN (SELECT tweet2_id
+                        FROM anagram_matches)
+ORDER BY tweets.date_existence_last_checked
+LIMIT 1;
+`;
+    return pools.anagramPool.query(oldestExistenceNotCheckedQuery).then(x => {
+        return x.rows[0].date_existence_last_checked;
+    });
+};
+
 exports.updateTweetsExistenceChecked = function(tweetIds) {
 
     if (tweetIds.length == 0) {

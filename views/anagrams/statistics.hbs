@@ -107,6 +107,18 @@
         <strong>{{formatNumber stats.countOfRejectedMatches}}</strong> matches have been rejected.
     </div>
     <div class="row">
+        The date of the oldest tweet whose existence has not been checked
+        <a href="#"
+           id="oldest-existence-not-checked-popover"
+           data-html="true"
+           data-placement="top"
+           data-toggle="popover"
+           data-trigger="focus"
+           title="Oldest unchecked tweet"
+           data-content="<span id='oldest-existence-not-checked'><img src='/images/loader.gif'></img></span>">
+            is... 🤔</a>
+    </div>
+    <div class="row">
         The most recent match was created <strong>{{formatRelative stats.dateLastMatchCreated}}</strong> at
         <strong>{{formatTime stats.dateLastMatchCreated hour="numeric" minute="numeric"}}</strong> on
         <strong>{{formatTime stats.dateLastMatchCreated day="numeric" month="long" year="numeric" }}</strong>.
@@ -1370,10 +1382,28 @@
         $exactTweetPopover.popover();
         $exactTweetPopover.on('show.bs.popover', function () {
             $.getJSON(`/anagrams/exacttweetcount`).done(data => {
-                if (data.error) {
-                    $.growl.error({message: data.error});
-                } else if (data.count) {
+                if (data.count) {
                     $("#exact-tweet-number").text(Number(data.count).toLocaleString());
+                } else if (data.error) {
+                    $.growl.error({message: data.error});
+                } else {
+                    $.growl.error({message: "something went wrong"});
+                }
+            }).fail((jqxhr, textStatus, error) => {
+                $.growl.error({message: error});
+            });
+        });
+
+        const $oldestExistenceNotChecked = $("#oldest-existence-not-checked-popover");
+        $oldestExistenceNotChecked.popover();
+        $oldestExistenceNotChecked.on('show.bs.popover', function () {
+            $.getJSON(`/anagrams/dateofoldesttweetwhoseexistencehasnotbeenchecked`).done(data => {
+                if (data.date) {
+                    $("#oldest-existence-not-checked").text(new Date(data.date).toLocaleString());
+                } else if (data.error) {
+                    $.growl.error({message: data.error});
+                } else {
+                    $.growl.error({message: "something went wrong"});
                 }
             }).fail((jqxhr, textStatus, error) => {
                 $.growl.error({message: error});
