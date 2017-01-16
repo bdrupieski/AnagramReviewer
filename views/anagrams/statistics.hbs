@@ -73,7 +73,7 @@
             matches
         {{/if}}
 
-        <a href="/anagrams/queuestatus">queued</a> to be posted.
+        <a href="/anagrams/queuestatus"><strong>queued</strong></a> to be posted.
     </div>
     <h3>Fun</h3>
     <div class="row">
@@ -86,7 +86,7 @@
            data-trigger="focus"
            title="Exact number of tweets"
            data-content="<span id='exact-tweet-number'><img src='/images/loader.gif'></img></span>">
-                {{formatNumber stats.approximateCountOfTweets}}</strong></a> tweets.
+                <strong>{{formatNumber stats.approximateCountOfTweets}}</strong></a> tweets.
         That's about <strong>{{formatNumber stats.tweetsPerMatch maximumFractionDigits="0"}}</strong> tweets per match!
     </div>
     <div class="row">
@@ -116,7 +116,7 @@
            data-trigger="focus"
            title="Oldest unchecked tweet"
            data-content="<span id='oldest-existence-not-checked'><img src='/images/loader.gif'></img></span>">
-            is... 🤔</a>
+            <strong>is... 🤔</strong></a>
     </div>
     <div class="row">
         The most recent match was created <strong>{{formatRelative stats.dateLastMatchCreated}}</strong> at
