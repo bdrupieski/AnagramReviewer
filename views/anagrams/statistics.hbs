@@ -9,20 +9,20 @@
             </div>
             <div class="col-sm-3">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-addon">Interesting Factor Cutoff</span>
-                    <input type="number" class="form-control" data-fraction-digits="2" name="interestingfactor" step="0.01" min="0" max="1" value="{{stats.interestingFactorCutoff}}">
+                    <label for="interestingFactorCutoff" class="input-group-addon">Interesting Factor Cutoff</label>
+                    <input id="interestingFactorCutoff" type="number" class="form-control" data-fraction-digits="2" name="interestingfactor" step="0.01" min="0" max="1" value="{{stats.interestingFactorCutoff}}">
                 </div>
             </div>
             <div class="col-sm-3">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-addon">Days</span>
-                    <input type="number" class="form-control" min="1" max="10000" name="days" value="{{stats.numberOfDaysToGetMatchesPerDay}}">
+                    <label for="numberOfDaysToGetMatchesPerDay" class="input-group-addon">Days</label>
+                    <input id="numberOfDaysToGetMatchesPerDay" type="number" class="form-control" min="1" max="10000" name="days" value="{{stats.numberOfDaysToGetMatchesPerDay}}">
                 </div>
             </div>
             <div class="col-sm-3">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-addon">Minute Interval</span>
-                    <input type="number" class="form-control" min="1" max="60" name="minutes" value="{{stats.minuteInterval}}">
+                    <label for="minuteInterval" class="input-group-addon" >Minute Interval</label>
+                    <input id="minuteInterval" type="number" class="form-control" min="1" max="60" name="minutes" value="{{stats.minuteInterval}}">
                 </div>
             </div>
         </form>
