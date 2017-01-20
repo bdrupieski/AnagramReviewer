@@ -103,6 +103,11 @@
                     (\{{word_count_difference}}/\{{total_words}})</span>
             </div>
             <div class="form-group row">
+                <label class="col-sm-7 control-label">English words / total word count:</label>
+                <span>\{{formatNumber english_words_to_total_word_count_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
+                    (\{{english_word_count}}/\{{total_words}})</span>
+            </div>
+            <div class="form-group row">
                 <label class="col-sm-7 control-label">Edit distance / total length:</label>
                 <span>\{{formatNumber edit_distance_to_length_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
                     (\{{edit_distance_stripped_text}}/\{{stripped_sorted_text_length}})</span>
@@ -111,6 +116,10 @@
             <div class="form-group row">
                 <label class="col-sm-7 control-label">Interesting factor:</label>
                 <span>\{{formatNumber interesting_factor minimumFractionDigits="2" maximumFractionDigits="2"}}</span>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-7 control-label">Interesting factor without English words:</label>
+                <span>\{{formatNumber interesting_factor_without_english_words minimumFractionDigits="2" maximumFractionDigits="2"}}</span>
             </div>
         </div>
         <div class="modal-footer">
@@ -144,6 +153,11 @@
         function showScorePopUp(matchId) {
             getFullMatch(matchId).then(fullMatch => {
                 fullMatch.stripped_sorted_text_length = fullMatch.stripped_sorted_text.length;
+                fullMatch.english_word_count = Math.trunc(fullMatch.english_words_to_total_word_count_ratio * fullMatch.total_words);
+                fullMatch.interesting_factor_without_english_words =
+                        (fullMatch.edit_distance_to_length_ratio +
+                        fullMatch.different_word_count_to_total_word_count_ratio +
+                        fullMatch.inverse_lcs_length_to_total_length_ratio) / 3;
                 const html = anagramMatchTemplate(fullMatch);
                 $("#anagram-match-template-content").html(html);
                 $("#anagram-match-modal").modal();
