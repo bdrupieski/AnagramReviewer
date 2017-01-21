@@ -264,6 +264,12 @@ exports.getAnagramMatchWithTweetInfo = function(id) {
 SELECT anagram_matches.*,
   t1.original_text as t1_original_text,
   t2.original_text as t2_original_text,
+  t1.created_at as t1_created_at,
+  t2.created_at as t2_created_at,
+  t1.user_name as t1_user_name,
+  t2.user_name as t2_user_name,
+  t1.status_id as t1_status_id,
+  t2.status_id as t2_status_id,
   t1.stripped_sorted_text
 FROM anagram_matches
   INNER JOIN tweets t1 ON t1.id = anagram_matches.tweet1_id
