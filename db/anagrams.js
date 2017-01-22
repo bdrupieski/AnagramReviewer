@@ -261,19 +261,66 @@ LIMIT 1
 
 exports.getAnagramMatchWithTweetInfo = function(id) {
     const anagramMatchWithTweetInfoByIdQuery = `
-SELECT anagram_matches.*,
-  t1.original_text as t1_original_text,
-  t2.original_text as t2_original_text,
-  t1.created_at as t1_created_at,
-  t2.created_at as t2_created_at,
-  t1.user_name as t1_user_name,
-  t2.user_name as t2_user_name,
-  t1.status_id as t1_status_id,
-  t2.status_id as t2_status_id,
-  t1.stripped_sorted_text
+WITH otherMatchCountForTweet1 AS (SELECT
+                                    count(1)        AS count,
+                                    sum(CASE WHEN anagram_matches.attempted_approval IS TRUE
+                                      THEN 1
+                                        ELSE 0 END) AS attempted_approval_count,
+                                    sum(CASE WHEN anagram_matches.date_retweeted IS NOT NULL AND
+                                                  anagram_matches.date_unretweeted IS NULL
+                                      THEN 1
+                                        ELSE 0 END) AS retweeted_count,
+                                    sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL
+                                      THEN 1
+                                        ELSE 0 END) AS tumblr_count,
+                                    $1::int          AS id
+                                  FROM anagram_matches
+                                  WHERE id != $1::int AND
+                                        tweet1_id IN (SELECT tweet1_id
+                                                      FROM anagram_matches
+                                                      WHERE id = $1::int)),
+    otherMatchCountForTweet2 AS (SELECT
+                                   count(1)        AS count,
+                                   sum(CASE WHEN anagram_matches.attempted_approval IS TRUE
+                                     THEN 1
+                                       ELSE 0 END) AS attempted_approval_count,
+                                   sum(CASE WHEN anagram_matches.date_retweeted IS NOT NULL AND
+                                                 anagram_matches.date_unretweeted IS NULL
+                                     THEN 1
+                                       ELSE 0 END) AS retweeted_count,
+                                   sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL
+                                     THEN 1
+                                       ELSE 0 END) AS tumblr_count,
+                                   $1::int          AS id
+                                 FROM anagram_matches
+                                 WHERE id != $1::int AND
+                                       tweet2_id IN (SELECT tweet2_id
+                                                     FROM anagram_matches
+                                                     WHERE id = $1::int))
+SELECT
+  t1.original_text                                               AS t1_original_text,
+  t2.original_text                                               AS t2_original_text,
+  otherMatchCountForTweet1.count                                 AS t1_other_match_count,
+  COALESCE(otherMatchCountForTweet1.attempted_approval_count, 0) AS t1_other_match_attempted_approval_count,
+  COALESCE(otherMatchCountForTweet1.retweeted_count, 0)          AS t1_other_match_retweeted_count,
+  COALESCE(otherMatchCountForTweet1.tumblr_count, 0)             AS t1_other_match_tumblr_count_count,
+  otherMatchCountForTweet2.count                                 AS t2_other_match_count,
+  COALESCE(otherMatchCountForTweet2.attempted_approval_count, 0) AS t2_other_match_attempted_approval_count,
+  COALESCE(otherMatchCountForTweet2.retweeted_count, 0)          AS t2_other_match_retweeted_count,
+  COALESCE(otherMatchCountForTweet2.tumblr_count, 0)             AS t2_other_match_tumblr_count_count,
+  t1.created_at                                                  AS t1_created_at,
+  t2.created_at                                                  AS t2_created_at,
+  t1.user_name                                                   AS t1_user_name,
+  t2.user_name                                                   AS t2_user_name,
+  t1.status_id                                                   AS t1_status_id,
+  t2.status_id                                                   AS t2_status_id,
+  t1.stripped_sorted_text,
+  anagram_matches.*
 FROM anagram_matches
   INNER JOIN tweets t1 ON t1.id = anagram_matches.tweet1_id
   INNER JOIN tweets t2 ON t2.id = anagram_matches.tweet2_id
+  INNER JOIN otherMatchCountForTweet1 ON otherMatchCountForTweet1.id = anagram_matches.id
+  INNER JOIN otherMatchCountForTweet2 ON otherMatchCountForTweet2.id = anagram_matches.id
 WHERE anagram_matches.id = $1::int
 LIMIT 1
 `;
