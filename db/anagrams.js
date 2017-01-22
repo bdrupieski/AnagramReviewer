@@ -235,17 +235,19 @@ WHERE anagram_matches.id = $1::int;
     });
 };
 
-function getTweet(id) {
+function getTweet(tweetId) {
     const tweetByIdQuery = `
 SELECT *
 FROM tweets
 WHERE id = $1::uuid
 LIMIT 1
 `;
-    return pools.anagramPool.query(tweetByIdQuery, [id]).then(x => {
+    return pools.anagramPool.query(tweetByIdQuery, [tweetId]).then(x => {
         return x.rows[0];
     });
 }
+
+exports.getTweet = getTweet;
 
 exports.getAnagramMatch = function(id) {
     const anagramMatchByIdQuery = `
@@ -298,6 +300,8 @@ WITH otherMatchCountForTweet1 AS (SELECT
                                                      FROM anagram_matches
                                                      WHERE id = $1::int))
 SELECT
+  t1.id                                                          AS t1_id,
+  t2.id                                                          AS t2_id,
   t1.original_text                                               AS t1_original_text,
   t2.original_text                                               AS t2_original_text,
   otherMatchCountForTweet1.count                                 AS t1_other_match_count,
@@ -938,6 +942,22 @@ FROM score_buckets;
 `;
 
     return pools.anagramPool.query(approvedScoreSurplusByInterestingFactorBucketQuery).then(x => {
+        return x.rows;
+    });
+};
+
+exports.otherMatchesWithTweet = function(tweetId) {
+    const otherMatchesWithTweetQuery = `
+SELECT
+  t1.*,
+  t2.*,
+  anagram_matches.*
+FROM anagram_matches
+  INNER JOIN tweets t1 ON t1.id = anagram_matches.tweet1_id
+  INNER JOIN tweets t2 ON t2.id = anagram_matches.tweet2_id
+WHERE tweet1_id = $1 OR tweet2_id = $1
+`;
+    return pools.anagramPool.query(otherMatchesWithTweetQuery, [tweetId]).then(x => {
         return x.rows;
     });
 };

@@ -1,0 +1,48 @@
+<div class="container-fluid">
+
+    <h3>Tweet {{tweet.id}}</h3>
+
+    <div class="row panel panel-default">
+        <div class="panel-body">
+            <div class="col-md-6">
+                <div class="row">
+                    <label class="col-md-5 control-label">Original Text:</label>
+                    <span>{{tweet.original_text}}</span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Stripped Sorted Text:</label>
+                    <span>{{tweet.stripped_sorted_text}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row panel panel-default">
+        <div class="panel-body">
+            <div class="col-md-6">
+                <div class="row">
+                    <label class="col-md-5 control-label">Created At:</label>
+                    <span>{{formatDate tweet.created_at day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Existence last checked:</label>
+                    <span>{{formatDate tweet.date_existence_last_checked day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="row">
+                    <label class="col-md-3 control-label">Status ID:</label>
+                    <span>{{tweet.status_id}}</span>
+                </div>
+                <div class="row">
+                    <label class="col-md-3 control-label">Username:</label>
+                    <span>{{tweet.user_name}}</span>
+                </div>
+                <div class="row">
+                    <label class="col-md-3 control-label">User ID:</label>
+                    <span>{{tweet.user_id}}</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

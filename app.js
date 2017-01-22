@@ -10,6 +10,7 @@ const schedule = require('node-schedule');
 const routes = require('./routes/index');
 const account = require('./routes/account');
 const anagrams = require('./routes/anagrams');
+const tweets = require('./routes/tweets');
 const tasks = require('./services/tasks');
 
 const app = express();
@@ -69,6 +70,7 @@ app.use(function(req, res, next){
 app.use('/', routes);
 app.use('/account', account);
 app.use('/anagrams', anagrams);
+app.use('/tweets', tweets);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
