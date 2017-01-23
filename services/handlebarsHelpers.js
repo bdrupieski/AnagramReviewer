@@ -17,7 +17,16 @@ function nullDateFormat(date, format, options) {
     }
 }
 
+function boolAsYesNo(bool, format, options) {
+    if (!bool) {
+        return new hbs.SafeString("No");
+    } else {
+        return new hbs.SafeString("Yes");
+    }
+}
+
 exports.registerCustomHelpers = function() {
     hbs.registerHelper('safeFormatNumber', safeFormatNumber);
     hbs.registerHelper('nullDateFormat', nullDateFormat);
+    hbs.registerHelper('boolAsYesNo', boolAsYesNo);
 };

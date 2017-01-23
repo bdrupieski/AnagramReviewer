@@ -31,11 +31,12 @@
             <div class="col-md-6">
                 <div class="row">
                     <label class="col-md-3 control-label">Status ID:</label>
-                    <span>{{tweet.status_id}}</span>
+                    <span><a href="http://www.twitter.com/{{tweet.user_name}}/status/{{tweet.status_id}}">{{tweet.status_id}}</a></span>
+
                 </div>
                 <div class="row">
                     <label class="col-md-3 control-label">Username:</label>
-                    <span>{{tweet.user_name}}</span>
+                    <span><a href="http://www.twitter.com/{{tweet.user_name}}">{{tweet.user_name}}</a></span>
                 </div>
                 <div class="row">
                     <label class="col-md-3 control-label">User ID:</label>
@@ -53,10 +54,11 @@
             <th>Tweet 2</th>
             <th>IF</th>
             <th>retweeted</th>
-            <th>unretweeted</th>
             <th>tumblr'd</th>
+            <th>rejected date</th>
             <th>rejected</th>
             <th>attempted approval</th>
+            <th>unretweeted</th>
         </tr>
         </thead>
         <tbody>
@@ -67,10 +69,11 @@
                 <td data-tweet-id="{{t2_id}}">{{t2_original_text}}</td>
                 <td><a href="#" data-match data-match-id="{{id}}">{{formatNumber interesting_factor minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
                 <td>{{nullDateFormat date_retweeted day="numeric" month="long" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
-                <td>{{nullDateFormat date_unretweeted day="numeric" month="long" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
                 <td>{{nullDateFormat date_posted_tumblr day="numeric" month="long" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
                 <td>{{nullDateFormat date_rejected day="numeric" month="long" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
-                <td>{{attempted_approval}}</td>
+                <td data-rejected="{{rejected}}">{{boolAsYesNo rejected}}</td>
+                <td data-attempted-approval="{{attempted_approval}}">{{boolAsYesNo attempted_approval}}</td>
+                <td>{{nullDateFormat date_unretweeted day="numeric" month="long" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
             </tr>
         {{/each}}
         </tbody>
@@ -88,6 +91,21 @@
             const $tableCell = $(e);
             const id = $tableCell.data("tweet-id");
             if (id == '{{tweet.id}}') {
+                $tableCell.addClass('success');
+            }
+        });
+
+        $("[data-rejected]").each((idx, e) => {
+            const $tableCell = $(e);
+            const rejected = $tableCell.data("rejected");
+            if (rejected) {
+                $tableCell.addClass('danger');
+            }
+        });
+        $("[data-attempted-approval]").each((idx, e) => {
+            const $tableCell = $(e);
+            const attemptedApproval = $tableCell.data("attempted-approval");
+            if (attemptedApproval) {
                 $tableCell.addClass('success');
             }
         });
