@@ -88,9 +88,14 @@
                 <td class="col-md-1">
                     <a href="#" data-bind="text: interestingFactor, click: $parent.showMatchDetails"></a>
                 </td>
-                <td class="col-md-6"><span data-bind="text: t1OriginalText"></span> <a data-bind="attr: { href : t1Link }">link</a>
-                    <br><br><span
-                            data-bind="text: t2OriginalText"></span> <a data-bind="attr: { href : t2Link }">link</a>
+                <td class="col-md-6">
+                    <span data-bind="text: t1OriginalText"></span>
+                    <a data-bind="attr: { href : t1Link }">[link]</a>
+                    <a data-bind="attr: { href : t1InfoLink }">[info]</a>
+                    <br><br>
+                    <span data-bind="text: t2OriginalText"></span>
+                    <a data-bind="attr: { href : t2Link }">[link]</a>
+                    <a data-bind="attr: { href : t2InfoLink }">[info]</a>
                 </td>
                 <td class="col-md-1">
                     <button type="submit" class="btn btn-danger"
@@ -140,6 +145,8 @@
                 this.t2Username = tweetRow.t2_username;
                 this.t1Link = `http://twitter.com/${this.t1Username}/status/${this.t1StatusId}`;
                 this.t2Link = `http://twitter.com/${this.t2Username}/status/${this.t2StatusId}`;
+                this.t1InfoLink = `/tweets/info/${tweetRow.t1_id}`;
+                this.t2InfoLink = `/tweets/info/${tweetRow.t2_id}`;
                 return this;
             };
 

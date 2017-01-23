@@ -81,7 +81,7 @@
             <div class="well well-sm">
                 <div class="row" data-toggle="collapse" data-target="#tweet1-collapse">
                     <label class="col-sm-4 control-label"><a href="#">Tweet 1:</a></label>
-                    <span>\{{t1_original_text}}</span>
+                    <span>\{{t1_original_text}} [<a href="/tweets/info/\{{t1_id}}">info</a>]</span>
                 </div>
                 <div id="tweet1-collapse" class="collapse">
                     <div class="row">
@@ -113,15 +113,12 @@
                                 <label class="col-sm-5 control-label">Count tumblr'd:</label>
                                 <span>\{{t1_other_match_tumblr_count_count}}</span>
                             </div>
-                            <div class="row">
-                                <label class="col-sm-5"><a href="/tweets/info/\{{t1_id}}">More Info</a></label>
-                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="row" data-toggle="collapse" data-target="#tweet2-collapse">
                     <label class="col-sm-4 control-label"><a href="#">Tweet 2:</a></label>
-                    <span>\{{t2_original_text}}</span>
+                    <span>\{{t2_original_text}} [<a href="/tweets/info/\{{t2_id}}">info</a>]</span>
                 </div>
                 <div id="tweet2-collapse" class="collapse">
                     <div class="row">
@@ -152,9 +149,6 @@
                             <div class="row">
                                 <label class="col-sm-5 control-label">Count tumblr'd:</label>
                                 <span>\{{t2_other_match_tumblr_count_count}}</span>
-                            </div>
-                            <div class="row">
-                                <label class="col-sm-5"><a href="/tweets/info/\{{t2_id}}">More Info</a></label>
                             </div>
                         </div>
                     </div>
