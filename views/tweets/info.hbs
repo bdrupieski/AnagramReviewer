@@ -1,6 +1,6 @@
 <div class="container-fluid">
 
-    <h3>Tweet {{tweet.id}}</h3>
+    <h2>Tweet {{tweet.id}}</h2>
 
     <div class="row panel panel-default">
         <div class="panel-body">
@@ -43,6 +43,53 @@
                 </div>
             </div>
         </div>
-
     </div>
+    <h3>Matches with this tweet</h3>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tweet 1</th>
+            <th>Tweet 2</th>
+            <th>IF</th>
+            <th>retweeted</th>
+            <th>unretweeted</th>
+            <th>tumblr'd</th>
+            <th>rejected</th>
+            <th>attempted approval</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#each matches}}
+            <tr>
+                <td>{{id}}</td>
+                <td data-tweet-id="{{t1_id}}">{{t1_original_text}}</td>
+                <td data-tweet-id="{{t2_id}}">{{t2_original_text}}</td>
+                <td><a href="#" data-match data-match-id="{{id}}">{{formatNumber interesting_factor minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
+                <td>{{nullDateFormat date_retweeted day="numeric" month="long" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
+                <td>{{nullDateFormat date_unretweeted day="numeric" month="long" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
+                <td>{{nullDateFormat date_posted_tumblr day="numeric" month="long" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
+                <td>{{nullDateFormat date_rejected day="numeric" month="long" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
+                <td>{{attempted_approval}}</td>
+            </tr>
+        {{/each}}
+        </tbody>
+    </table>
 </div>
+
+<script>
+    $(() => {
+        $("[data-match]").click(e => {
+            const id = $(e.target).data("match-id");
+            anagrams.showScorePopUp(id);
+        });
+
+        $("[data-tweet-id]").each((idx, e) => {
+            const $tableCell = $(e);
+            const id = $tableCell.data("tweet-id");
+            if (id == '{{tweet.id}}') {
+                $tableCell.addClass('success');
+            }
+        });
+    });
+</script>

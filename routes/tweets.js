@@ -15,11 +15,11 @@ router.get('/info/:tweetId', function (req, res) {
     const tweetId = req.params.tweetId;
     return Promise.all([
         anagramsDb.getTweet(tweetId),
-        anagramsDb.otherMatchesWithTweet(tweetId),
+        anagramsDb.matchesWithTweet(tweetId),
     ]).then(tweetData => {
         res.render('tweets/info', {
             tweet: tweetData[0],
-            otherMatches: tweetData[1],
+            matches: tweetData[1],
         });
     }).catch(error => {
         logger.error(error.toString());

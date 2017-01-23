@@ -114,7 +114,7 @@
                                 <span>\{{t1_other_match_tumblr_count_count}}</span>
                             </div>
                             <div class="row">
-                                <label class="col-sm-5"><a href="/tweets/info/\{{t2_id}}">More Info</a></label>
+                                <label class="col-sm-5"><a href="/tweets/info/\{{t1_id}}">More Info</a></label>
                             </div>
                         </div>
                     </div>
@@ -229,7 +229,7 @@
 
         function getFullMatch(id) {
             return new Promise((resolve, reject) => {
-                $.getJSON(`fullmatch/${id}`).done(data => {
+                $.getJSON(`/anagrams/fullmatch/${id}`).done(data => {
                     if (data.match) {
                         return resolve(data.match);
                     } else if (data.error) {

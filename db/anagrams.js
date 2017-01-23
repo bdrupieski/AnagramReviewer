@@ -946,18 +946,20 @@ FROM score_buckets;
     });
 };
 
-exports.otherMatchesWithTweet = function(tweetId) {
-    const otherMatchesWithTweetQuery = `
+exports.matchesWithTweet = function(tweetId) {
+    const matchesWithTweetQuery = `
 SELECT
-  t1.*,
-  t2.*,
+  t1.id as t1_id,
+  t2.id as t2_id,
+  t1.original_text as t1_original_text,
+  t2.original_text as t2_original_text,
   anagram_matches.*
 FROM anagram_matches
   INNER JOIN tweets t1 ON t1.id = anagram_matches.tweet1_id
   INNER JOIN tweets t2 ON t2.id = anagram_matches.tweet2_id
 WHERE tweet1_id = $1 OR tweet2_id = $1
 `;
-    return pools.anagramPool.query(otherMatchesWithTweetQuery, [tweetId]).then(x => {
+    return pools.anagramPool.query(matchesWithTweetQuery, [tweetId]).then(x => {
         return x.rows;
     });
 };
