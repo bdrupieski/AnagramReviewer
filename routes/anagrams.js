@@ -196,7 +196,12 @@ router.get('/nwaymatches', function(req, res) {
             .map(x => {
                 const obj =  {
                     strippedText: x[0],
-                    originalText: _.map(x[1], y => y.original_text)
+                    originalText: _.map(x[1], y => {
+                        return {
+                            id: y.id,
+                            text: y.original_text
+                        };
+                    })
                 };
                 obj.count = obj.originalText.length;
                 return obj;

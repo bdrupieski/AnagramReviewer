@@ -844,6 +844,7 @@ WITH tweetGroups AS (WITH matchGroups AS (SELECT
                                           GROUP BY t1.stripped_sorted_text
                                           ORDER BY countOfMatches DESC)
 SELECT
+  tweets.id,
   original_text,
   tweets.stripped_sorted_text,
   count(tweets.stripped_sorted_text)
@@ -854,6 +855,7 @@ WINDOW w AS (
   PARTITION BY tweets.stripped_sorted_text )
 )
 SELECT
+  id,
   original_text,
   stripped_sorted_text
 FROM tweetGroups
