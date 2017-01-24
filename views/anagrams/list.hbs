@@ -76,6 +76,7 @@
             <thead>
             <tr>
                 <th>score</th>
+                <th></th>
                 <th>tweets</th>
                 <th>reject</th>
                 <th>approve</th>
@@ -88,14 +89,17 @@
                 <td class="col-md-1">
                     <a href="#" data-bind="text: interestingFactor, click: $parent.showMatchDetails"></a>
                 </td>
-                <td class="col-md-6">
-                    <span data-bind="text: t1OriginalText"></span>
+                <td class="col-md-1">
                     <a data-bind="attr: { href : t1Link }">[link]</a>
                     <a data-bind="attr: { href : t1InfoLink }">[info]</a>
                     <br><br>
-                    <span data-bind="text: t2OriginalText"></span>
                     <a data-bind="attr: { href : t2Link }">[link]</a>
                     <a data-bind="attr: { href : t2InfoLink }">[info]</a>
+                </td>
+                <td class="col-md-5">
+                    <span data-bind="text: t1OriginalText"></span>
+                    <br><br>
+                    <span data-bind="text: t2OriginalText"></span>
                 </td>
                 <td class="col-md-1">
                     <button type="submit" class="btn btn-danger"

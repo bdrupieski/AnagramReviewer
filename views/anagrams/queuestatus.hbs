@@ -35,8 +35,16 @@
                         <tr data-pending-id="{{id}}">
                             <td>{{formatTime date_queued day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
                             <td><a href="#" data-match data-match-id="{{match_id}}">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
-                            <td>{{t1_originaltext}} <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">link</a></td>
-                            <td>{{t2_originaltext}} <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">link</a></td>
+                            <td>
+                                {{t1_originaltext}}
+                                <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">[link]</a>
+                                <a href="/tweets/info/{{t1_id}}">[info]</a>
+                            </td>
+                            <td>
+                                {{t2_originaltext}}
+                                <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">[link]</a>
+                                <a href="/tweets/info/{{t2_id}}">[info]</a>
+                            </td>
                             <td>
                                 <form action='queue/remove/{{id}}' method="post">
                                     <button type="submit" class="btn btn-sm btn-danger">✖</button>

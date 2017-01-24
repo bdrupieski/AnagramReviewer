@@ -163,6 +163,8 @@ SELECT
   match_queue.message,
   anagram_matches.id                 AS match_id,
   anagram_matches.interesting_factor AS interesting,
+  tweet1.id                          AS t1_id,
+  tweet2.id                          AS t2_id,
   tweet1.original_text               AS t1_originalText,
   tweet2.original_text               AS t2_originalText,
   tweet1.user_name                   AS t1_username,
