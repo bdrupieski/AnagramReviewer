@@ -281,12 +281,16 @@ WITH otherMatchCountForTweet1 AS (SELECT
                                     sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL
                                       THEN 1
                                         ELSE 0 END) AS tumblr_count,
-                                    $1::int          AS id
+                                    $1::int         AS id
                                   FROM anagram_matches
                                   WHERE id != $1::int AND
-                                        tweet1_id IN (SELECT tweet1_id
-                                                      FROM anagram_matches
-                                                      WHERE id = $1::int)),
+                                        (tweet1_id IN (SELECT tweet1_id
+                                                       FROM anagram_matches
+                                                       WHERE id = $1::int)
+                                         OR
+                                         tweet2_id IN (SELECT tweet1_id
+                                                       FROM anagram_matches
+                                                       WHERE id = $1::int))),
     otherMatchCountForTweet2 AS (SELECT
                                    count(1)        AS count,
                                    sum(CASE WHEN anagram_matches.attempted_approval IS TRUE
@@ -299,12 +303,16 @@ WITH otherMatchCountForTweet1 AS (SELECT
                                    sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL
                                      THEN 1
                                        ELSE 0 END) AS tumblr_count,
-                                   $1::int          AS id
+                                   $1::int         AS id
                                  FROM anagram_matches
                                  WHERE id != $1::int AND
-                                       tweet2_id IN (SELECT tweet2_id
-                                                     FROM anagram_matches
-                                                     WHERE id = $1::int))
+                                        (tweet1_id IN (SELECT tweet2_id
+                                                       FROM anagram_matches
+                                                       WHERE id = $1::int)
+                                         OR
+                                         tweet2_id IN (SELECT tweet2_id
+                                                       FROM anagram_matches
+                                                       WHERE id = $1::int)))
 SELECT
   t1.id                                                          AS t1_id,
   t2.id                                                          AS t2_id,
