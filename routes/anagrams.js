@@ -239,30 +239,49 @@ router.get('/unretweetmanually', function(req, res) {
 router.post('/unretweetmanually/:id', function(req, res) {
 
     const matchId = req.params.id;
+    const unretweet = req.query.unretweet === "true";
     const deleteFromTumblr = req.query.deletetumblrpost === "true";
 
-    anagramsDb.getAnagramMatch(matchId).then(match => {
+    if (!unretweet && !deleteFromTumblr) {
+        req.flash('error', "Neither 'unretweet' or 'deletetumblrpost' were set");
+        return res.redirect('/anagrams/list');
+    } else {
+        return anagramsDb.getAnagramMatch(matchId).then(match => {
 
-        const unretweetPromises = [
-            twitter.destroyTweet(match.tweet1_retweet_id),
-            twitter.destroyTweet(match.tweet2_retweet_id)
-        ];
+            const deletePromises = [];
 
-        if (deleteFromTumblr) {
-            unretweetPromises.push(tumblr.client.deletePost("anagrammatweest", {id: match.tumblr_post_id}));
-        }
+            if (unretweet && match.tweet1_retweet_id && match.tweet2_retweet_id) {
+                deletePromises.push(twitter.destroyTweet(match.tweet1_retweet_id));
+                deletePromises.push(twitter.destroyTweet(match.tweet2_retweet_id));
+            }
 
-        return Promise.all(unretweetPromises);
-    }).then(x => {
-        return anagramsDb.setUnretweetedAndClearRetweetIds(matchId, deleteFromTumblr);
-    }).then(x => {
-        req.flash('info', `Unretweeted match ${matchId}`);
-        res.redirect('/anagrams/list');
-    }).catch(err => {
-        logger.error(err.toString());
-        req.flash('error', err.toString());
-        res.redirect('/anagrams/list');
-    });
+            if (deleteFromTumblr && match.tumblr_post_id) {
+                logger.info(`unposting tumblr ${match.tumblr_post_id}}`);
+                deletePromises.push(tumblr.client.deletePost("anagrammatweest", {id: match.tumblr_post_id}));
+            }
+
+            return Promise.all(deletePromises);
+        }).then(x => {
+            return anagramsDb.setUnpostedAndClearIds(matchId, unretweet, deleteFromTumblr);
+        }).then(x => {
+
+            const actions = [];
+            if (unretweet) {
+                actions.push("unretweeted");
+            }
+            if (deleteFromTumblr) {
+                actions.push("untumblr'd");
+            }
+            const combinedActions = actions.join(" and ");
+
+            req.flash('info', `${combinedActions} match ${matchId}`);
+            res.redirect('/anagrams/list');
+        }).catch(err => {
+            logger.error(err.toString());
+            req.flash('error', err.toString());
+            res.redirect('/anagrams/list');
+        });
+    }
 });
 
 router.get('/unrejectmanually', function(req, res) {

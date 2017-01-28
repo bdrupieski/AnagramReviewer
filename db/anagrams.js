@@ -210,7 +210,8 @@ UPDATE anagram_matches
 SET
   tweet1_retweet_id = $2,
   tweet2_retweet_id = $3,
-  date_retweeted    = current_timestamp
+  date_retweeted    = current_timestamp,
+  date_unretweeted  = NULL
 WHERE anagram_matches.id = $1::int;
 `;
 
@@ -227,8 +228,9 @@ exports.updateTumblrPostId = function(matchId, tumblrPostId) {
     const updateTumblrPostIdQuery = `
 UPDATE anagram_matches
 SET
-  tumblr_post_id     = $2::bigint,
-  date_posted_tumblr = current_timestamp
+  tumblr_post_id        = $2::bigint,
+  date_posted_tumblr    = current_timestamp,
+  date_unposted_tumblr  = NULL
 WHERE anagram_matches.id = $1::int;
 `;
 
@@ -655,33 +657,51 @@ WHERE id = $1::int
     });
 };
 
-exports.setUnretweetedAndClearRetweetIds = function(matchId, clearTumblrPostId) {
-    const setUnretweetedDateAndRetweetIds = `
-UPDATE anagram_matches
-SET 
-  date_unretweeted   = current_timestamp,
-  date_retweeted     = NULL,
-  tweet1_retweet_id  = NULL,
-  tweet2_retweet_id  = NULL
-WHERE id = $1::int
-`;
-
-    const setUnretweetedDateRetweetIdsTumblrPostId = `
+exports.setUnpostedAndClearIds = function(matchId, unretweet, clearTumblrPostId) {
+    const unretweetQuery = `
 UPDATE anagram_matches
 SET 
   date_unretweeted   = current_timestamp,
   date_retweeted     = NULL,
   tweet1_retweet_id  = NULL,
   tweet2_retweet_id  = NULL,
-  tumblr_post_id     = NULL
+  attempted_approval = false
+WHERE id = $1::int
+`;
+
+    const unretweetAndDeleteTumblrQuery = `
+UPDATE anagram_matches
+SET 
+  date_unretweeted     = current_timestamp,
+  date_retweeted       = NULL,
+  tweet1_retweet_id    = NULL,
+  tweet2_retweet_id    = NULL,
+  tumblr_post_id       = NULL,
+  date_posted_tumblr   = NULL,
+  date_unposted_tumblr = current_timestamp,
+  attempted_approval   = false
+WHERE id = $1::int
+`;
+
+    const deleteTumblrQuery = `
+UPDATE anagram_matches
+SET 
+  tumblr_post_id       = NULL,
+  date_posted_tumblr   = NULL,
+  date_unposted_tumblr = current_timestamp,
+  attempted_approval   = false
 WHERE id = $1::int
 `;
 
     let queryToUseForUnretweeting;
-    if (clearTumblrPostId) {
-        queryToUseForUnretweeting = setUnretweetedDateRetweetIdsTumblrPostId;
+    if (unretweet && clearTumblrPostId) {
+        queryToUseForUnretweeting = unretweetAndDeleteTumblrQuery;
+    } else if (unretweet && !clearTumblrPostId) {
+        queryToUseForUnretweeting = unretweetQuery;
+    } else if (!unretweet && clearTumblrPostId) {
+        queryToUseForUnretweeting = deleteTumblrQuery;
     } else {
-        queryToUseForUnretweeting = setUnretweetedDateAndRetweetIds;
+        throw `unknown error when unretweeting/unposting ${matchId} from tumblr.`;
     }
 
     return pools.anagramPool.query(queryToUseForUnretweeting, [matchId]).then(x => {
@@ -699,6 +719,7 @@ SELECT
   anagram_matches.id,
   anagram_matches.interesting_factor AS interesting,
   anagram_matches.date_retweeted,
+  anagram_matches.date_posted_tumblr,
   tweet1.id                          AS t1_id,
   tweet2.id                          AS t2_id,
   tweet1.original_text               AS t1_originaltext,
@@ -711,8 +732,9 @@ FROM
   anagram_matches
   INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
   INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
-WHERE anagram_matches.date_retweeted IS NOT NULL
-ORDER BY anagram_matches.date_retweeted DESC
+WHERE (anagram_matches.date_retweeted IS NOT NULL AND anagram_matches.date_unretweeted IS NULL) OR
+      (anagram_matches.date_posted_tumblr IS NOT NULL AND anagram_matches.date_unposted_tumblr IS NULL)
+ORDER BY COALESCE(anagram_matches.date_retweeted, anagram_matches.date_posted_tumblr) DESC
 LIMIT $1::int;
 `;
 

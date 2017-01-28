@@ -2,8 +2,8 @@
     <thead>
     <tr>
         <th>score</th>
-        <th>T1</th>
-        <th>T2</th>
+        <th>tweets</th>
+        <th>posted</th>
         <th>actions</th>
     </tr>
     </thead>
@@ -11,27 +11,52 @@
     {{#each matches}}
         <tr>
             <td class="col-md-1"><a href="#" data-match data-match-id="{{id}}">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
-            <td class="col-md-3">
+            <td class="col-md-5">
                 {{t1_originaltext}}
                 <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">[link]</a>
                 <a href="/tweets/info/{{t1_id}}">[info]</a>
-            </td>
-            <td class="col-md-3">
+                <br>
+                <br>
                 {{t2_originaltext}}
                 <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">[link]</a>
                 <a href="/tweets/info/{{t2_id}}">[info]</a>
             </td>
-            <td class="col-md-4">
+            <td class="col-md-3">
                 <div class="row">
-                    <div class="col-sm-6">
-                        <form action='unretweetmanually/{{id}}' method="post">
-                            <button type="submit" class="btn btn-primary">Unretweet</button>
-                        </form>
+                    <label class="col-sm-4 control-label">Retweeted:</label>
+                    <span>{{nullDateFormat date_retweeted day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</span>
+                </div>
+                <br>
+                <div class="row">
+                    <label class="col-sm-4 control-label">Tumblr'd:</label>
+                    <span>{{nullDateFormat date_posted_tumblr day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</span>
+                </div>
+            </td>
+            <td class="col-md-3">
+                <div class="row">
+                    <div class="col-sm-4">
+                        {{#if date_retweeted}}
+                            <form action='unretweetmanually/{{id}}?unretweet=true' method="post">
+                                <button type="submit" class="btn btn-primary">Unretweet</button>
+                            </form>
+                        {{/if}}
                     </div>
-                    <div class="col-sm-6">
-                        <form action='unretweetmanually/{{id}}?deletetumblrpost=true' method="post">
-                            <button type="submit" class="btn btn-primary">Unretweet & delete tumblr</button>
-                        </form>
+                    <div class="col-sm-4">
+                        {{#if date_posted_tumblr}}
+                            <form action='unretweetmanually/{{id}}?deletetumblrpost=true' method="post">
+                                <button type="submit" class="btn btn-warning">Untumblr</button>
+                            </form>
+                        {{/if}}
+                    </div>
+                    <div class="col-sm-4">
+                        {{#if date_posted_tumblr}}
+                            {{#if date_retweeted}}
+                                <form action='unretweetmanually/{{id}}?unretweet=true&deletetumblrpost=true'
+                                      method="post">
+                                    <button type="submit" class="btn btn-info">Unretweet & Untumblr</button>
+                                </form>
+                            {{/if}}
+                        {{/if}}
                     </div>
                 </div>
             </td>

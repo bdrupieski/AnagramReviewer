@@ -92,7 +92,7 @@ exports.unretweet = function(id) {
 };
 
 exports.destroyTweet = function (id) {
-    logger.info(`destroying ${id}`);
+    logger.info(`destroying tweet ${id}`);
     return new Promise((resolve, reject) => {
         client.post(`statuses/destroy/${id}`, {trim_user: true},
             function (error, tweet, response) {
