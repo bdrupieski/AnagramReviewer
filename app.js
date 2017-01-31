@@ -45,18 +45,18 @@ app.use(flash());
 const passportConfig = require("./services/passport");
 passportConfig.configure();
 
-// every minute on the minute
+// every minute
 schedule.scheduleJob("*/1 * * * *", function () {
     tasks.deleteFromDatabaseTheOldestTweetsThatNoLongerExist(59);
 });
 
-// every 30 minutes on :00 and :30
+// every 30 minutes
 schedule.scheduleJob("*/30 * * * *", function () {
     tasks.retweetOnePendingMatch();
 });
 
-// every 12 hours
-schedule.scheduleJob("* */12 * * *", function () {
+// 15 minutes past the hour every 12 hours (12:15 AM, 12:15 PM)
+schedule.scheduleJob("15 */12 * * *", function () {
     tasks.cleanUpAnyBrokenPairsInRecentRetweets();
 });
 
