@@ -55,8 +55,8 @@ schedule.scheduleJob("*/30 * * * *", function () {
     tasks.retweetOnePendingMatch();
 });
 
-// 15 minutes past the hour every 12 hours (12:15 AM, 12:15 PM)
-schedule.scheduleJob("15 */12 * * *", function () {
+// 15 minutes past the hour every 6 hours
+schedule.scheduleJob("15 */6 * * *", function () {
     tasks.cleanUpAnyBrokenPairsInRecentRetweets();
 });
 

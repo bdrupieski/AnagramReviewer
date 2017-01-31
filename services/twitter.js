@@ -165,28 +165,8 @@ exports.oembedTweet = function(tweetId) {
     });
 };
 
-exports.getMostRecent200TimelineTweets = function() {
-    const data = {
-        count: 200,
-        trim_user: true,
-        exclude_replies: true
-    };
-    return new Promise((resolve, reject) => {
-        client.get('statuses/user_timeline', data, function (error, data, response) {
-            if (error) {
-                reject(error);
-            }
-            else if (data) {
-                return resolve(data);
-            } else {
-                logger.error(response);
-                return reject(`unknown error when retrieving statuses/user_timeline`);
-            }
-        })
-    });
-};
-
-exports.getPastTweetsUpTo3200 = function() {
+exports.getPastTweetsUpTo3200 = function(atLeastNumberOfTweets = 3200) {
+    atLeastNumberOfTweets = Math.min(atLeastNumberOfTweets, 3200);
 
     const getTimelineTweetsGreaterThanMaxId = function(maxId) {
 
@@ -216,20 +196,20 @@ exports.getPastTweetsUpTo3200 = function() {
     };
 
     const allTweets = [];
-    let count = 0;
+    let recurseCount = 0;
 
     function recurse(maxId) {
         const closedMaxId = maxId;
         return getTimelineTweetsGreaterThanMaxId(maxId).then(tweets => {
 
-            count++;
-            if (count > 20) {
+            recurseCount++;
+            if (recurseCount > 20) {
                 throw `recursed too many times on ${closedMaxId}`;
             }
 
             allTweets.push.apply(allTweets, tweets);
 
-            if (tweets.length == 1) {
+            if (tweets.length == 1 || allTweets.length == 3200 || allTweets.length >= atLeastNumberOfTweets) {
                 return true;
             } else {
                 const maxId = tweets[tweets.length - 1].id_str;

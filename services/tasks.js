@@ -130,13 +130,18 @@ function isRateLimited(error) {
 
 exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
     return Promise.all([
-        twitter.getMostRecent200TimelineTweets(),
-        anagramsDb.getMostRecentRetweetedStatusIds(85),
+        // always get more tweets than the number of matches*2
+        // so the retrieved timeline doesn't break on a dangling pair
+        twitter.getPastTweetsUpTo3200(300),
+        anagramsDb.getMostRecentRetweetedStatusIds(100),
     ]).then(([timelineTweets, mostRecentRetweets]) => {
         let statusIdsOfRetweetsOnTimeline = new Set(timelineTweets.map(x => x.retweeted_status.id_str));
         return findStatusIdsWithMissingCorrespondingStatusId(statusIdsOfRetweetsOnTimeline, mostRecentRetweets);
     }).then(matchesWithMissingPair => {
-        console.log(matchesWithMissingPair);
+        if (matchesWithMissingPair.length > 0) {
+            console.log(matchesWithMissingPair);
+            logger.cleanUp.info(matchesWithMissingPair);
+        }
         return Promise.all(matchesWithMissingPair.map(x => {
             return Promise.all([
                 destroyTweet(x.missingTweetRetweetId),

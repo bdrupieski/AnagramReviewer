@@ -41,6 +41,7 @@ const cleanUpLogger = new winston.Logger({
             maxsize: 5000000,
             level: 'error'
         }),
+        new (winston.transports.Console)({level: 'debug', stderrLevels: []})
     ]
 });
 
