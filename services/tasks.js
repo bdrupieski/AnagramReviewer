@@ -132,9 +132,10 @@ exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
     return Promise.all([
         // always get more tweets than the number of matches*2
         // so the retrieved timeline doesn't break on a dangling pair
-        twitter.getPastTweetsUpTo3200(300),
-        anagramsDb.getMostRecentRetweetedStatusIds(100),
+        twitter.getPastTweetsUpTo3200(600),
+        anagramsDb.getMostRecentRetweetedStatusIds(200),
     ]).then(([timelineTweets, mostRecentRetweets]) => {
+        console.log(`retrieved ${timelineTweets.length} timeline tweets`);
         let statusIdsOfRetweetsOnTimeline = new Set(timelineTweets.map(x => x.retweeted_status.id_str));
         return findStatusIdsWithMissingCorrespondingStatusId(statusIdsOfRetweetsOnTimeline, mostRecentRetweets);
     }).then(matchesWithMissingPair => {
@@ -144,6 +145,7 @@ exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
         }
         return Promise.all(matchesWithMissingPair.map(x => {
             return Promise.all([
+                Promise.resolve(x),
                 destroyTweet(x.missingTweetRetweetId),
                 destroyTweet(x.existingTweetRetweetId)
             ]).then(deletions => {
@@ -156,12 +158,30 @@ exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
         if (allDeletions.length == 0) {
             logger.cleanUp.info("No tweets to clean up.");
         } else {
-            logger.cleanUp.info(allDeletions);
+            for (let deletion of allDeletions) {
+                logDeletion(deletion);
+            }
         }
     }).catch(err => {
-        logger.cleanUp.error(err.toString());
+        logger.cleanUp.error("unhandled error when cleaning up timeline");
+        logger.cleanUp.error(err);
     });
 };
+
+function logDeletion(deletion) {
+    const [pair, t1Deletion, t2Deletion] = deletion;
+    logger.cleanUp.info(`Destroyed tweets ${pair.missingTweetRetweetId} and ${pair.existingTweetRetweetId} for ${pair.id}`);
+    logTweetDestruction(t1Deletion);
+    logTweetDestruction(t2Deletion);
+}
+
+function logTweetDestruction(deletion) {
+    if (deletion.error) {
+        logger.cleanUp.info(`error when deleting: ${deletion.result}`);
+    } else {
+        logger.cleanUp.info(`Deleted ${deletion.id_str} created on ${deletion.created_at} ("${deletion.retweeted_status.text}", original status id ${deletion.retweeted_status.id_str})`);
+    }
+}
 
 function destroyTweet(retweetId) {
     return twitter.destroyTweet(retweetId).catch(e => {
