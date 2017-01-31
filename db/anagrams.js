@@ -685,35 +685,39 @@ exports.setUnpostedAndClearIds = function(matchId, unretweet, clearTumblrPostId)
     const unretweetQuery = `
 UPDATE anagram_matches
 SET 
-  date_unretweeted   = current_timestamp,
-  date_retweeted     = NULL,
-  tweet1_retweet_id  = NULL,
-  tweet2_retweet_id  = NULL,
-  attempted_approval = false
+  date_unretweeted     = current_timestamp,
+  date_retweeted       = NULL,
+  tweet1_retweet_id    = NULL,
+  tweet2_retweet_id    = NULL,
+  unretweeted_manually = true,
+  attempted_approval   = false
 WHERE id = $1::int
 `;
 
     const unretweetAndDeleteTumblrQuery = `
 UPDATE anagram_matches
 SET 
-  date_unretweeted     = current_timestamp,
-  date_retweeted       = NULL,
-  tweet1_retweet_id    = NULL,
-  tweet2_retweet_id    = NULL,
-  tumblr_post_id       = NULL,
-  date_posted_tumblr   = NULL,
-  date_unposted_tumblr = current_timestamp,
-  attempted_approval   = false
+  date_unretweeted         = current_timestamp,
+  date_retweeted           = NULL,
+  tweet1_retweet_id        = NULL,
+  tweet2_retweet_id        = NULL,
+  unretweeted_manually     = true,
+  tumblr_post_id           = NULL,
+  date_posted_tumblr       = NULL,
+  date_unposted_tumblr     = current_timestamp,
+  unposted_tumblr_manually = true,
+  attempted_approval       = false
 WHERE id = $1::int
 `;
 
     const deleteTumblrQuery = `
 UPDATE anagram_matches
 SET 
-  tumblr_post_id       = NULL,
-  date_posted_tumblr   = NULL,
-  date_unposted_tumblr = current_timestamp,
-  attempted_approval   = false
+  tumblr_post_id           = NULL,
+  date_posted_tumblr       = NULL,
+  date_unposted_tumblr     = current_timestamp,
+  unposted_tumblr_manually = true,
+  attempted_approval       = false
 WHERE id = $1::int
 `;
 
