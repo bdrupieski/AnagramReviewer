@@ -51,6 +51,7 @@ FROM
   INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
 WHERE NOT anagram_matches.rejected
       AND anagram_matches.date_retweeted IS NULL
+      AND anagram_matches.date_unretweeted IS NULL
       AND anagram_matches.tumblr_post_id IS NULL
       AND anagram_matches.id NOT IN (SELECT match_id
                                      FROM match_queue
@@ -89,6 +90,7 @@ FROM
   INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
 WHERE NOT anagram_matches.rejected
       AND anagram_matches.date_retweeted IS NULL
+      AND anagram_matches.date_unretweeted IS NULL
       AND anagram_matches.tumblr_post_id IS NULL
       AND anagram_matches.interesting_factor > $2::float
       AND anagram_matches.id NOT IN (SELECT match_id
@@ -128,6 +130,7 @@ FROM
   INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
 WHERE NOT anagram_matches.rejected
       AND anagram_matches.date_retweeted IS NULL
+      AND anagram_matches.date_unretweeted IS NULL
       AND anagram_matches.tumblr_post_id IS NULL
       AND anagram_matches.id NOT IN (SELECT match_id
                                      FROM match_queue
@@ -620,6 +623,27 @@ WHERE anagram_matches.date_retweeted IS NOT NULL
     });
 };
 
+exports.getMostRecentRetweetedStatusIds = function(limit = 100) {
+    const mostRecentRetweetedStatusIdsQuery = `
+SELECT
+  anagram_matches.id,
+  anagram_matches.date_retweeted,
+  anagram_matches.tweet1_retweet_id,
+  anagram_matches.tweet2_retweet_id,
+  t1.status_id AS t1_status_id,
+  t2.status_id AS t2_status_id
+FROM anagram_matches
+  INNER JOIN tweets t1 ON anagram_matches.tweet1_id = t1.id
+  INNER JOIN tweets t2 ON anagram_matches.tweet2_id = t2.id
+WHERE anagram_matches.date_retweeted IS NOT NULL
+ORDER BY anagram_matches.date_retweeted DESC
+LIMIT $1::int
+`;
+    return pools.anagramPool.query(mostRecentRetweetedStatusIdsQuery, [limit]).then(x => {
+        return x.rows;
+    });
+};
+
 exports.getTweetsToPostToTumblr = function(limit) {
     const retweetedAndNotUnretweetedAndNotPostedToTumblrQuery = `
 SELECT
@@ -705,6 +729,25 @@ WHERE id = $1::int
     }
 
     return pools.anagramPool.query(queryToUseForUnretweeting, [matchId]).then(x => {
+        if (x.rowCount != 1) {
+            throw x;
+        } else {
+            return x;
+        }
+    });
+};
+
+exports.setUnretweetedFromTimelineCleanup = function(matchId) {
+    const setUnretweetedFromTimelineCleanupQuery = `
+UPDATE anagram_matches
+SET 
+  date_unretweeted         = current_timestamp,
+  date_retweeted           = NULL,
+  unretweeted_from_cleanup = TRUE
+WHERE id = $1::int
+`;
+
+    return pools.anagramPool.query(setUnretweetedFromTimelineCleanupQuery, [matchId]).then(x => {
         if (x.rowCount != 1) {
             throw x;
         } else {

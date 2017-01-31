@@ -127,3 +127,83 @@ function isRateLimited(error) {
         return false;
     }
 }
+
+exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
+    return Promise.all([
+        twitter.getMostRecent200TimelineTweets(),
+        anagramsDb.getMostRecentRetweetedStatusIds(85),
+    ]).then(([timelineTweets, mostRecentRetweets]) => {
+        let statusIdsOfRetweetsOnTimeline = new Set(timelineTweets.map(x => x.retweeted_status.id_str));
+        return findStatusIdsWithMissingCorrespondingStatusId(statusIdsOfRetweetsOnTimeline, mostRecentRetweets);
+    }).then(matchesWithMissingPair => {
+        console.log(matchesWithMissingPair);
+        return Promise.all(matchesWithMissingPair.map(x => {
+            return Promise.all([
+                destroyTweet(x.missingTweetRetweetId),
+                destroyTweet(x.existingTweetRetweetId)
+            ]).then(deletions => {
+                return anagramsDb.setUnretweetedFromTimelineCleanup(x.id).then(x => {
+                    return deletions;
+                });
+            });
+        }));
+    }).then(allDeletions => {
+        if (allDeletions.length == 0) {
+            logger.cleanUp.info("No tweets to clean up.");
+        } else {
+            logger.cleanUp.info(allDeletions);
+        }
+    }).catch(err => {
+        logger.cleanUp.error(err.toString());
+    });
+};
+
+function destroyTweet(retweetId) {
+    return twitter.destroyTweet(retweetId).catch(e => {
+        return {
+            error: true,
+            result: e
+        }
+    });
+}
+
+function findStatusIdsWithMissingCorrespondingStatusId(setOfStatusIdsOnTimeline, mostRecentRetweets) {
+    const tweetIdToMatchId = new Map();
+    for (const match of mostRecentRetweets) {
+        tweetIdToMatchId.set(match.t1_status_id, {
+            matchId : match.id,
+            thisTweetId: match.t1_status_id,
+            thisTweetRetweetId: match.tweet1_retweet_id,
+            otherTweetId: match.t2_status_id,
+            otherTweetRetweetId: match.tweet2_retweet_id,
+            dateRetweeted: match.date_retweeted
+        });
+        tweetIdToMatchId.set(match.t2_status_id, {
+            matchId : match.id,
+            thisTweetId: match.t2_status_id,
+            thisTweetRetweetId: match.tweet2_retweet_id,
+            otherTweetId: match.t1_status_id,
+            otherTweetRetweetId: match.tweet1_retweet_id,
+            dateRetweeted: match.date_retweeted
+        });
+    }
+
+    const matchesWithMissingPair = [];
+    for (const tweetId of setOfStatusIdsOnTimeline) {
+
+        const matchingTweet = tweetIdToMatchId.get(tweetId);
+
+        if (matchingTweet && !setOfStatusIdsOnTimeline.has(matchingTweet.otherTweetId)) {
+            matchesWithMissingPair.push({
+                missingTweet: matchingTweet.otherTweetId,
+                missingTweetRetweetId: matchingTweet.otherTweetRetweetId,
+                existingTweet: tweetId,
+                existingTweetRetweetId: matchingTweet.thisTweetRetweetId,
+                id: matchingTweet.matchId,
+                dateRetweeted: matchingTweet.dateRetweeted
+            });
+        }
+    }
+
+    return matchesWithMissingPair;
+}

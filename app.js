@@ -55,6 +55,11 @@ schedule.scheduleJob("*/30 * * * *", function () {
     tasks.retweetOnePendingMatch();
 });
 
+// every 12 hours
+schedule.scheduleJob("* */12 * * *", function () {
+    tasks.cleanUpAnyBrokenPairsInRecentRetweets();
+});
+
 app.use(function(req, res, next){
     res.locals.user = req.user;
     next();

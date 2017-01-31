@@ -165,6 +165,27 @@ exports.oembedTweet = function(tweetId) {
     });
 };
 
+exports.getMostRecent200TimelineTweets = function() {
+    const data = {
+        count: 200,
+        trim_user: true,
+        exclude_replies: true
+    };
+    return new Promise((resolve, reject) => {
+        client.get('statuses/user_timeline', data, function (error, data, response) {
+            if (error) {
+                reject(error);
+            }
+            else if (data) {
+                return resolve(data);
+            } else {
+                logger.error(response);
+                return reject(`unknown error when retrieving statuses/user_timeline`);
+            }
+        })
+    });
+};
+
 exports.getPastTweetsUpTo3200 = function() {
 
     const getTimelineTweetsGreaterThanMaxId = function(maxId) {
@@ -221,3 +242,7 @@ exports.getPastTweetsUpTo3200 = function() {
         return _.uniqBy(allTweets, x => x.id_str);
     });
 };
+
+function clamp(x, a, b) {
+    return Math.max(a, Math.min(x, b));
+}
