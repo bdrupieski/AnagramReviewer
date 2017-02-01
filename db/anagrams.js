@@ -768,17 +768,19 @@ exports.getMostRecentRetweetedMatches = function (limit = 10) {
     const getRecentRetweetedMatchesQuery = `
 SELECT
   anagram_matches.id,
-  anagram_matches.interesting_factor AS interesting,
+  anagram_matches.interesting_factor        AS interesting,
   anagram_matches.date_retweeted,
   anagram_matches.date_posted_tumblr,
-  tweet1.id                          AS t1_id,
-  tweet2.id                          AS t2_id,
-  tweet1.original_text               AS t1_originaltext,
-  tweet2.original_text               AS t2_originaltext,
-  tweet1.user_name                   AS t1_username,
-  tweet1.status_id                   AS t1_statusid,
-  tweet2.user_name                   AS t2_username,
-  tweet2.status_id                   AS t2_statusid
+  anagram_matches.unretweeted_from_cleanup,
+  anagram_matches.unretweeted_manually,
+  tweet1.id                                 AS t1_id,
+  tweet2.id                                 AS t2_id,
+  tweet1.original_text                      AS t1_originaltext,
+  tweet2.original_text                      AS t2_originaltext,
+  tweet1.user_name                          AS t1_username,
+  tweet1.status_id                          AS t1_statusid,
+  tweet2.user_name                          AS t2_username,
+  tweet2.status_id                          AS t2_statusid
 FROM
   anagram_matches
   INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
