@@ -378,11 +378,11 @@ SELECT
   count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
   sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
   count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr,
-  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN 1 ELSE 0 END) OVER w AS unreviewed,
+  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed,
   avg(anagram_matches.interesting_factor) over w as average_interesting_factor,
   avg(CASE WHEN anagram_matches.attempted_approval = true THEN anagram_matches.interesting_factor END) over w as attempted_approval_average_interesting_factor,
   avg(CASE WHEN anagram_matches.rejected = true THEN anagram_matches.interesting_factor END) over w as rejected_average_interesting_factor,
-  avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
+  avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
 FROM anagram_matches
 WINDOW w AS (
   PARTITION BY date(anagram_matches.date_created) )
@@ -407,7 +407,7 @@ SELECT
   count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
   sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
   count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr,
-  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN 1 ELSE 0 END) OVER w AS unreviewed
+  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed
 FROM anagram_matches
 WINDOW w AS (
   PARTITION BY trunc(anagram_matches.interesting_factor :: NUMERIC, 2) )
@@ -434,11 +434,11 @@ SELECT
   count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
   sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
   count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr,
-  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN 1 ELSE 0 END) OVER w AS unreviewed,
+  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed,
   avg(anagram_matches.interesting_factor) over w as average_interesting_factor,
   avg(CASE WHEN anagram_matches.attempted_approval = true THEN anagram_matches.interesting_factor END) over w as attempted_approval_average_interesting_factor,
   avg(CASE WHEN anagram_matches.rejected = true THEN anagram_matches.interesting_factor END) over w as rejected_average_interesting_factor,
-  avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
+  avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
 FROM anagram_matches
 WINDOW w AS (
   PARTITION BY date_part('hour', anagram_matches.date_created) * INTERVAL '1 hour' +
@@ -905,7 +905,7 @@ SELECT DISTINCT ON (interesting_factor)
   trunc(anagram_matches.interesting_factor :: NUMERIC, 2) AS interesting_factor,
   count(anagram_matches.interesting_factor) OVER w AS total,
   sum(CASE WHEN anagram_matches.rejected = TRUE THEN 1 ELSE 0 END) OVER w AS rejected,
-  sum(CASE WHEN anagram_matches.rejected = FALSE AND anagram_matches.attempted_approval = FALSE THEN 1 ELSE 0 END) OVER w AS unreviewed
+  sum(CASE WHEN anagram_matches.rejected = FALSE AND anagram_matches.attempted_approval = FALSE AND anagram_matches.date_unretweeted IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed
 FROM anagram_matches
 WHERE date(date_created) = '${formattedDate}'
 WINDOW w AS (
