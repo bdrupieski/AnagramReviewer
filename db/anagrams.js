@@ -610,23 +610,6 @@ WHERE anagram_matches.id != $1::int AND anagram_matches.date_retweeted IS NOT NU
     });
 };
 
-exports.getRetweetedStatusIds = function() {
-    const retweetedStatusIdsQuery = `
-SELECT
-  anagram_matches.id,
-  t1.status_id AS t1_status_id,
-  t2.status_id AS t2_status_id
-FROM anagram_matches
-  INNER JOIN tweets t1 ON anagram_matches.tweet1_id = t1.id
-  INNER JOIN tweets t2 ON anagram_matches.tweet2_id = t2.id
-WHERE anagram_matches.date_retweeted IS NOT NULL
-`;
-
-    return pools.anagramPool.query(retweetedStatusIdsQuery).then(x => {
-        return x.rows;
-    });
-};
-
 exports.getMostRecentRetweetedStatusIds = function(limit = 100) {
     const mostRecentRetweetedStatusIdsQuery = `
 SELECT
@@ -666,22 +649,6 @@ LIMIT $1::int
 
     return pools.anagramPool.query(retweetedAndNotUnretweetedAndNotPostedToTumblrQuery, [limit]).then(x => {
         return x.rows;
-    });
-};
-
-exports.setUnretweeted = function(matchId) {
-    const setUnretweetedDate = `
-UPDATE anagram_matches
-SET date_unretweeted = current_timestamp
-WHERE id = $1::int
-`;
-
-    return pools.anagramPool.query(setUnretweetedDate, [matchId]).then(x => {
-        if (x.rowCount != 1) {
-            throw x;
-        } else {
-            return x;
-        }
     });
 };
 
