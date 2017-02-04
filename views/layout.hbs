@@ -180,6 +180,11 @@
                     <span>\{{formatNumber edit_distance_to_length_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
                     (\{{edit_distance_stripped_text}}/\{{stripped_sorted_text_length}})</span>
                 </div>
+                <div class="row">
+                    <label class="col-sm-8 control-label">Total length / maximum possible length:</label>
+                    <span>\{{formatNumber total_length_to_highest_length_captured_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
+                    (\{{stripped_sorted_text_length}}/30)</span>
+                </div>
             </div>
             <h4>Combined score</h4>
             <div class="well well-sm">
