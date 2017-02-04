@@ -129,11 +129,12 @@ function isRateLimited(error) {
 }
 
 exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
+    logger.cleanUp.info("Starting cleanup of broken pairs.");
     return Promise.all([
         // always get more tweets than the number of matches*2
         // so the retrieved timeline doesn't break on a dangling pair
-        twitter.getPastTweetsUpTo3200(600),
-        anagramsDb.getMostRecentRetweetedStatusIds(200),
+        twitter.getPastTweetsUpTo3200(800),
+        anagramsDb.getMostRecentRetweetedStatusIds(300),
     ]).then(([timelineTweets, mostRecentRetweets]) => {
         console.log(`retrieved ${timelineTweets.length} timeline tweets`);
         let statusIdsOfRetweetsOnTimeline = new Set(timelineTweets.map(x => x.retweeted_status.id_str));
@@ -141,7 +142,8 @@ exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
     }).then(matchesWithMissingPair => {
         if (matchesWithMissingPair.length > 0) {
             console.log(matchesWithMissingPair);
-            logger.cleanUp.info(matchesWithMissingPair);
+            const matchIds = matchesWithMissingPair.map(x => `[${x.id}]`).join(", ");
+            logger.cleanUp.info(`deleting matches: ${matchIds}`);
         }
         return Promise.all(matchesWithMissingPair.map(x => {
             return Promise.all([
@@ -170,7 +172,7 @@ exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
 
 function logDeletion(deletion) {
     const [pair, t1Deletion, t2Deletion] = deletion;
-    logger.cleanUp.info(`Destroyed tweets ${pair.missingTweetRetweetId} and ${pair.existingTweetRetweetId} for ${pair.id}`);
+    logger.cleanUp.info(`Destroyed tweets ${pair.missingTweetRetweetId} and ${pair.existingTweetRetweetId} for ${pair.id}:`);
     logTweetDestruction(t1Deletion);
     logTweetDestruction(t2Deletion);
 }
