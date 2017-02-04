@@ -191,6 +191,10 @@
                     <label class="col-sm-8 control-label">Interesting factor without English words:</label>
                     <span>\{{formatNumber interesting_factor_without_english_words minimumFractionDigits="2" maximumFractionDigits="2"}}</span>
                 </div>
+                <div class="row">
+                    <label class="col-sm-8 control-label">Interesting factor without English words or total length:</label>
+                    <span>\{{formatNumber interesting_factor_without_english_or_length minimumFractionDigits="2" maximumFractionDigits="2"}}</span>
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -242,6 +246,11 @@
                 fullMatch.stripped_sorted_text_length = fullMatch.stripped_sorted_text.length;
                 fullMatch.english_word_count = Math.trunc(fullMatch.english_words_to_total_word_count_ratio * fullMatch.total_words);
                 fullMatch.interesting_factor_without_english_words =
+                        (fullMatch.edit_distance_to_length_ratio +
+                        fullMatch.different_word_count_to_total_word_count_ratio +
+                        fullMatch.inverse_lcs_length_to_total_length_ratio +
+                        fullMatch.total_length_to_highest_length_captured_ratio) / 4;
+                fullMatch.interesting_factor_without_english_or_length =
                         (fullMatch.edit_distance_to_length_ratio +
                         fullMatch.different_word_count_to_total_word_count_ratio +
                         fullMatch.inverse_lcs_length_to_total_length_ratio) / 3;

@@ -389,6 +389,7 @@
                     <th>Word count difference ratio</th>
                     <th>Edit distance ratio</th>
                     <th>English word count ratio</th>
+                    <th>Total length ratio</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -398,6 +399,7 @@
                     <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.wcApprovedSurplus minimumFractionDigits="3" maximumFractionDigits="3"}}</td>
                     <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.edApprovedSurplus minimumFractionDigits="3" maximumFractionDigits="3"}}</td>
                     <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.ewcApprovedSurplus minimumFractionDigits="3" maximumFractionDigits="3"}}</td>
+                    <td>{{safeFormatNumber stats.scoreSurplusForApprovedMatches.tlApprovedSurplus minimumFractionDigits="3" maximumFractionDigits="3"}}</td>
                 </tr>
                 </tbody>
             </table>
@@ -423,6 +425,7 @@
                 <th>Word count difference ratio</th>
                 <th>Edit distance ratio</th>
                 <th>English word count ratio</th>
+                <th>Total length ratio</th>
             </tr>
             </thead>
             <tbody>
@@ -433,6 +436,7 @@
                 <td class="js-color-based-on-number-value">\{{safeFormatNumber wcApprovedSurplus maximumFractionDigits="4"}}</td>
                 <td class="js-color-based-on-number-value">\{{safeFormatNumber edApprovedSurplus maximumFractionDigits="4"}}</td>
                 <td class="js-color-based-on-number-value">\{{safeFormatNumber ewcApprovedSurplus maximumFractionDigits="4"}}</td>
+                <td class="js-color-based-on-number-value">\{{safeFormatNumber tlApprovedSurplus maximumFractionDigits="4"}}</td>
             </tr>
             \{{/each}}
             </tbody>
@@ -805,6 +809,7 @@
                 this.wcApprovedSurplus = row.wc_approved_surplus;
                 this.edApprovedSurplus = row.ed_approved_surplus;
                 this.ewcApprovedSurplus = row.ewc_approved_surplus;
+                this.tlApprovedSurplus = row.tl_approved_surplus;
             }
         }
 
@@ -817,6 +822,7 @@
                 this.wcApprovedSurplus = scoreSeriesByProperty(stats, x => x.wcApprovedSurplus);
                 this.edApprovedSurplus = scoreSeriesByProperty(stats, x => x.edApprovedSurplus);
                 this.ewcApprovedSurplus = scoreSeriesByProperty(stats, x => x.ewcApprovedSurplus);
+                this.tlApprovedSurplus = scoreSeriesByProperty(stats, x => x.tlApprovedSurplus);
             }
         }
 
@@ -1270,6 +1276,9 @@
             }, {
                 values: scoreSurplusByBucket.ewcApprovedSurplus,
                 key: 'English words',
+            }, {
+                values: scoreSurplusByBucket.tlApprovedSurplus,
+                key: 'total length',
             }];
 
             nv.addGraph(() => {
