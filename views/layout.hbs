@@ -74,7 +74,7 @@
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span>&times;</span>
             </button>
-            <h4 class="modal-title">Match \{{id}} (created \{{formatDate date_created "numericdatetime"}})</h4>
+            <h4 class="modal-title">Match <a href="/anagrams/info/\{{id}}">\{{id}}</a> (created \{{formatDate date_created "numericdatetime"}})</h4>
         </div>
         <div class="modal-body container-fluid">
             <h4>Tweets</h4>
@@ -248,17 +248,6 @@
 
         function showScorePopUp(matchId) {
             getFullMatch(matchId).then(fullMatch => {
-                fullMatch.stripped_sorted_text_length = fullMatch.stripped_sorted_text.length;
-                fullMatch.english_word_count = Math.trunc(fullMatch.english_words_to_total_word_count_ratio * fullMatch.total_words);
-                fullMatch.interesting_factor_without_english_words =
-                        (fullMatch.edit_distance_to_length_ratio +
-                        fullMatch.different_word_count_to_total_word_count_ratio +
-                        fullMatch.inverse_lcs_length_to_total_length_ratio +
-                        fullMatch.total_length_to_highest_length_captured_ratio) / 4;
-                fullMatch.interesting_factor_without_english_or_length =
-                        (fullMatch.edit_distance_to_length_ratio +
-                        fullMatch.different_word_count_to_total_word_count_ratio +
-                        fullMatch.inverse_lcs_length_to_total_length_ratio) / 3;
                 const html = anagramMatchTemplate(fullMatch, {
                     data: {intl: customFormats}
                 });

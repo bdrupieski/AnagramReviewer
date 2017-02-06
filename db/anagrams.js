@@ -348,7 +348,21 @@ WHERE anagram_matches.id = $1::int
 LIMIT 1
 `;
     return pools.anagramPool.query(anagramMatchWithTweetInfoByIdQuery, [id]).then(x => {
-        return x.rows[0];
+        const fullMatch = x.rows[0];
+
+        fullMatch.stripped_sorted_text_length = fullMatch.stripped_sorted_text.length;
+        fullMatch.english_word_count = Math.trunc(fullMatch.english_words_to_total_word_count_ratio * fullMatch.total_words);
+        fullMatch.interesting_factor_without_english_words =
+            (fullMatch.edit_distance_to_length_ratio +
+            fullMatch.different_word_count_to_total_word_count_ratio +
+            fullMatch.inverse_lcs_length_to_total_length_ratio +
+            fullMatch.total_length_to_highest_length_captured_ratio) / 4;
+        fullMatch.interesting_factor_without_english_or_length =
+            (fullMatch.edit_distance_to_length_ratio +
+            fullMatch.different_word_count_to_total_word_count_ratio +
+            fullMatch.inverse_lcs_length_to_total_length_ratio) / 3;
+
+        return fullMatch;
     });
 };
 

@@ -64,7 +64,7 @@
         <tbody>
         {{#each matches}}
             <tr>
-                <td>{{id}}</td>
+                <td><a href="/anagrams/info/{{id}}">{{id}}</a></td>
                 <td data-tweet-id="{{t1_id}}"><a href="/tweets/info/{{t1_id}}">{{t1_original_text}}</a></td>
                 <td data-tweet-id="{{t2_id}}"><a href="/tweets/info/{{t2_id}}">{{t2_original_text}}</a></td>
                 <td><a href="#/" data-match data-match-id="{{id}}">{{formatNumber interesting_factor minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>

@@ -48,6 +48,24 @@ router.get('/fullmatch/:matchId', function (req, res) {
     });
 });
 
+router.get('/info/:matchId', function(req, res) {
+    const matchId = req.params.matchId;
+
+    Promise.all([
+        anagramsDb.getAnagramMatchWithTweetInfo(matchId),
+        matchQueueDb.getAllMatchesInQueueForMatch(matchId),
+    ]).then(([match, queueItems]) => {
+        res.render('anagrams/info', {
+            match: match,
+            queueItems: queueItems
+        });
+    }).catch(error => {
+        logger.error(error.toString());
+        req.flash('error', error.toString());
+        res.redirect('/');
+    });
+});
+
 router.get('/ratelimits', function(req, res) {
     twitter.getAppAndStatusRateLimits().then(rateLimits => {
         res.render('anagrams/ratelimits', {

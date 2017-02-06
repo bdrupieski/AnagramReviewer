@@ -192,3 +192,16 @@ exports.getErrorQueuedMatches = function() {
 exports.getPendingQueuedMatches = function() {
     return getQueuedMatchesWithStatus(queuedMatchPendingStatus);
 };
+
+exports.getAllMatchesInQueueForMatch = function(matchId) {
+    const getAllMatchesInQueueForMatchQuery = `
+SELECT
+  match_queue.*
+FROM
+  match_queue
+WHERE match_queue.match_id = $1::int
+`;
+    return pools.anagramPool.query(getAllMatchesInQueueForMatchQuery, [matchId]).then(x => {
+        return x.rows;
+    });
+};

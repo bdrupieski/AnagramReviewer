@@ -1,0 +1,263 @@
+<div class="container-fluid">
+
+    <h2>Match {{match.id}}</h2>
+
+    <div class="row panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Tweets</h3>
+        </div>
+        <div class="panel-body">
+            <div class="col-md-6">
+                <div class="row">
+                    <label class="col-md-4 control-label">Tweet 1:</label>
+                    <span><a href="/tweets/info/{{match.t1_id}}">{{match.t1_original_text}}</a></span>
+                </div>
+                <div class="row">
+                    <label class="col-md-4 control-label">Tweet 2:</label>
+                    <span><a href="/tweets/info/{{match.t2_id}}">{{match.t2_original_text}}</a></span>
+                </div>
+                <div class="row">
+                    <label class="col-md-4 control-label">Stripped sorted text:</label>
+                    <span>{{match.stripped_sorted_text}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Status</h3>
+        </div>
+        <div class="panel-body">
+            <div class="col-md-6">
+                <div class="row">
+                    <label class="col-md-5 control-label">Tweet 1 Created:</label>
+                    <span>
+                        {{formatDate match.t1_created_at day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}
+                        ({{formatRelative match.t1_created_at}})
+                    </span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Tweet 2 Created:</label>
+                    <span>
+                        {{formatDate match.t2_created_at day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}
+                        ({{formatRelative match.t2_created_at}})
+                    </span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Match created:</label>
+                    <span>
+                        {{formatDate match.date_created day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}
+                        ({{formatRelative match.date_created}})
+                    </span>
+                </div>
+                <br>
+                <div class="row">
+                    <label class="col-md-5 control-label">Attempted approval:</label>
+                    <span>{{match.attempted_approval}}</span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Rejected:</label>
+                    <span>{{match.rejected}}</span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Auto-rejected:</label>
+                    <span>{{match.auto_rejected}}</span>
+                </div>
+                <br>
+                <div class="row">
+                    <label class="col-md-5 control-label">Date rejected:</label>
+                    <span>
+                        {{nullDateFormat match.date_rejected day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}
+                        {{#if match.date_rejected}}
+                            ({{formatRelative match.date_rejected}})
+                        {{/if}}
+                    </span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Date retweeted:</label>
+                    <span>
+                        {{nullDateFormat match.date_retweeted day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}
+                        {{#if match.date_retweeted}}
+                            ({{formatRelative match.date_retweeted}})
+                        {{/if}}
+                    </span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Date posted to tumblr:</label>
+                    <span>
+                        {{nullDateFormat match.date_posted_tumblr day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}
+                        {{#if match.date_posted_tumblr}}
+                            ({{formatRelative match.date_posted_tumblr}})
+                        {{/if}}
+                    </span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Date unretweeted:</label>
+                    <span>
+                        {{nullDateFormat match.date_unretweeted day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}
+                        {{#if match.date_unretweeted}}
+                            ({{formatRelative match.date_unretweeted}})
+                        {{/if}}
+                    </span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Date unposted from tumblr:</label>
+                    <span>
+                        {{nullDateFormat match.date_unposted_tumblr day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}
+                        {{#if match.date_unposted_tumblr}}
+                            ({{formatRelative match.date_unposted_tumblr}})
+                        {{/if}}
+                    </span>
+                </div>
+                <div class="row">
+                    <label class="col-md-5 control-label">Tumblr post ID:</label>
+                    <span>{{match.tumblr_post_id}}</span>
+                </div>
+                <br>
+                <div class="row">
+                    <label class="col-md-6 control-label">Unretweeted from cleanup:</label>
+                    <span>{{match.unretweeted_from_cleanup}}</span>
+                </div>
+                <div class="row">
+                    <label class="col-md-6 control-label">Unretweeted manually:</label>
+                    <span>{{match.unretweeted_manually}}</span>
+                </div>
+                <div class="row">
+                    <label class="col-md-6 control-label">Unposted from tumblr manually:</label>
+                    <span>{{match.unposted_tumblr_manually}}</span>
+                </div>
+                <div class="row">
+                    <label class="col-md-6 control-label">Unretweeted from legacy cleanup:</label>
+                    <span>{{match.unretweeted_legacy_cleanup}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Scores</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <label class="col-sm-4 control-label">1 - (Longest common substring / total length):</label>
+                <span>{{formatNumber match.inverse_lcs_length_to_total_length_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
+                    (1 - ({{match.longest_common_substring_length_stripped_text}}/{{match.stripped_sorted_text_length}}))</span>
+            </div>
+            <div class="row">
+                <label class="col-sm-4 control-label">Different word count / total word count:</label>
+                <span>{{formatNumber match.different_word_count_to_total_word_count_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
+                    ({{match.word_count_difference}}/{{match.total_words}})</span>
+            </div>
+            <div class="row">
+                <label class="col-sm-4 control-label">English words / total word count:</label>
+                <span>{{formatNumber match.english_words_to_total_word_count_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
+                    ({{match.english_word_count}}/{{match.total_words}})</span>
+            </div>
+            <div class="row">
+                <label class="col-sm-4 control-label">Edit distance / total length:</label>
+                <span>{{formatNumber match.edit_distance_to_length_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
+                    ({{match.edit_distance_stripped_text}}/{{match.stripped_sorted_text_length}})</span>
+            </div>
+            <div class="row">
+                <label class="col-sm-4 control-label">Total length / maximum possible length:</label>
+                <span>{{formatNumber match.total_length_to_highest_length_captured_ratio minimumFractionDigits="2" maximumFractionDigits="2"}}
+                    ({{match.stripped_sorted_text_length}}/30)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Combined Scores</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <label class="col-sm-4 control-label">Interesting factor:</label>
+                <span>{{formatNumber match.interesting_factor minimumFractionDigits="2" maximumFractionDigits="2"}}</span>
+            </div>
+            <div class="row">
+                <label class="col-sm-4 control-label">Interesting factor without English words:</label>
+                <span>{{formatNumber match.interesting_factor_without_english_words minimumFractionDigits="2" maximumFractionDigits="2"}}</span>
+            </div>
+            <div class="row">
+                <label class="col-sm-4 control-label">Interesting factor without English words or total length:</label>
+                <span>{{formatNumber match.interesting_factor_without_english_or_length minimumFractionDigits="2" maximumFractionDigits="2"}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Actions</h3>
+        </div>
+        <div class="panel-body">
+            <div class="col-sm-2">
+                {{#if match.date_retweeted}}
+                    <form action='unretweetmanually/{{id}}?unretweet=true' method="post">
+                        <button type="submit" class="btn btn-lg btn-primary">Unretweet</button>
+                    </form>
+                {{/if}}
+            </div>
+            <div class="col-sm-2">
+                {{#if match.date_posted_tumblr}}
+                    <form action='unretweetmanually/{{id}}?deletetumblrpost=true' method="post">
+                        <button type="submit" class="btn btn-lg btn-warning">Untumblr</button>
+                    </form>
+                {{/if}}
+            </div>
+            <div class="col-sm-2">
+                {{#if match.date_posted_tumblr}}
+                    {{#if match.date_retweeted}}
+                        <form action='unretweetmanually/{{id}}?unretweet=true&deletetumblrpost=true' method="post">
+                            <button type="submit" class="btn btn-lg btn-info">Unretweet & Untumblr</button>
+                        </form>
+                    {{/if}}
+                {{/if}}
+            </div>
+        </div>
+    </div>
+
+    <div class="row panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Match queue</h3>
+        </div>
+        <div class="panel-body">
+            {{#if queueItems}}
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Order as shown</th>
+                        <th>Date queued</th>
+                        <th>Date posted</th>
+                        <th>Status</th>
+                        <th>Message</th>
+                        <th>Error date</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#each queueItems}}
+                        <tr>
+                            <td>{{id}}</td>
+                            <td>{{order_as_shown}}</td>
+                            <td>{{nullDateFormat date_queued day="numeric" month="numeric" year="numeric" hour="numeric"
+                                                 minute="numeric" second="numeric"}}</td>
+                            <td>{{nullDateFormat date_posted day="numeric" month="numeric" year="numeric" hour="numeric"
+                                                 minute="numeric" second="numeric"}}</td>
+                            <td>{{status}}</td>
+                            <td>{{message}}</td>
+                            <td>{{nullDateFormat date_error day="numeric" month="numeric" year="numeric" hour="numeric"
+                                                 minute="numeric" second="numeric"}}</td>
+                        </tr>
+                    {{/each}}
+                    </tbody>
+                </table>
+            {{else}}
+                <span>This match is not in the match queue.</span>
+            {{/if}}
+        </div>
+    </div>
+
+</div>
