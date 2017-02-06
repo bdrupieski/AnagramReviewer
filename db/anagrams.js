@@ -1037,6 +1037,32 @@ WHERE tweet1_id = $1 OR tweet2_id = $1
     });
 };
 
+exports.retweetedMatchesThatContainTweetsFromThisMatch = function(matchId) {
+    const retweetedMatchesThatContainTweetsFromThisMatchQuery = `
+WITH matchTweetIds AS (SELECT
+                         tweet1_id,
+                         tweet2_id
+                       FROM anagram_matches
+                       WHERE id = $1::int),
+    tweetIds AS (SELECT tweet1_id AS id
+                 FROM matchTweetIds
+                 UNION SELECT tweet2_id AS id
+                       FROM matchTweetIds)
+SELECT *
+FROM anagram_matches
+WHERE
+  (anagram_matches.tweet1_id IN (SELECT id
+                                 FROM tweetIds) OR
+   anagram_matches.tweet2_id IN (SELECT id
+                                 FROM tweetIds))
+  AND anagram_matches.date_retweeted IS NOT NULL AND
+  anagram_matches.date_unretweeted IS NULL
+`;
+    return pools.anagramPool.query(retweetedMatchesThatContainTweetsFromThisMatchQuery, [matchId]).then(x => {
+        return x.rows;
+    });
+};
+
 function clamp(x, a, b) {
     return Math.max(a, Math.min(x, b));
 }

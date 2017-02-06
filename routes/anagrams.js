@@ -399,7 +399,14 @@ router.post('/enqueue/:id', function (req, res) {
                     return matchQueueDb.enqueueMatch(matchId, orderAsShown);
                 }
             }).then(x => {
-                res.json({successMessage: `Enqueued ${matchId}.`, remove: true});
+                return anagramsDb.retweetedMatchesThatContainTweetsFromThisMatch(matchId);
+            }).then(retweetedMatchesWithTheseTweets => {
+                const containsRetweets = retweetedMatchesWithTheseTweets.length > 0;
+                res.json({
+                    successMessage: `Enqueued ${matchId}.`,
+                    enqueuedMatchContainsRetweets: containsRetweets,
+                    remove: true
+                });
             }).catch(error => {
                 logger.error(error);
                 res.json({error: error});

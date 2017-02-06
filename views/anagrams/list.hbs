@@ -212,6 +212,9 @@
                     if (data.tumblrError) {
                         $.growl.error({title: '', message: data.tumblrError});
                     }
+                    if (data.enqueuedMatchContainsRetweets) {
+                        $.growl.warning({title: '', message: "The enqueued match contains retweets."});
+                    }
                     if (data.remove) {
                         this.anagramMatches.remove(match => match.id === affectedMatch.id);
                         this.getMoreMatchesIfListIsRunningLow();
