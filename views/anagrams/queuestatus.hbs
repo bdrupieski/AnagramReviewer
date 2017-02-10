@@ -24,6 +24,7 @@
                     <thead>
                     <tr>
                         <th>Time Queued</th>
+                        <th>Match</th>
                         <th>IF</th>
                         <th>T1</th>
                         <th>T2</th>
@@ -34,6 +35,7 @@
                     {{#each queueStatus.pendingQueueMatches}}
                         <tr data-pending-id="{{id}}">
                             <td>{{formatTime date_queued day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
+                            <td><a href="/anagrams/info/{{match_id}}">{{match_id}}</a></td>
                             <td><a href="#/" data-match data-match-id="{{match_id}}">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
                             <td>
                                 {{t1_originaltext}}
