@@ -886,7 +886,7 @@ SELECT DISTINCT ON (interesting_factor)
   trunc(anagram_matches.interesting_factor :: NUMERIC, 2) AS interesting_factor,
   count(anagram_matches.interesting_factor) OVER w AS total,
   sum(CASE WHEN anagram_matches.rejected = TRUE THEN 1 ELSE 0 END) OVER w AS rejected,
-  sum(CASE WHEN anagram_matches.rejected = FALSE AND anagram_matches.attempted_approval = FALSE AND anagram_matches.date_unretweeted IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed
+  sum(CASE WHEN anagram_matches.rejected = FALSE AND anagram_matches.attempted_approval = FALSE AND anagram_matches.date_unposted_tumblr IS NULL AND anagram_matches.date_unretweeted IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed
 FROM anagram_matches
 WHERE date(date_created) = '${formattedDate}'
 WINDOW w AS (

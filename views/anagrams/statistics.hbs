@@ -1237,6 +1237,7 @@
             }, {
                 values: scoreDistributionStats.unreviewed,
                 key: "Unreviewed",
+                disabled: true,
             }, {
                 values: scoreDistributionStats.reviewed,
                 key: 'Reviewed',
@@ -1250,7 +1251,6 @@
                         .options({
                             duration: 300,
                         })
-                        .stacked(true)
                         .margin({right: 50})
                         .color(d3.scale.category10().range());
 
