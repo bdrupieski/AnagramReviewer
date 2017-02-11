@@ -785,7 +785,7 @@ exports.getMostRecentRejectedMatches = function (limit = 10) {
 SELECT
   anagram_matches.id,
   anagram_matches.interesting_factor AS interesting,
-  anagram_matches.date_retweeted,
+  anagram_matches.date_rejected,
   tweet1.id                          AS t1_id,
   tweet2.id                          AS t2_id,
   tweet1.original_text               AS t1_originaltext,

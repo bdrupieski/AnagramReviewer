@@ -2,6 +2,7 @@
     <thead>
     <tr>
         <th>score</th>
+        <th>rejected</th>
         <th>T1</th>
         <th>T2</th>
         <th>actions</th>
@@ -11,11 +12,12 @@
     {{#each matches}}
         <tr>
             <td class="col-md-1"><a href="#/" data-match data-match-id="{{id}}">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
-            <td class="col-md-5">{{t1_originaltext}}
+            <td class="col-md-2">{{nullDateFormat date_rejected day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
+            <td class="col-md-4">{{t1_originaltext}}
                 <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">[link]</a>
                 <a href="/tweets/info/{{t1_id}}">[info]</a>
             </td>
-            <td class="col-md-5">{{t2_originaltext}}
+            <td class="col-md-4">{{t2_originaltext}}
                 <a href="http://twitter.com/{{t2_username}}/status/{{t2_statusid}}">[link]</a>
                 <a href="/tweets/info/{{t2_id}}">[info]</a>
             </td>
