@@ -283,7 +283,8 @@ WITH otherMatchCountForTweet1 AS (SELECT
                                                   anagram_matches.date_unretweeted IS NULL
                                       THEN 1
                                         ELSE 0 END) AS retweeted_count,
-                                    sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL
+                                    sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL AND
+                                                  anagram_matches.date_unposted_tumblr IS NULL
                                       THEN 1
                                         ELSE 0 END) AS tumblr_count,
                                     $1::int         AS id
@@ -305,7 +306,8 @@ WITH otherMatchCountForTweet1 AS (SELECT
                                                  anagram_matches.date_unretweeted IS NULL
                                      THEN 1
                                        ELSE 0 END) AS retweeted_count,
-                                   sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL
+                                   sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL AND
+                                                 anagram_matches.date_unposted_tumblr IS NULL
                                      THEN 1
                                        ELSE 0 END) AS tumblr_count,
                                    $1::int         AS id
@@ -392,11 +394,11 @@ SELECT
   count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
   sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
   count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr,
-  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed,
+  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL AND anagram_matches.date_unposted_tumblr IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed,
   avg(anagram_matches.interesting_factor) over w as average_interesting_factor,
   avg(CASE WHEN anagram_matches.attempted_approval = true THEN anagram_matches.interesting_factor END) over w as attempted_approval_average_interesting_factor,
   avg(CASE WHEN anagram_matches.rejected = true THEN anagram_matches.interesting_factor END) over w as rejected_average_interesting_factor,
-  avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
+  avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL AND anagram_matches.date_unposted_tumblr IS NULL THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
 FROM anagram_matches
 WINDOW w AS (
   PARTITION BY date(anagram_matches.date_created) )
@@ -421,7 +423,7 @@ SELECT
   count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
   sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
   count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr,
-  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed
+  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL AND anagram_matches.date_unposted_tumblr IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed
 FROM anagram_matches
 WINDOW w AS (
   PARTITION BY trunc(anagram_matches.interesting_factor :: NUMERIC, 2) )
@@ -448,11 +450,11 @@ SELECT
   count(anagram_matches.date_unretweeted) OVER w AS unretweeted,
   sum(CASE WHEN anagram_matches.rejected = true THEN 1 ELSE 0 END) OVER w AS rejected,
   count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr,
-  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed,
+  sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL AND anagram_matches.date_unposted_tumblr IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed,
   avg(anagram_matches.interesting_factor) over w as average_interesting_factor,
   avg(CASE WHEN anagram_matches.attempted_approval = true THEN anagram_matches.interesting_factor END) over w as attempted_approval_average_interesting_factor,
   avg(CASE WHEN anagram_matches.rejected = true THEN anagram_matches.interesting_factor END) over w as rejected_average_interesting_factor,
-  avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
+  avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL AND anagram_matches.date_unposted_tumblr IS NULL THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
 FROM anagram_matches
 WINDOW w AS (
   PARTITION BY date_part('hour', anagram_matches.date_created) * INTERVAL '1 hour' +
@@ -657,6 +659,7 @@ FROM anagram_matches
 WHERE anagram_matches.date_retweeted IS NOT NULL
   AND anagram_matches.date_unretweeted IS NULL
   AND anagram_matches.date_posted_tumblr IS NULL
+  AND anagram_matches.date_unposted_tumblr IS NULL
 ORDER BY anagram_matches.date_retweeted
 LIMIT $1::int
 `;
