@@ -195,14 +195,14 @@
         <div class="panel-body">
             <div class="col-sm-2">
                 {{#if match.date_retweeted}}
-                    <form action='unretweetmanually/{{id}}?unretweet=true' method="post">
+                    <form action='/anagrams/unretweetmanually/{{match.id}}?unretweet=true' method="post">
                         <button type="submit" class="btn btn-lg btn-primary">Unretweet</button>
                     </form>
                 {{/if}}
             </div>
             <div class="col-sm-2">
                 {{#if match.date_posted_tumblr}}
-                    <form action='unretweetmanually/{{id}}?deletetumblrpost=true' method="post">
+                    <form action='/anagrams/unretweetmanually/{{match.id}}?deletetumblrpost=true' method="post">
                         <button type="submit" class="btn btn-lg btn-warning">Untumblr</button>
                     </form>
                 {{/if}}
@@ -210,7 +210,7 @@
             <div class="col-sm-2">
                 {{#if match.date_posted_tumblr}}
                     {{#if match.date_retweeted}}
-                        <form action='unretweetmanually/{{id}}?unretweet=true&deletetumblrpost=true' method="post">
+                        <form action='/anagrams/unretweetmanually{{match.id}}?unretweet=true&deletetumblrpost=true' method="post">
                             <button type="submit" class="btn btn-lg btn-info">Unretweet & Untumblr</button>
                         </form>
                     {{/if}}
