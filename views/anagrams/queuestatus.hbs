@@ -15,6 +15,13 @@
     <div class="row">
         <strong>{{formatNumber queueStatus.removedCount}}</strong> removed.
     </div>
+    <br>
+    <div class="row">
+        <strong>{{formatNumber queueStatus.orderAsShownCount.orderAsShownTrue}}</strong> total matches queued in the order as shown (<strong>⇉</strong>, T1 then T2).
+    </div>
+    <div class="row">
+        <strong>{{formatNumber queueStatus.orderAsShownCount.orderAsShownFalse}}</strong> total matches queued in reverse order (<strong>⤮</strong>, T2 then T1).
+    </div>
 
     {{#if queueStatus.pendingQueueMatches}}
         <div class="row">

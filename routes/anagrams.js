@@ -338,7 +338,8 @@ router.get('/queuestatus', function(req, res) {
         matchQueueDb.getCountOfObservedErrorQueuedMatches(),
         matchQueueDb.getCountOfRemovedQueueMatches(),
         matchQueueDb.getPendingQueuedMatches(),
-        matchQueueDb.getErrorQueuedMatches()
+        matchQueueDb.getErrorQueuedMatches(),
+        matchQueueDb.getCountOfOrderAsShown(),
     ]).then(queueStatus => {
 
         const formattedQueueStatus = {
@@ -348,7 +349,8 @@ router.get('/queuestatus', function(req, res) {
             errorObservedCount: queueStatus[3],
             removedCount: queueStatus[4],
             pendingQueueMatches: queueStatus[5],
-            errorQueueMatches: queueStatus[6]
+            errorQueueMatches: queueStatus[6],
+            orderAsShownCount: queueStatus[7],
         };
 
         res.render('anagrams/queuestatus', {

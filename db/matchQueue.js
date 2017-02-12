@@ -206,3 +206,24 @@ WHERE match_queue.match_id = $1::int
         return x.rows;
     });
 };
+
+exports.getCountOfOrderAsShown = function() {
+    const countOfOrderAsShownQuery = `
+SELECT
+  sum(CASE WHEN match_queue.order_as_shown IS TRUE
+    THEN 1
+      ELSE 0 END) AS order_as_shown_true,
+  sum(CASE WHEN match_queue.order_as_shown IS FALSE
+    THEN 1
+      ELSE 0 END) AS order_as_shown_false
+FROM match_queue
+WHERE match_queue.status = 'posted'
+`;
+    return pools.anagramPool.query(countOfOrderAsShownQuery).then(x => {
+        const counts = x.rows[0];
+        return {
+            orderAsShownTrue: Number(counts.order_as_shown_true),
+            orderAsShownFalse: Number(counts.order_as_shown_false),
+        }
+    });
+};
