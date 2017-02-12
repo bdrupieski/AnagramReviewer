@@ -161,6 +161,7 @@ SELECT
   match_queue.date_queued,
   match_queue.date_error,
   match_queue.message,
+  match_queue.order_as_shown,
   anagram_matches.id                 AS match_id,
   anagram_matches.interesting_factor AS interesting,
   tweet1.id                          AS t1_id,

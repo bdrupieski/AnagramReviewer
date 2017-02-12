@@ -25,8 +25,18 @@ function boolAsYesNo(bool, format, options) {
     }
 }
 
+function checkedIf(condition) {
+    return condition ? "checked" : "";
+}
+
+function inOrderArrows(condition) {
+    return condition ? "⇉" : "⤮";
+}
+
 exports.registerCustomHelpers = function() {
     hbs.registerHelper('safeFormatNumber', safeFormatNumber);
     hbs.registerHelper('nullDateFormat', nullDateFormat);
     hbs.registerHelper('boolAsYesNo', boolAsYesNo);
+    hbs.registerHelper('checkedIf', checkedIf);
+    hbs.registerHelper('inOrderArrows', inOrderArrows);
 };

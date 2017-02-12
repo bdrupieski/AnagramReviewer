@@ -26,6 +26,7 @@
                         <th>Time Queued</th>
                         <th>Match</th>
                         <th>IF</th>
+                        <th>In order</th>
                         <th>T1</th>
                         <th>T2</th>
                         <th>Remove</th>
@@ -37,6 +38,7 @@
                             <td>{{formatTime date_queued day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
                             <td><a href="/anagrams/info/{{match_id}}">{{match_id}}</a></td>
                             <td><a href="#/" data-match data-match-id="{{match_id}}">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
+                            <td><strong style="font-size: 150%">{{inOrderArrows order_as_shown}}</strong></td>
                             <td>
                                 {{t1_originaltext}}
                                 <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">[link]</a>
@@ -71,6 +73,7 @@
                         <th>Time Error</th>
                         <th>Match</th>
                         <th>IF</th>
+                        <th>In order</th>
                         <th>T1</th>
                         <th>T2</th>
                         <th>Message</th>
@@ -84,6 +87,7 @@
                             <td>{{formatTime date_error day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
                             <td><a href="/anagrams/info/{{match_id}}">{{match_id}}</a></td>
                             <td><a href="#" data-match data-match-id="{{match_id}}">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
+                            <td><strong style="font-size: 150%">{{inOrderArrows order_as_shown}}</strong></td>
                             <td>
                                 {{t1_originaltext}}
                                 <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">[link]</a>
