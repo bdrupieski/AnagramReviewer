@@ -10,7 +10,13 @@
     <tbody>
     {{#each matches}}
         <tr>
-            <td class="col-md-1"><a href="#/" data-match data-match-id="{{id}}">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
+            <td class="col-md-1">
+                <a href="#/" data-match data-match-id="{{id}}">
+                    {{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}
+                </a>
+                <br>
+                <strong style="font-size: 200%">{{inOrderArrows posted_in_order}}</strong>
+            </td>
             <td class="col-md-5">
                 {{t1_originaltext}}
                 <a href="http://twitter.com/{{t1_username}}/status/{{t1_statusid}}">[link]</a>

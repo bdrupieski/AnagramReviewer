@@ -206,19 +206,20 @@ WHERE anagram_matches.id = $1::int;
     });
 };
 
-exports.approveMatch = function (matchId, tweet1RetweetId, tweet2RetweetId) {
+exports.updateMatchAsRetweeted = function (matchId, tweet1RetweetId, tweet2RetweetId, postedInOrder) {
 
-    const approveMatchQuery = `
+    const updateMatchAsRetweetedQuery = `
 UPDATE anagram_matches
 SET
   tweet1_retweet_id = $2,
   tweet2_retweet_id = $3,
   date_retweeted    = current_timestamp,
-  date_unretweeted  = NULL
+  date_unretweeted  = NULL,
+  posted_in_order   = $4::boolean
 WHERE anagram_matches.id = $1::int;
 `;
 
-    return pools.anagramPool.query(approveMatchQuery, [matchId, tweet1RetweetId, tweet2RetweetId]).then(x => {
+    return pools.anagramPool.query(updateMatchAsRetweetedQuery, [matchId, tweet1RetweetId, tweet2RetweetId, postedInOrder]).then(x => {
         if (x.rowCount != 1) {
             throw x;
         } else {
@@ -227,17 +228,18 @@ WHERE anagram_matches.id = $1::int;
     });
 };
 
-exports.updateTumblrPostId = function(matchId, tumblrPostId) {
+exports.updateTumblrPostId = function(matchId, tumblrPostId, postedInOrder) {
     const updateTumblrPostIdQuery = `
 UPDATE anagram_matches
 SET
   tumblr_post_id        = $2::bigint,
   date_posted_tumblr    = current_timestamp,
-  date_unposted_tumblr  = NULL
+  date_unposted_tumblr  = NULL,
+  posted_in_order       = $3::boolean
 WHERE anagram_matches.id = $1::int;
 `;
 
-    return pools.anagramPool.query(updateTumblrPostIdQuery, [matchId, tumblrPostId]).then(x => {
+    return pools.anagramPool.query(updateTumblrPostIdQuery, [matchId, tumblrPostId, postedInOrder]).then(x => {
         if (x.rowCount != 1) {
             throw x;
         } else {
@@ -757,6 +759,7 @@ SELECT
   anagram_matches.date_posted_tumblr,
   anagram_matches.unretweeted_from_cleanup,
   anagram_matches.unretweeted_manually,
+  anagram_matches.posted_in_order,
   tweet1.id                                 AS t1_id,
   tweet2.id                                 AS t2_id,
   tweet1.original_text                      AS t1_originaltext,

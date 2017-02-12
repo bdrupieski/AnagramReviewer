@@ -50,7 +50,7 @@ exports.postToTumblr = function(matchId, orderAsShown) {
             tweets.tweet2 = temp;
         }
 
-        return postMatchToTumblr(matchId, tweets.tweet1.id_str, tweets.tweet2.id_str);
+        return postMatchToTumblr(matchId, tweets.tweet1.id_str, tweets.tweet2.id_str, orderAsShown);
     }).then(x => {
         return {successMessage: "Match contains retweet. Posted to tumblr.", remove: true};
     }).catch(error => {
@@ -64,7 +64,7 @@ exports.postToTumblr = function(matchId, orderAsShown) {
     });
 };
 
-function postMatchToTumblr(matchId, t1StatusId, t2StatusId) {
+function postMatchToTumblr(matchId, t1StatusId, t2StatusId, postedInOrder) {
     return Promise.all([
         twitter.oembedTweet(t1StatusId),
         twitter.oembedTweet(t2StatusId)
@@ -80,7 +80,7 @@ function postMatchToTumblr(matchId, t1StatusId, t2StatusId) {
     }).then(tumblrResponse => {
         const tumblrPostId = tumblrResponse.id;
         logger.info(`posted tumblr post id: ${tumblrPostId}`);
-        return anagramsDb.updateTumblrPostId(matchId, tumblrPostId);
+        return anagramsDb.updateTumblrPostId(matchId, tumblrPostId, postedInOrder);
     });
 }
 
@@ -105,9 +105,9 @@ exports.retweetAndPostToTumblr = function(matchId, orderAsShown) {
         return twitter.retweet(originalTweets.tweet1.id_str);
     }).then(retweet => {
         retweet2 = retweet;
-        return anagramsDb.approveMatch(matchId, retweet1.id_str, retweet2.id_str);
+        return anagramsDb.updateMatchAsRetweeted(matchId, retweet1.id_str, retweet2.id_str, orderAsShown);
     }).then(x => {
-        return postMatchToTumblr(matchId, originalTweets.tweet1.id_str, originalTweets.tweet2.id_str).then(x => {
+        return postMatchToTumblr(matchId, originalTweets.tweet1.id_str, originalTweets.tweet2.id_str, orderAsShown).then(x => {
             return null;
         }).catch(err => {
             return err;

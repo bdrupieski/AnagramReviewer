@@ -30,7 +30,11 @@ function checkedIf(condition) {
 }
 
 function inOrderArrows(condition) {
-    return condition ? "⇉" : "⤮";
+    if (condition == null || condition == undefined) {
+        return condition;
+    } else {
+        return condition ? "⇉" : "⤮";
+    }
 }
 
 exports.registerCustomHelpers = function() {

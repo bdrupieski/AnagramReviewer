@@ -466,7 +466,7 @@ router.post('/bulkpostmissingtumblrposts', function (req, res) {
             req.flash('info', "No missing tumblr posts.");
             res.redirect('/anagrams/list');
         } else {
-            return Promise.all(matches.map(x => postMatchToTumblr(x.id, x.t1_status_id, x.t2_status_id))).then(x => {
+            return Promise.all(matches.map(x => postMatchToTumblr(x.id, x.t1_status_id, x.t2_status_id, true))).then(x => {
                 req.flash('info', `posted ${x.length} to tumblr`);
                 res.redirect('/anagrams/list');
             });
