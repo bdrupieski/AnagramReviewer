@@ -243,7 +243,8 @@ router.post('/nwaymatches', function(req, res) {
 });
 
 router.get('/unretweetmanually', function(req, res) {
-    anagramsDb.getMostRecentRetweetedMatches(500).then(matches => {
+    const limit = req.query.limit || 500;
+    anagramsDb.getMostRecentRetweetedMatches(limit).then(matches => {
         res.render('anagrams/unretweetmanually', {
             matches: matches
         });
@@ -303,7 +304,8 @@ router.post('/unretweetmanually/:id', function(req, res) {
 });
 
 router.get('/unrejectmanually', function(req, res) {
-    anagramsDb.getMostRecentRejectedMatches(500).then(matches => {
+    const limit = req.query.limit || 500;
+    anagramsDb.getMostRecentRejectedMatches(limit).then(matches => {
         res.render('anagrams/unrejectmanually', {
             matches: matches
         });
