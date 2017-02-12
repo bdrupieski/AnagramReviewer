@@ -54,15 +54,15 @@
                 <br>
                 <div class="row">
                     <label class="col-md-5 control-label">Attempted approval:</label>
-                    <span>{{match.attempted_approval}}</span>
+                    <span>{{boolAsYesNo match.attempted_approval}}</span>
                 </div>
                 <div class="row">
                     <label class="col-md-5 control-label">Rejected:</label>
-                    <span>{{match.rejected}}</span>
+                    <span>{{boolAsYesNo match.rejected}}</span>
                 </div>
                 <div class="row">
                     <label class="col-md-5 control-label">Auto-rejected:</label>
-                    <span>{{match.auto_rejected}}</span>
+                    <span>{{boolAsYesNo match.auto_rejected}}</span>
                 </div>
                 <br>
                 <div class="row">
@@ -117,19 +117,19 @@
                 <br>
                 <div class="row">
                     <label class="col-md-6 control-label">Unretweeted from cleanup:</label>
-                    <span>{{match.unretweeted_from_cleanup}}</span>
+                    <span>{{boolAsYesNo match.unretweeted_from_cleanup}}</span>
                 </div>
                 <div class="row">
                     <label class="col-md-6 control-label">Unretweeted manually:</label>
-                    <span>{{match.unretweeted_manually}}</span>
+                    <span>{{boolAsYesNo match.unretweeted_manually}}</span>
                 </div>
                 <div class="row">
                     <label class="col-md-6 control-label">Unposted from tumblr manually:</label>
-                    <span>{{match.unposted_tumblr_manually}}</span>
+                    <span>{{boolAsYesNo match.unposted_tumblr_manually}}</span>
                 </div>
                 <div class="row">
                     <label class="col-md-6 control-label">Unretweeted from legacy cleanup:</label>
-                    <span>{{match.unretweeted_legacy_cleanup}}</span>
+                    <span>{{boolAsYesNo match.unretweeted_legacy_cleanup}}</span>
                 </div>
             </div>
         </div>
