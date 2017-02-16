@@ -100,7 +100,7 @@ function formatRateLimit(rateLimitCategory, key) {
 router.get('/statistics', function(req, res) {
 
     const interestingFactorCutoff = Number(req.query.interestingfactor) || anagramsDb.defaultInterestingFactor;
-    const numberOfLastDaysToGetMatchesCreatedPerDay = Number(req.query.days) || 15;
+    const numberOfPastDays = Number(req.query.days) || 15;
     const minuteInterval = Number(req.query.minutes) || 15;
 
     Promise.all([
@@ -112,12 +112,12 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getCountOfRetweetedMatches(),
         anagramsDb.getCountOfRejectedMatches(),
         anagramsDb.getDateLastMatchCreated(),
-        anagramsDb.getRetweetsAndTumblrPostsByDay(numberOfLastDaysToGetMatchesCreatedPerDay),
-        anagramsDb.getStatsByDateMatchCreated(numberOfLastDaysToGetMatchesCreatedPerDay),
-        anagramsDb.getStatsByInterestingFactorBucket(),
-        anagramsDb.getStatsByTimeOfDayMatchCreated(minuteInterval),
-        anagramsDb.averageScoreSurplusForApprovedMatches(interestingFactorCutoff),
-        anagramsDb.averageScoreSurplusForApprovedMatchesByInterestingFactorScoreBucket(),
+        anagramsDb.getRetweetsAndTumblrPostsByDay(numberOfPastDays),
+        anagramsDb.getStatsByDateMatchCreated(numberOfPastDays),
+        anagramsDb.getStatsByInterestingFactorBucket(numberOfPastDays),
+        anagramsDb.getStatsByTimeOfDayMatchCreated(minuteInterval, numberOfPastDays),
+        anagramsDb.averageScoreSurplusForApprovedMatches(interestingFactorCutoff, numberOfPastDays),
+        anagramsDb.averageScoreSurplusForApprovedMatchesByInterestingFactorScoreBucket(numberOfPastDays),
     ]).then(stats => {
         const formattedStats = {
             countOfMatches: stats[0],
@@ -137,7 +137,7 @@ router.get('/statistics', function(req, res) {
         };
 
         formattedStats.interestingFactorCutoff = interestingFactorCutoff;
-        formattedStats.numberOfDaysToGetMatchesPerDay = numberOfLastDaysToGetMatchesCreatedPerDay;
+        formattedStats.numberOfPastDays = numberOfPastDays;
         formattedStats.minuteInterval = minuteInterval;
 
         formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoffIsOne =
@@ -147,7 +147,7 @@ router.get('/statistics', function(req, res) {
         formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.countOfMatches;
         formattedStats.countOfRetweetedTweets = formattedStats.countOfRetweetedMatches * 2;
         formattedStats.sumRetweetedMatchesOverPastDays = _.sum(formattedStats.retweetsAndTumblrByDay.map(x => Number(x.retweeted)));
-        formattedStats.averageRetweetedMatchesPerDay = formattedStats.sumRetweetedMatchesOverPastDays / formattedStats.numberOfDaysToGetMatchesPerDay;
+        formattedStats.averageRetweetedMatchesPerDay = formattedStats.sumRetweetedMatchesOverPastDays / formattedStats.numberOfPastDays;
 
         formattedStats.retweetsAndTumblrByDayJson = JSON.stringify(formattedStats.retweetsAndTumblrByDay);
         formattedStats.statsByDateMatchCreatedJson = JSON.stringify(formattedStats.statsByDateMatchCreated);

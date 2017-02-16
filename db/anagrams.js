@@ -412,7 +412,7 @@ LIMIT $1::int;
     });
 };
 
-exports.getStatsByInterestingFactorBucket = function () {
+exports.getStatsByInterestingFactorBucket = function (numberOfPastDays) {
 
     const statsByInterestingFactorBucket = `
 SELECT
@@ -427,6 +427,7 @@ SELECT
   count(anagram_matches.date_posted_tumblr) OVER w AS posted_to_tumblr,
   sum(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL AND anagram_matches.date_unposted_tumblr IS NULL THEN 1 ELSE 0 END) OVER w AS unreviewed
 FROM anagram_matches
+WHERE date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
 WINDOW w AS (
   PARTITION BY trunc(anagram_matches.interesting_factor :: NUMERIC, 2) )
 ORDER BY score DESC;
@@ -436,7 +437,7 @@ ORDER BY score DESC;
     });
 };
 
-exports.getStatsByTimeOfDayMatchCreated = function(minuteInterval = 5) {
+exports.getStatsByTimeOfDayMatchCreated = function(minuteInterval = 5, numberOfPastDays) {
 
     const interval = clamp(minuteInterval, 1, 60);
 
@@ -458,6 +459,7 @@ SELECT
   avg(CASE WHEN anagram_matches.rejected = true THEN anagram_matches.interesting_factor END) over w as rejected_average_interesting_factor,
   avg(CASE WHEN anagram_matches.rejected = false AND anagram_matches.attempted_approval = false AND anagram_matches.date_unretweeted IS NULL AND anagram_matches.date_unposted_tumblr IS NULL THEN anagram_matches.interesting_factor END) over w as unreviewed_average_interesting_factor
 FROM anagram_matches
+WHERE date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
 WINDOW w AS (
   PARTITION BY date_part('hour', anagram_matches.date_created) * INTERVAL '1 hour' +
                (date_part('minute', anagram_matches.date_created) :: INT / ${interval} * INTERVAL '${interval} min') )
@@ -936,7 +938,7 @@ WHERE number_of_matches_in_group > $1::int;
     });
 };
 
-exports.averageScoreSurplusForApprovedMatches = function(interestingFactorCutoff = defaultInterestingFactor) {
+exports.averageScoreSurplusForApprovedMatches = function(interestingFactorCutoff = defaultInterestingFactor, numberOfPastDays) {
 
     interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
 
@@ -949,8 +951,8 @@ WITH scores_attempted_approval AS (SELECT
                                      avg(anagram_matches.english_words_to_total_word_count_ratio)        AS ewc_ratio,
                                      avg(anagram_matches.total_length_to_highest_length_captured_ratio)  AS tl_ratio
                                    FROM anagram_matches
-                                   WHERE
-                                     anagram_matches.attempted_approval IS TRUE
+                                   WHERE date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
+                                     AND anagram_matches.attempted_approval IS TRUE
                                      AND anagram_matches.rejected IS FALSE
                                      AND anagram_matches.interesting_factor > $1::float),
     scores_rejected AS (SELECT
@@ -961,8 +963,9 @@ WITH scores_attempted_approval AS (SELECT
                           avg(anagram_matches.english_words_to_total_word_count_ratio)        AS ewc_ratio,
                           avg(anagram_matches.total_length_to_highest_length_captured_ratio)  AS tl_ratio
                         FROM anagram_matches
-                        WHERE anagram_matches.rejected IS TRUE
-                              AND anagram_matches.interesting_factor > $1::float)
+                        WHERE date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
+                          AND anagram_matches.rejected IS TRUE
+                          AND anagram_matches.interesting_factor > $1::float)
 SELECT
   scores_attempted_approval.interesting_factor - scores_rejected.interesting_factor AS if_approved_surplus,
   scores_attempted_approval.lcs_ratio - scores_rejected.lcs_ratio                   AS lcs_approved_surplus,
@@ -986,7 +989,7 @@ FROM scores_attempted_approval, scores_rejected;
     });
 };
 
-exports.averageScoreSurplusForApprovedMatchesByInterestingFactorScoreBucket = function() {
+exports.averageScoreSurplusForApprovedMatchesByInterestingFactorScoreBucket = function(numberOfPastDays) {
     const approvedScoreSurplusByInterestingFactorBucketQuery = `
 WITH score_buckets AS (SELECT DISTINCT ON (interesting_factor)
                          trunc(anagram_matches.interesting_factor :: NUMERIC, 2) AS interesting_factor,
@@ -1021,6 +1024,7 @@ WITH score_buckets AS (SELECT DISTINCT ON (interesting_factor)
                            THEN anagram_matches.total_length_to_highest_length_captured_ratio END)
                          OVER w   AS tl_ratio_rejected
                        FROM anagram_matches
+                       WHERE date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
                        WINDOW w AS (
                          PARTITION BY trunc(anagram_matches.interesting_factor :: NUMERIC, 2)
                        ))
