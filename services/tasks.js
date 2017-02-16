@@ -133,8 +133,8 @@ exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
     return Promise.all([
         // always get more tweets than the number of matches*2
         // so the retrieved timeline doesn't break on a dangling pair
-        twitter.getPastTweetsUpTo3200(800),
-        anagramsDb.getMostRecentRetweetedStatusIds(300),
+        twitter.getPastTweetsUpTo3200(1000),
+        anagramsDb.getMostRecentRetweetedStatusIds(400),
     ]).then(([timelineTweets, mostRecentRetweets]) => {
         console.log(`retrieved ${timelineTweets.length} timeline tweets`);
         let statusIdsOfRetweetsOnTimeline = new Set(timelineTweets.map(x => x.retweeted_status.id_str));
