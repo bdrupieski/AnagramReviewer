@@ -199,6 +199,16 @@ router.get('/exacttweetcount', function(req, res) {
     });
 });
 
+router.get('/exacttweetcountforpastnumberofdays/:pastNumberOfDays', function(req, res) {
+    const pastNumberOfDays = Number(req.params.pastNumberOfDays);
+    anagramsDb.getExactCountOfTweetsInPastNumberOfDays(pastNumberOfDays).then(count => {
+        res.json({count: count});
+    }).catch(error => {
+        logger.error(error.toString());
+        res.json({error: error});
+    });
+});
+
 router.get('/dateofoldesttweetwhoseexistencehasnotbeenchecked', function(req, res) {
     anagramsDb.getDateOfOldestTweetWhoseExistenceHasNotBeenChecked().then(date => {
         res.json({date: date});

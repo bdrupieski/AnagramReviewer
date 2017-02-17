@@ -82,8 +82,8 @@
     <h3>For all time...</h3>
 
     <div class="row">
-        <strong>{{formatNumber stats.allTimeCounts.total_count}}</strong> matches have been created over approximately
-        <a href="#"
+        <strong>{{formatNumber stats.allTimeCounts.total_count}}</strong> matches have been created from approximately
+        <a href="#/"
            id="exact-tweet-popover"
            data-html="true"
            data-placement="top"
@@ -113,13 +113,22 @@
         (for <strong>{{formatNumber stats.allTimeCountOfRetweetedTweets}}</strong> retweets, with <strong>{{formatNumber
             stats.allTimeCounts.tumblr_only_count}}</strong> posted only to tumblr) for an average of
         <strong>{{formatNumber stats.allTimeAverageRetweetedMatchesPerDay maximumFractionDigits="1"}}</strong> matches/day
-        retweeted over <strong>{{formatNumber stats.countOfDaysMatchesHaveBeenRetweeted}}</strong> total days matches have been retweeted.
+        retweeted over <strong>{{formatNumber stats.countOfDaysMatchesHaveBeenRetweeted}}</strong> total (non-contiguous) days matches have been retweeted.
     </div>
 
     <h3>In the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days...</h3>
 
     <div class="row">
-        <strong>{{formatNumber stats.recentCounts.recent_total_count}}</strong> matches have been created.
+        <strong>{{formatNumber stats.recentCounts.recent_total_count}}</strong> matches have been created from
+        <a href="#/"
+           id="exact-tweet-for-past-number-of-days-popover"
+           data-html="true"
+           data-placement="top"
+           data-toggle="popover"
+           data-trigger="focus"
+           title="Exact number of tweets for the past {{formatNumber stats.numberOfPastDays}} days"
+           data-content="<span id='exact-tweet-number-for-past-number-of-days'><img src='/images/loader.gif'></img></span>">
+            <strong><span id="exact-tweet-for-past-number-of-days-content">... 🤔</span></strong></a> tweets<span id="recent-tweets-per-match">.</span>
     </div>
     <div class="row">
         <strong>{{formatNumber stats.recentCounts.recent_interesting_factor_count}}</strong> matches have been created with an interesting factor
@@ -140,10 +149,14 @@
     </div>
     <div class="row">
         <strong>{{formatNumber stats.recentCounts.recent_retweet_count}}</strong> matches have been retweeted
-        (with <strong>{{formatNumber stats.recentCounts.recent_tumblr_only_count}}</strong> posted only to tumblr)
+        (for <strong>{{formatNumber stats.recentCountOfRetweetsWhereMatchWasCreatedRecently}}</strong> total retweets)
         for an average of
-        <strong>{{formatNumber stats.recentAverageRetweetedMatchesPerDayWhereMatchCreatedRecently maximumFractionDigits="1"}}</strong> matches/day
+        <strong>{{formatNumber stats.recentAverageRetweetedMatchesPerDayWhereMatchCreatedRecently
+                               maximumFractionDigits="1"}}</strong> matches/day
         retweeted.
+    </div>
+    <div class="row">
+        <strong>{{formatNumber stats.recentCounts.recent_tumblr_only_count}}</strong> matches were posted only to tumblr.
     </div>
 
     <h4>For matches <em>acted upon</em> in the past {{formatNumber stats.numberOfPastDays}} days...</h4>
@@ -165,7 +178,7 @@
     </div>
     <div class="row">
         The date of the oldest tweet whose existence has not been checked
-        <a href="#"
+        <a href="#/"
            id="oldest-existence-not-checked-popover"
            data-html="true"
            data-placement="top"
@@ -1462,6 +1475,29 @@
             $.getJSON(`/anagrams/exacttweetcount`).done(data => {
                 if (data.count) {
                     $("#exact-tweet-number").text(Number(data.count).toLocaleString());
+                } else if (data.error) {
+                    $.growl.error({message: data.error});
+                } else {
+                    $.growl.error({message: "something went wrong"});
+                }
+            }).fail((jqxhr, textStatus, error) => {
+                $.growl.error({message: error});
+            });
+        });
+
+        const $exactTweetForPastNumberOfDaysPopover = $("#exact-tweet-for-past-number-of-days-popover");
+        $exactTweetForPastNumberOfDaysPopover.popover();
+        $exactTweetForPastNumberOfDaysPopover.on('show.bs.popover', function () {
+            $.getJSON(`/anagrams/exacttweetcountforpastnumberofdays/{{stats.numberOfPastDays}}`).done(data => {
+                if (data.count) {
+                    const exactRecentTweetCount = Number(data.count);
+                    const formattedExactRecentTweetCount = Number(data.count).toLocaleString();
+                    $("#exact-tweet-number-for-past-number-of-days").text(formattedExactRecentTweetCount);
+                    $("#exact-tweet-for-past-number-of-days-content").text(formattedExactRecentTweetCount);
+                    const recentMatchCount = Number({{stats.recentCounts.recent_total_count}});
+                    const recentTweetsPerMatch = exactRecentTweetCount / recentMatchCount;
+                    const formattedrecentTweetsPerMatch = Number(recentTweetsPerMatch.toFixed(1)).toLocaleString()
+                    $("#recent-tweets-per-match").html(`, for <strong>${formattedrecentTweetsPerMatch}</strong> tweets per match.`);
                 } else if (data.error) {
                     $.growl.error({message: data.error});
                 } else {

@@ -523,6 +523,17 @@ SELECT count(1) AS tweet_count FROM tweets;
     });
 };
 
+exports.getExactCountOfTweetsInPastNumberOfDays = function(pastNumberOfDays) {
+    const exactCountOfTweetsInPastNumberOfDays = `
+SELECT count(1) as tweet_count_in_past_number_of_days
+FROM tweets
+WHERE date(tweets.created_at) > current_date - INTERVAL '${pastNumberOfDays}' DAY;
+`;
+    return pools.anagramPool.query(exactCountOfTweetsInPastNumberOfDays).then(x => {
+        return Number(x.rows[0].tweet_count_in_past_number_of_days);
+    });
+}
+
 exports.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterThan = function (interestingFactorCutoff = defaultInterestingFactor) {
 
     interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
