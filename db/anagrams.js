@@ -383,7 +383,7 @@ exports.getTweetsForMatch = function (matchId) {
 
 exports.getStatsByDateMatchCreated = function (numberOfPastDays = 30) {
 
-    numberOfPastDays = Math.max(numberOfPastDays, 5);
+    numberOfPastDays = Math.max(numberOfPastDays, 2);
 
     const statsByDateMatchCreated = `
 SELECT
@@ -475,7 +475,7 @@ ORDER BY time_of_day;
 
 exports.getRetweetsAndTumblrPostsByDay = function (numberOfPastDays = 30) {
 
-    numberOfPastDays = Math.max(numberOfPastDays, 5);
+    numberOfPastDays = Math.max(numberOfPastDays, 2);
 
     const retweetsAndTumblrPostsByDayQuery = `
 SELECT
@@ -625,6 +625,19 @@ WHERE date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPa
             }
         }
         return row;
+    });
+};
+
+exports.getCountOfDaysMatchesHaveBeenRetweeted = function() {
+    const countOfDaysMatchesHaveBeenRetweetedQuery = `
+SELECT count(1) AS count_of_days_matches_have_been_retweeted
+FROM (SELECT 1
+      FROM anagram_matches
+      WHERE date_retweeted IS NOT NULL
+      GROUP BY date(date_retweeted)) dates;
+`;
+    return pools.anagramPool.query(countOfDaysMatchesHaveBeenRetweetedQuery).then(x => {
+        return Number(x.rows[0].count_of_days_matches_have_been_retweeted);
     });
 };
 

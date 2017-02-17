@@ -82,7 +82,7 @@
     <h3>For all time...</h3>
 
     <div class="row">
-        There are <strong>{{formatNumber stats.allTimeCounts.total_count}}</strong> total matches over approximately
+        <strong>{{formatNumber stats.allTimeCounts.total_count}}</strong> matches have been created over approximately
         <a href="#"
            id="exact-tweet-popover"
            data-html="true"
@@ -91,14 +91,14 @@
            data-trigger="focus"
            title="Exact number of tweets"
            data-content="<span id='exact-tweet-number'><img src='/images/loader.gif'></img></span>">
-            <strong>{{formatNumber stats.approximateCountOfTweets}}</strong></a> tweets.
-        That's about <strong>{{formatNumber stats.tweetsPerMatch maximumFractionDigits="0"}}</strong> tweets per match!
+            <strong>{{formatNumber stats.approximateCountOfTweets}}</strong></a> tweets, for
+        <strong>{{formatNumber stats.allTimeTweetsPerMatch maximumFractionDigits="0"}}</strong> tweets per match.
     </div>
     <div class="row">
-        There are <strong>{{formatNumber stats.allTimeCounts.interesting_factor_count}}</strong> matches with an interesting factor
+        <strong>{{formatNumber stats.allTimeCounts.interesting_factor_count}}</strong> matches have been created with an interesting factor
         above
         <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>.
-        The all-time average interesting factor is <strong>{{formatNumber stats.allTimeCounts.average_interesting_factor
+        The average interesting factor is <strong>{{formatNumber stats.allTimeCounts.average_interesting_factor
                                                                           minimumFractionDigits="2"
                                                                           maximumFractionDigits="2"}}</strong>.
     </div>
@@ -110,8 +110,10 @@
     </div>
     <div class="row">
         <strong>{{formatNumber stats.allTimeCounts.retweet_count}}</strong> matches have been retweeted
-        (with <strong>{{formatNumber stats.allTimeCounts.tumblr_only_count}}</strong> posted only to tumblr).
-        There should be <strong>{{stats.countOfRetweetedTweets}}</strong> retweeted tweets.
+        (for <strong>{{formatNumber stats.allTimeCountOfRetweetedTweets}}</strong> retweets, with <strong>{{formatNumber
+            stats.allTimeCounts.tumblr_only_count}}</strong> posted only to tumblr) for an average of
+        <strong>{{formatNumber stats.allTimeAverageRetweetedMatchesPerDay maximumFractionDigits="1"}}</strong> matches/day
+        retweeted over <strong>{{formatNumber stats.countOfDaysMatchesHaveBeenRetweeted}}</strong> total days matches have been retweeted.
     </div>
 
     <h3>In the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days...</h3>
@@ -120,13 +122,16 @@
         <strong>{{formatNumber stats.recentCounts.recent_total_count}}</strong> matches have been created.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.recentCounts.recent_interesting_factor_count}}</strong> matches matches with an interesting factor
+        <strong>{{formatNumber stats.recentCounts.recent_interesting_factor_count}}</strong> matches have been created with an interesting factor
         above
         <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>.
         The average interesting factor is <strong>{{formatNumber stats.recentCounts.recent_average_interesting_factor
                                                                  minimumFractionDigits="2"
                                                                  maximumFractionDigits="2"}}</strong>.
     </div>
+
+    <h4>For matches <em>created</em> in the past {{formatNumber stats.numberOfPastDays}} days...</h4>
+
     <div class="row">
         Approval has been attempted for <strong>{{formatNumber stats.recentCounts.recent_attempted_approval_count}}</strong> matches.
     </div>
@@ -137,7 +142,17 @@
         <strong>{{formatNumber stats.recentCounts.recent_retweet_count}}</strong> matches have been retweeted
         (with <strong>{{formatNumber stats.recentCounts.recent_tumblr_only_count}}</strong> posted only to tumblr)
         for an average of
-        <strong>{{formatNumber stats.averageRetweetedMatchesPerDay maximumFractionDigits="1"}}</strong> matches/day
+        <strong>{{formatNumber stats.recentAverageRetweetedMatchesPerDayWhereMatchCreatedRecently maximumFractionDigits="1"}}</strong> matches/day
+        retweeted.
+    </div>
+
+    <h4>For matches <em>acted upon</em> in the past {{formatNumber stats.numberOfPastDays}} days...</h4>
+
+    <div class="row">
+        <strong>{{formatNumber stats.recentCountOfRetweetedMatchesWhereMatchRetweetedRecently}}</strong> matches have been retweeted
+        (for <strong>{{formatNumber stats.recentCountOfRetweetsWhereMatchRetweetedRecently}}</strong> retweets)
+        for an average of
+        <strong>{{formatNumber stats.recentAverageRetweetedMatchesPerDayWhereMatchRetweetedRecently maximumFractionDigits="1"}}</strong> matches/day
         retweeted.
     </div>
 

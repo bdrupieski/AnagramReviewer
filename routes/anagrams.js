@@ -106,6 +106,7 @@ router.get('/statistics', function(req, res) {
     Promise.all([
         anagramsDb.getAllTimeCounts(interestingFactorCutoff),
         anagramsDb.getRecentCounts(interestingFactorCutoff, numberOfPastDays),
+        anagramsDb.getCountOfDaysMatchesHaveBeenRetweeted(),
         anagramsDb.getApproximateCountOfTweets(),
         anagramsDb.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterThan(interestingFactorCutoff),
         matchQueueDb.getCountOfPendingQueuedMatches(),
@@ -120,16 +121,17 @@ router.get('/statistics', function(req, res) {
         const formattedStats = {
             allTimeCounts: stats[0],
             recentCounts: stats[1],
-            approximateCountOfTweets: stats[2],
-            countOfNotRejectedAndNotApprovedMatchesAboveCutoff: stats[3],
-            countOfPendingQueuedMatches: stats[4],
-            dateLastMatchCreated: stats[5],
-            retweetsAndTumblrByDay: stats[6],
-            statsByDateMatchCreated: stats[7],
-            statsByInterestingFactorBucket: stats[8],
-            statsByTimeOfDayMatchCreated: stats[9],
-            scoreSurplusForApprovedMatches: stats[10],
-            scoreSurplusForApprovedMatchesByInterestingFactorBucket: stats[11],
+            countOfDaysMatchesHaveBeenRetweeted: stats[2],
+            approximateCountOfTweets: stats[3],
+            countOfNotRejectedAndNotApprovedMatchesAboveCutoff: stats[4],
+            countOfPendingQueuedMatches: stats[5],
+            dateLastMatchCreated: stats[6],
+            retweetsAndTumblrByDay: stats[7],
+            statsByDateMatchCreated: stats[8],
+            statsByInterestingFactorBucket: stats[9],
+            statsByTimeOfDayMatchCreated: stats[10],
+            scoreSurplusForApprovedMatches: stats[11],
+            scoreSurplusForApprovedMatchesByInterestingFactorBucket: stats[12],
         };
 
         formattedStats.interestingFactorCutoff = interestingFactorCutoff;
@@ -140,9 +142,18 @@ router.get('/statistics', function(req, res) {
             formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff == 1;
         formattedStats.countOfPendingQueuedMatchesIsOne = formattedStats.countOfPendingQueuedMatches == 1;
 
-        formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.allTimeCounts.total_count;
-        formattedStats.countOfRetweetedTweets = formattedStats.allTimeCounts.retweet_count * 2;
-        formattedStats.averageRetweetedMatchesPerDay = formattedStats.recentCounts.recent_retweet_count / formattedStats.numberOfPastDays;
+        formattedStats.allTimeTweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.allTimeCounts.total_count;
+        formattedStats.allTimeCountOfRetweetedTweets = formattedStats.allTimeCounts.retweet_count * 2;
+        formattedStats.allTimeAverageRetweetedMatchesPerDay = formattedStats.allTimeCounts.retweet_count / formattedStats.countOfDaysMatchesHaveBeenRetweeted;
+
+        // For retweets _made_ in past X days.
+        formattedStats.recentCountOfRetweetedMatchesWhereMatchRetweetedRecently = _.sum(formattedStats.retweetsAndTumblrByDay.map(x => Number(x.retweeted)));
+        formattedStats.recentAverageRetweetedMatchesPerDayWhereMatchRetweetedRecently = formattedStats.recentCountOfRetweetedMatchesWhereMatchRetweetedRecently / numberOfPastDays;
+        formattedStats.recentCountOfRetweetsWhereMatchRetweetedRecently = formattedStats.recentCountOfRetweetedMatchesWhereMatchRetweetedRecently * 2;
+
+        // For retweets where _match_ was created in past X days.
+        formattedStats.recentAverageRetweetedMatchesPerDayWhereMatchCreatedRecently = formattedStats.recentCounts.recent_retweet_count / formattedStats.numberOfPastDays;
+        formattedStats.recentCountOfRetweetsWhereMatchWasCreatedRecently = formattedStats.recentCounts.recent_retweet_count * 2;
 
         formattedStats.retweetsAndTumblrByDayJson = JSON.stringify(formattedStats.retweetsAndTumblrByDay);
         formattedStats.statsByDateMatchCreatedJson = JSON.stringify(formattedStats.statsByDateMatchCreated);
