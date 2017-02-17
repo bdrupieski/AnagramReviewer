@@ -552,7 +552,7 @@ exports.getSimpleCounts = function(interestingFactorCutoff, numberOfPastDays) {
     const simpleCountsQuery = `
 SELECT
   count(1)           total_count,
-  sum(CASE WHEN date(anagram_matches.date_created) > current_date - INTERVAL '15' DAY
+  sum(CASE WHEN date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
     THEN 1
       ELSE 0 END) AS recent_total_count,
   sum(CASE WHEN anagram_matches.attempted_approval IS TRUE
