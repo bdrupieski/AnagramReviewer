@@ -502,16 +502,6 @@ ORDER BY day DESC
     });
 };
 
-exports.getCountOfAnagramMatches = function () {
-    const anagramMatchCountQuery = `
-SELECT count(1)
-FROM anagram_matches;
-`;
-    return pools.anagramPool.query(anagramMatchCountQuery).then(x => {
-        return Number(x.rows[0].count);
-    });
-};
-
 exports.getApproximateCountOfTweets = function () {
     const approximateTweetCountQuery = `
 SELECT reltuples AS approximate_row_count FROM pg_class WHERE relname = 'tweets' LIMIT 1;
@@ -527,20 +517,6 @@ SELECT count(1) AS tweet_count FROM tweets;
 `;
     return pools.anagramPool.query(exactTweetCountQuery).then(x => {
         return Number(x.rows[0].tweet_count);
-    });
-};
-
-exports.getCountOfMatchesWithInterestingFactorGreaterThan = function (interestingFactorCutoff = defaultInterestingFactor) {
-
-    interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
-
-    const anagramMatchCountQuery = `
-SELECT count(1)
-FROM anagram_matches
-WHERE interesting_factor > $1::float;
-`;
-    return pools.anagramPool.query(anagramMatchCountQuery, [interestingFactorCutoff]).then(x => {
-        return Number(x.rows[0].count);
     });
 };
 
@@ -565,28 +541,32 @@ WHERE
     });
 };
 
-exports.getCountOfRetweetedMatches = function () {
+exports.getSimpleCounts = function(interestingFactorCutoff) {
 
-    const retweetedMatchCountQuery = `
-SELECT count(1)
+    interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
+
+    const simpleCountsQuery = `
+SELECT
+  count(1)           total_count,
+  sum(CASE WHEN anagram_matches.rejected IS TRUE
+    THEN 1
+      ELSE 0 END) AS rejected_count,
+  sum(CASE WHEN anagram_matches.date_retweeted IS NOT NULL AND anagram_matches.date_unretweeted IS NULL
+    THEN 1
+      ELSE 0 END) AS retweet_count,
+  sum(CASE WHEN anagram_matches.interesting_factor > $1::float
+    THEN 1
+      ELSE 0 END) AS if_greater_than_count
 FROM anagram_matches
-WHERE date_retweeted IS NOT NULL
-  AND date_unretweeted IS NULL;
 `;
-    return pools.anagramPool.query(retweetedMatchCountQuery).then(x => {
-        return Number(x.rows[0].count);
-    });
-};
-
-exports.getCountOfRejectedMatches = function () {
-
-    const rejectedMatchCountQuery = `
-SELECT count(1)
-FROM anagram_matches
-WHERE rejected = true
-`;
-    return pools.anagramPool.query(rejectedMatchCountQuery).then(x => {
-        return Number(x.rows[0].count);
+    return pools.anagramPool.query(simpleCountsQuery, [interestingFactorCutoff]).then(x => {
+        const row = x.rows[0];
+        for (const prop in row) {
+            if (row.hasOwnProperty(prop)) {
+                row[prop] = Number(row[prop]);
+            }
+        }
+        return row;
     });
 };
 

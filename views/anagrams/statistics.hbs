@@ -77,7 +77,7 @@
     </div>
     <h3>Fun</h3>
     <div class="row">
-        There are <strong>{{formatNumber stats.countOfMatches}}</strong> total matches over approximately
+        There are <strong>{{formatNumber stats.counts.total_count}}</strong> total matches over approximately
         <a href="#"
            id="exact-tweet-popover"
            data-html="true"
@@ -90,12 +90,12 @@
         That's about <strong>{{formatNumber stats.tweetsPerMatch maximumFractionDigits="0"}}</strong> tweets per match!
     </div>
     <div class="row">
-        There are <strong>{{formatNumber stats.countOfMatchesAboveCutoff}}</strong> matches with an interesting factor
+        There are <strong>{{formatNumber stats.counts.if_greater_than_count}}</strong> matches with an interesting factor
         above
         <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.countOfRetweetedMatches}}</strong> matches have been retweeted.
+        <strong>{{formatNumber stats.counts.retweet_count}}</strong> matches have been retweeted.
         There should be <strong>{{stats.countOfRetweetedTweets}}</strong> retweeted tweets.
     </div>
     <div class="row">
@@ -104,7 +104,7 @@
             <strong>{{formatNumber stats.averageRetweetedMatchesPerDay maximumFractionDigits="1"}}</strong> matches/day retweeted.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.countOfRejectedMatches}}</strong> matches have been rejected.
+        <strong>{{formatNumber stats.counts.rejected_count}}</strong> matches have been rejected.
     </div>
     <div class="row">
         The date of the oldest tweet whose existence has not been checked
