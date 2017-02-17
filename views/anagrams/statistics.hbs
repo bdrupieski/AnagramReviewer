@@ -93,6 +93,9 @@
         There are <strong>{{formatNumber stats.allTimeCounts.interesting_factor_count}}</strong> matches with an interesting factor
         above
         <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>.
+        The all-time average interesting factor is <strong>{{formatNumber stats.allTimeCounts.average_interesting_factor
+                                                                          minimumFractionDigits="2"
+                                                                          maximumFractionDigits="2"}}</strong>.
     </div>
     <div class="row">
         Approval has been attempted for <strong>{{formatNumber stats.allTimeCounts.attempted_approval_count}}</strong> matches.
@@ -114,6 +117,9 @@
         above
         <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>
         in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
+        The average interesting factor over the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days is <strong>{{formatNumber stats.allTimeCounts.average_interesting_factor
+                                                                          minimumFractionDigits="2"
+                                                                          maximumFractionDigits="2"}}</strong>.
     </div>
     <div class="row">
         Approval has been attempted for <strong>{{formatNumber stats.recentCounts.recent_attempted_approval_count}}</strong> matches in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
