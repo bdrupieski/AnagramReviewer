@@ -75,7 +75,7 @@
 
         <a href="/anagrams/queuestatus"><strong>queued</strong></a> to be posted.
     </div>
-    <h3>Fun</h3>
+    <h3>Totals</h3>
     <div class="row">
         There are <strong>{{formatNumber stats.counts.total_count}}</strong> total matches over approximately
         <a href="#"
@@ -86,26 +86,51 @@
            data-trigger="focus"
            title="Exact number of tweets"
            data-content="<span id='exact-tweet-number'><img src='/images/loader.gif'></img></span>">
-                <strong>{{formatNumber stats.approximateCountOfTweets}}</strong></a> tweets.
+            <strong>{{formatNumber stats.approximateCountOfTweets}}</strong></a> tweets.
         That's about <strong>{{formatNumber stats.tweetsPerMatch maximumFractionDigits="0"}}</strong> tweets per match!
     </div>
     <div class="row">
-        There are <strong>{{formatNumber stats.counts.if_greater_than_count}}</strong> matches with an interesting factor
+        There are <strong>{{formatNumber stats.counts.interesting_factor_count}}</strong> matches with an interesting factor
         above
         <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.counts.retweet_count}}</strong> matches have been retweeted.
-        There should be <strong>{{stats.countOfRetweetedTweets}}</strong> retweeted tweets.
-    </div>
-    <div class="row">
-        <strong>{{formatNumber stats.sumRetweetedMatchesOverPastDays}}</strong> matches have been retweeted over the past
-            <strong>{{formatNumber stats.numberOfPastDays}}</strong> days for an average of
-            <strong>{{formatNumber stats.averageRetweetedMatchesPerDay maximumFractionDigits="1"}}</strong> matches/day retweeted.
+        Approval has been attempted for <strong>{{formatNumber stats.counts.attempted_approval_count}}</strong> matches.
     </div>
     <div class="row">
         <strong>{{formatNumber stats.counts.rejected_count}}</strong> matches have been rejected.
     </div>
+    <div class="row">
+        <strong>{{formatNumber stats.counts.retweet_count}}</strong> matches have been retweeted
+        (with <strong>{{formatNumber stats.counts.tumblr_only_count}}</strong> posted only to tumblr).
+        There should be <strong>{{stats.countOfRetweetedTweets}}</strong> retweeted tweets.
+    </div>
+    <h3>Recently</h3>
+    <div class="row">
+        <strong>{{formatNumber stats.counts.recent_total_count}}</strong> matches have been created in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
+    </div>
+    <div class="row">
+        <strong>{{formatNumber stats.counts.recent_interesting_factor_count}}</strong> matches matches with an interesting factor
+        above
+        <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>
+        in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
+    </div>
+    <div class="row">
+        Approval has been attempted for <strong>{{formatNumber stats.counts.recent_attempted_approval_count}}</strong> matches in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
+    </div>
+    <div class="row">
+        <strong>{{formatNumber stats.counts.recent_rejected_count}}</strong> matches have been rejected in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
+    </div>
+    <div class="row">
+        <strong>{{formatNumber stats.counts.recent_retweet_count}}</strong> matches have been retweeted over the
+        past
+        <strong>{{formatNumber stats.numberOfPastDays}}</strong> days
+        (with <strong>{{formatNumber stats.counts.recent_tumblr_only_count}}</strong> posted only to tumblr)
+        for an average of
+        <strong>{{formatNumber stats.averageRetweetedMatchesPerDay maximumFractionDigits="1"}}</strong> matches/day
+        retweeted.
+    </div>
+    <br>
     <div class="row">
         The date of the oldest tweet whose existence has not been checked
         <a href="#"

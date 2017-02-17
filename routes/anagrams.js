@@ -104,7 +104,7 @@ router.get('/statistics', function(req, res) {
     const minuteInterval = Number(req.query.minutes) || 15;
 
     Promise.all([
-        anagramsDb.getSimpleCounts(interestingFactorCutoff),
+        anagramsDb.getSimpleCounts(interestingFactorCutoff, numberOfPastDays),
         anagramsDb.getApproximateCountOfTweets(),
         anagramsDb.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterThan(interestingFactorCutoff),
         matchQueueDb.getCountOfPendingQueuedMatches(),
@@ -140,8 +140,7 @@ router.get('/statistics', function(req, res) {
 
         formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.counts.total_count;
         formattedStats.countOfRetweetedTweets = formattedStats.counts.retweet_count * 2;
-        formattedStats.sumRetweetedMatchesOverPastDays = _.sum(formattedStats.retweetsAndTumblrByDay.map(x => Number(x.retweeted)));
-        formattedStats.averageRetweetedMatchesPerDay = formattedStats.sumRetweetedMatchesOverPastDays / formattedStats.numberOfPastDays;
+        formattedStats.averageRetweetedMatchesPerDay = formattedStats.counts.recent_retweet_count / formattedStats.numberOfPastDays;
 
         formattedStats.retweetsAndTumblrByDayJson = JSON.stringify(formattedStats.retweetsAndTumblrByDay);
         formattedStats.statsByDateMatchCreatedJson = JSON.stringify(formattedStats.statsByDateMatchCreated);

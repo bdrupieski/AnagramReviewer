@@ -253,7 +253,7 @@ function getTweet(tweetId) {
 SELECT *
 FROM tweets
 WHERE id = $1::uuid
-LIMIT 1
+LIMIT 1;
 `;
     return pools.anagramPool.query(tweetByIdQuery, [tweetId]).then(x => {
         return x.rows[0];
@@ -267,7 +267,7 @@ exports.getAnagramMatch = function(id) {
 SELECT *
 FROM anagram_matches
 WHERE id = $1::int
-LIMIT 1
+LIMIT 1;
 `;
     return pools.anagramPool.query(anagramMatchByIdQuery, [id]).then(x => {
         return x.rows[0];
@@ -349,7 +349,7 @@ FROM anagram_matches
   INNER JOIN otherMatchCountForTweet1 ON otherMatchCountForTweet1.id = anagram_matches.id
   INNER JOIN otherMatchCountForTweet2 ON otherMatchCountForTweet2.id = anagram_matches.id
 WHERE anagram_matches.id = $1::int
-LIMIT 1
+LIMIT 1;
 `;
     return pools.anagramPool.query(anagramMatchWithTweetInfoByIdQuery, [id]).then(x => {
         const fullMatch = x.rows[0];
@@ -414,6 +414,8 @@ LIMIT $1::int;
 
 exports.getStatsByInterestingFactorBucket = function (numberOfPastDays) {
 
+    numberOfPastDays = Number(numberOfPastDays);
+
     const statsByInterestingFactorBucket = `
 SELECT
   DISTINCT ON (score)
@@ -440,6 +442,7 @@ ORDER BY score DESC;
 exports.getStatsByTimeOfDayMatchCreated = function(minuteInterval = 5, numberOfPastDays) {
 
     const interval = clamp(minuteInterval, 1, 60);
+    numberOfPastDays = Number(numberOfPastDays);
 
     const statsByDateMatchCreatedTimeOfDayQuery = `
 SELECT
@@ -495,7 +498,7 @@ FROM (SELECT
                    FROM anagram_matches
                    WHERE date(date_posted_tumblr) > current_date - interval '${numberOfPastDays}' day 
                    GROUP BY day) AS tumblr ON retweeted.day = tumblr.day
-ORDER BY day DESC
+ORDER BY day DESC;
 `;
     return pools.anagramPool.query(retweetsAndTumblrPostsByDayQuery).then(x => {
         return x.rows;
@@ -534,30 +537,71 @@ WHERE
   AND anagram_matches.rejected = FALSE
   AND anagram_matches.date_retweeted IS NULL
   AND anagram_matches.date_unretweeted IS NULL
-  AND anagram_matches.tumblr_post_id IS NULL
+  AND anagram_matches.tumblr_post_id IS NULL;
 `;
     return pools.anagramPool.query(notRejectedAndNotApprovedAnagramMatchCountQuery, [interestingFactorCutoff]).then(x => {
         return Number(x.rows[0].count);
     });
 };
 
-exports.getSimpleCounts = function(interestingFactorCutoff) {
+exports.getSimpleCounts = function(interestingFactorCutoff, numberOfPastDays) {
 
+    numberOfPastDays = Number(numberOfPastDays);
     interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
 
     const simpleCountsQuery = `
 SELECT
   count(1)           total_count,
+  sum(CASE WHEN date(anagram_matches.date_created) > current_date - INTERVAL '15' DAY
+    THEN 1
+      ELSE 0 END) AS recent_total_count,
+  sum(CASE WHEN anagram_matches.attempted_approval IS TRUE
+    THEN 1
+      ELSE 0 END) AS attempted_approval_count,
+  sum(CASE WHEN anagram_matches.attempted_approval IS TRUE AND
+                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
+    THEN 1
+      ELSE 0 END) AS recent_attempted_approval_count,
   sum(CASE WHEN anagram_matches.rejected IS TRUE
     THEN 1
       ELSE 0 END) AS rejected_count,
+  sum(CASE WHEN anagram_matches.rejected IS TRUE AND
+                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
+    THEN 1
+      ELSE 0 END) AS recent_rejected_count,
   sum(CASE WHEN anagram_matches.date_retweeted IS NOT NULL AND anagram_matches.date_unretweeted IS NULL
     THEN 1
       ELSE 0 END) AS retweet_count,
-  sum(CASE WHEN anagram_matches.interesting_factor > $1::float
+  sum(CASE WHEN anagram_matches.date_retweeted IS NOT NULL AND anagram_matches.date_unretweeted IS NULL AND
+                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
     THEN 1
-      ELSE 0 END) AS if_greater_than_count
-FROM anagram_matches
+      ELSE 0 END) AS recent_retweet_count,
+  sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL AND
+                (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL)
+    THEN 1
+      ELSE 0 END) AS tumblr_only_count,
+  sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL AND
+                (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL) AND
+                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
+    THEN 1
+      ELSE 0 END) AS recent_tumblr_only_count,
+  sum(CASE WHEN anagram_matches.interesting_factor > $1::float 
+    THEN 1
+      ELSE 0 END) AS interesting_factor_count,
+  sum(CASE WHEN anagram_matches.interesting_factor > $1::float AND
+                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
+    THEN 1
+      ELSE 0 END) AS recent_interesting_factor_count,
+  sum(CASE WHEN anagram_matches.date_unretweeted IS NOT NULL AND
+                (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL)
+    THEN 1
+      ELSE 0 END) AS unretweeted_count,
+  sum(CASE WHEN anagram_matches.date_unretweeted IS NOT NULL AND
+                (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL) AND
+                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
+    THEN 1
+      ELSE 0 END) AS recent_unretweeted_count
+FROM anagram_matches;
 `;
     return pools.anagramPool.query(simpleCountsQuery, [interestingFactorCutoff]).then(x => {
         const row = x.rows[0];
@@ -602,7 +646,7 @@ WHERE anagram_matches.id != $1::int AND anagram_matches.date_retweeted IS NOT NU
       (anagram_matches.tweet1_id IN (SELECT id
                                      FROM candidateTweetIds) OR
        anagram_matches.tweet2_id IN (SELECT id
-                                     FROM candidateTweetIds))
+                                     FROM candidateTweetIds));
 `;
 
     return pools.anagramPool.query(countOfMatchesWithTweetAlreadyRetweetedQuery, [matchId]).then(x => {
@@ -624,7 +668,7 @@ FROM anagram_matches
   INNER JOIN tweets t2 ON anagram_matches.tweet2_id = t2.id
 WHERE anagram_matches.date_retweeted IS NOT NULL
 ORDER BY anagram_matches.date_retweeted DESC
-LIMIT $1::int
+LIMIT $1::int;
 `;
     return pools.anagramPool.query(mostRecentRetweetedStatusIdsQuery, [limit]).then(x => {
         return x.rows;
@@ -645,7 +689,7 @@ WHERE anagram_matches.date_retweeted IS NOT NULL
   AND anagram_matches.date_posted_tumblr IS NULL
   AND anagram_matches.date_unposted_tumblr IS NULL
 ORDER BY anagram_matches.date_retweeted
-LIMIT $1::int
+LIMIT $1::int;
 `;
 
     return pools.anagramPool.query(retweetedAndNotUnretweetedAndNotPostedToTumblrQuery, [limit]).then(x => {
@@ -663,7 +707,7 @@ SET
   tweet2_retweet_id    = NULL,
   unretweeted_manually = true,
   attempted_approval   = false
-WHERE id = $1::int
+WHERE id = $1::int;
 `;
 
     const unretweetAndDeleteTumblrQuery = `
@@ -679,7 +723,7 @@ SET
   date_unposted_tumblr     = current_timestamp,
   unposted_tumblr_manually = true,
   attempted_approval       = false
-WHERE id = $1::int
+WHERE id = $1::int;
 `;
 
     const deleteTumblrQuery = `
@@ -690,7 +734,7 @@ SET
   date_unposted_tumblr     = current_timestamp,
   unposted_tumblr_manually = true,
   attempted_approval       = false
-WHERE id = $1::int
+WHERE id = $1::int;
 `;
 
     let queryToUseForUnretweeting;
@@ -720,7 +764,7 @@ SET
   date_unretweeted         = current_timestamp,
   date_retweeted           = NULL,
   unretweeted_from_cleanup = TRUE
-WHERE id = $1::int
+WHERE id = $1::int;
 `;
 
     return pools.anagramPool.query(setUnretweetedFromTimelineCleanupQuery, [matchId]).then(x => {
@@ -837,7 +881,7 @@ exports.updateTweetsExistenceChecked = function(tweetIds) {
     const updateExistenceCheckedQuery = `
 UPDATE tweets
 SET date_existence_last_checked = current_timestamp
-WHERE id = ANY($1)
+WHERE id = ANY($1);
 `;
 
     return pools.anagramPool.query(updateExistenceCheckedQuery, [tweetIds]).then(x => {
@@ -878,7 +922,7 @@ SELECT DISTINCT ON (interesting_factor)
 FROM anagram_matches
 WHERE date(date_created) = '${formattedDate}'
 WINDOW w AS (
-  PARTITION BY trunc(anagram_matches.interesting_factor :: NUMERIC, 2) )
+  PARTITION BY trunc(anagram_matches.interesting_factor :: NUMERIC, 2) );
 `;
     return pools.anagramPool.query(getInterestingFactorsForMatchesCreatedOnDateQuery).then(x => {
         return x.rows;
@@ -920,6 +964,7 @@ WHERE number_of_matches_in_group > $1::int;
 
 exports.averageScoreSurplusForApprovedMatches = function(interestingFactorCutoff = defaultInterestingFactor, numberOfPastDays) {
 
+    numberOfPastDays = Number(numberOfPastDays);
     interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
 
     const approvedSurplusQuery = `
@@ -970,6 +1015,9 @@ FROM scores_attempted_approval, scores_rejected;
 };
 
 exports.averageScoreSurplusForApprovedMatchesByInterestingFactorScoreBucket = function(numberOfPastDays) {
+
+    numberOfPastDays = Number(numberOfPastDays);
+
     const approvedScoreSurplusByInterestingFactorBucketQuery = `
 WITH score_buckets AS (SELECT DISTINCT ON (interesting_factor)
                          trunc(anagram_matches.interesting_factor :: NUMERIC, 2) AS interesting_factor,
@@ -1034,7 +1082,7 @@ SELECT
 FROM anagram_matches
   INNER JOIN tweets t1 ON t1.id = anagram_matches.tweet1_id
   INNER JOIN tweets t2 ON t2.id = anagram_matches.tweet2_id
-WHERE tweet1_id = $1 OR tweet2_id = $1
+WHERE tweet1_id = $1 OR tweet2_id = $1;
 `;
     return pools.anagramPool.query(matchesWithTweetQuery, [tweetId]).then(x => {
         return x.rows;
@@ -1060,7 +1108,7 @@ WHERE
    anagram_matches.tweet2_id IN (SELECT id
                                  FROM tweetIds))
   AND anagram_matches.date_retweeted IS NOT NULL AND
-  anagram_matches.date_unretweeted IS NULL
+  anagram_matches.date_unretweeted IS NULL;
 `;
     return pools.anagramPool.query(retweetedMatchesThatContainTweetsFromThisMatchQuery, [matchId]).then(x => {
         return x.rows;
