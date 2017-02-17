@@ -104,7 +104,8 @@ router.get('/statistics', function(req, res) {
     const minuteInterval = Number(req.query.minutes) || 15;
 
     Promise.all([
-        anagramsDb.getSimpleCounts(interestingFactorCutoff, numberOfPastDays),
+        anagramsDb.getAllTimeCounts(interestingFactorCutoff),
+        anagramsDb.getRecentCounts(interestingFactorCutoff, numberOfPastDays),
         anagramsDb.getApproximateCountOfTweets(),
         anagramsDb.getCountOfNotRejectedAndNotApprovedMatchesWithInterestingFactorGreaterThan(interestingFactorCutoff),
         matchQueueDb.getCountOfPendingQueuedMatches(),
@@ -117,17 +118,18 @@ router.get('/statistics', function(req, res) {
         anagramsDb.averageScoreSurplusForApprovedMatchesByInterestingFactorScoreBucket(numberOfPastDays),
     ]).then(stats => {
         const formattedStats = {
-            counts: stats[0],
-            approximateCountOfTweets: stats[1],
-            countOfNotRejectedAndNotApprovedMatchesAboveCutoff: stats[2],
-            countOfPendingQueuedMatches: stats[3],
-            dateLastMatchCreated: stats[4],
-            retweetsAndTumblrByDay: stats[5],
-            statsByDateMatchCreated: stats[6],
-            statsByInterestingFactorBucket: stats[7],
-            statsByTimeOfDayMatchCreated: stats[8],
-            scoreSurplusForApprovedMatches: stats[9],
-            scoreSurplusForApprovedMatchesByInterestingFactorBucket: stats[10],
+            allTimeCounts: stats[0],
+            recentCounts: stats[1],
+            approximateCountOfTweets: stats[2],
+            countOfNotRejectedAndNotApprovedMatchesAboveCutoff: stats[3],
+            countOfPendingQueuedMatches: stats[4],
+            dateLastMatchCreated: stats[5],
+            retweetsAndTumblrByDay: stats[6],
+            statsByDateMatchCreated: stats[7],
+            statsByInterestingFactorBucket: stats[8],
+            statsByTimeOfDayMatchCreated: stats[9],
+            scoreSurplusForApprovedMatches: stats[10],
+            scoreSurplusForApprovedMatchesByInterestingFactorBucket: stats[11],
         };
 
         formattedStats.interestingFactorCutoff = interestingFactorCutoff;
@@ -138,9 +140,9 @@ router.get('/statistics', function(req, res) {
             formattedStats.countOfNotRejectedAndNotApprovedMatchesAboveCutoff == 1;
         formattedStats.countOfPendingQueuedMatchesIsOne = formattedStats.countOfPendingQueuedMatches == 1;
 
-        formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.counts.total_count;
-        formattedStats.countOfRetweetedTweets = formattedStats.counts.retweet_count * 2;
-        formattedStats.averageRetweetedMatchesPerDay = formattedStats.counts.recent_retweet_count / formattedStats.numberOfPastDays;
+        formattedStats.tweetsPerMatch = formattedStats.approximateCountOfTweets / formattedStats.allTimeCounts.total_count;
+        formattedStats.countOfRetweetedTweets = formattedStats.allTimeCounts.retweet_count * 2;
+        formattedStats.averageRetweetedMatchesPerDay = formattedStats.recentCounts.recent_retweet_count / formattedStats.numberOfPastDays;
 
         formattedStats.retweetsAndTumblrByDayJson = JSON.stringify(formattedStats.retweetsAndTumblrByDay);
         formattedStats.statsByDateMatchCreatedJson = JSON.stringify(formattedStats.statsByDateMatchCreated);

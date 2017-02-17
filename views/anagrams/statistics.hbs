@@ -77,7 +77,7 @@
     </div>
     <h3>Totals</h3>
     <div class="row">
-        There are <strong>{{formatNumber stats.counts.total_count}}</strong> total matches over approximately
+        There are <strong>{{formatNumber stats.allTimeCounts.total_count}}</strong> total matches over approximately
         <a href="#"
            id="exact-tweet-popover"
            data-html="true"
@@ -90,42 +90,42 @@
         That's about <strong>{{formatNumber stats.tweetsPerMatch maximumFractionDigits="0"}}</strong> tweets per match!
     </div>
     <div class="row">
-        There are <strong>{{formatNumber stats.counts.interesting_factor_count}}</strong> matches with an interesting factor
+        There are <strong>{{formatNumber stats.allTimeCounts.interesting_factor_count}}</strong> matches with an interesting factor
         above
         <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>.
     </div>
     <div class="row">
-        Approval has been attempted for <strong>{{formatNumber stats.counts.attempted_approval_count}}</strong> matches.
+        Approval has been attempted for <strong>{{formatNumber stats.allTimeCounts.attempted_approval_count}}</strong> matches.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.counts.rejected_count}}</strong> matches have been rejected.
+        <strong>{{formatNumber stats.allTimeCounts.rejected_count}}</strong> matches have been rejected.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.counts.retweet_count}}</strong> matches have been retweeted
-        (with <strong>{{formatNumber stats.counts.tumblr_only_count}}</strong> posted only to tumblr).
+        <strong>{{formatNumber stats.allTimeCounts.retweet_count}}</strong> matches have been retweeted
+        (with <strong>{{formatNumber stats.allTimeCounts.tumblr_only_count}}</strong> posted only to tumblr).
         There should be <strong>{{stats.countOfRetweetedTweets}}</strong> retweeted tweets.
     </div>
     <h3>Recently</h3>
     <div class="row">
-        <strong>{{formatNumber stats.counts.recent_total_count}}</strong> matches have been created in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
+        <strong>{{formatNumber stats.recentCounts.recent_total_count}}</strong> matches have been created in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.counts.recent_interesting_factor_count}}</strong> matches matches with an interesting factor
+        <strong>{{formatNumber stats.recentCounts.recent_interesting_factor_count}}</strong> matches matches with an interesting factor
         above
         <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>
         in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
     </div>
     <div class="row">
-        Approval has been attempted for <strong>{{formatNumber stats.counts.recent_attempted_approval_count}}</strong> matches in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
+        Approval has been attempted for <strong>{{formatNumber stats.recentCounts.recent_attempted_approval_count}}</strong> matches in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.counts.recent_rejected_count}}</strong> matches have been rejected in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
+        <strong>{{formatNumber stats.recentCounts.recent_rejected_count}}</strong> matches have been rejected in the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.counts.recent_retweet_count}}</strong> matches have been retweeted over the
+        <strong>{{formatNumber stats.recentCounts.recent_retweet_count}}</strong> matches have been retweeted over the
         past
         <strong>{{formatNumber stats.numberOfPastDays}}</strong> days
-        (with <strong>{{formatNumber stats.counts.recent_tumblr_only_count}}</strong> posted only to tumblr)
+        (with <strong>{{formatNumber stats.recentCounts.recent_tumblr_only_count}}</strong> posted only to tumblr)
         for an average of
         <strong>{{formatNumber stats.averageRetweetedMatchesPerDay maximumFractionDigits="1"}}</strong> matches/day
         retweeted.

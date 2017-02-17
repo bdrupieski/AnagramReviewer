@@ -544,66 +544,80 @@ WHERE
     });
 };
 
-exports.getSimpleCounts = function(interestingFactorCutoff, numberOfPastDays) {
+exports.getAllTimeCounts = function(interestingFactorCutoff) {
+
+    interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
+
+    const allTimeCountsQuery = `
+SELECT
+  count(1)                                   total_count,
+  sum(CASE WHEN anagram_matches.attempted_approval IS TRUE
+    THEN 1
+      ELSE 0 END)                         AS attempted_approval_count,
+  sum(CASE WHEN anagram_matches.rejected IS TRUE
+    THEN 1
+      ELSE 0 END)                         AS rejected_count,
+  sum(CASE WHEN anagram_matches.date_retweeted IS NOT NULL AND anagram_matches.date_unretweeted IS NULL
+    THEN 1
+      ELSE 0 END)                         AS retweet_count,
+  sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL AND
+                (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL)
+    THEN 1
+      ELSE 0 END)                         AS tumblr_only_count,
+  sum(CASE WHEN anagram_matches.interesting_factor > $1::float
+    THEN 1
+      ELSE 0 END)                         AS interesting_factor_count,
+  sum(CASE WHEN anagram_matches.date_unretweeted IS NOT NULL AND
+                (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL)
+    THEN 1
+      ELSE 0 END)                         AS unretweeted_count,
+  avg(anagram_matches.interesting_factor) AS average_interesting_factor
+FROM anagram_matches;
+`;
+    return pools.anagramPool.query(allTimeCountsQuery, [interestingFactorCutoff]).then(x => {
+        const row = x.rows[0];
+        for (const prop in row) {
+            if (row.hasOwnProperty(prop)) {
+                row[prop] = Number(row[prop]);
+            }
+        }
+        return row;
+    });
+};
+
+exports.getRecentCounts = function(interestingFactorCutoff, numberOfPastDays) {
 
     numberOfPastDays = Number(numberOfPastDays);
     interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
 
-    const simpleCountsQuery = `
+    const recentCountsQuery = `
 SELECT
-  count(1)           total_count,
-  sum(CASE WHEN date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
-    THEN 1
-      ELSE 0 END) AS recent_total_count,
+  count(1)                                   recent_total_count,
   sum(CASE WHEN anagram_matches.attempted_approval IS TRUE
     THEN 1
-      ELSE 0 END) AS attempted_approval_count,
-  sum(CASE WHEN anagram_matches.attempted_approval IS TRUE AND
-                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
-    THEN 1
-      ELSE 0 END) AS recent_attempted_approval_count,
+      ELSE 0 END)                         AS recent_attempted_approval_count,
   sum(CASE WHEN anagram_matches.rejected IS TRUE
     THEN 1
-      ELSE 0 END) AS rejected_count,
-  sum(CASE WHEN anagram_matches.rejected IS TRUE AND
-                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
-    THEN 1
-      ELSE 0 END) AS recent_rejected_count,
+      ELSE 0 END)                         AS recent_rejected_count,
   sum(CASE WHEN anagram_matches.date_retweeted IS NOT NULL AND anagram_matches.date_unretweeted IS NULL
     THEN 1
-      ELSE 0 END) AS retweet_count,
-  sum(CASE WHEN anagram_matches.date_retweeted IS NOT NULL AND anagram_matches.date_unretweeted IS NULL AND
-                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
-    THEN 1
-      ELSE 0 END) AS recent_retweet_count,
+      ELSE 0 END)                         AS recent_retweet_count,
   sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL AND
                 (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL)
     THEN 1
-      ELSE 0 END) AS tumblr_only_count,
-  sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL AND
-                (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL) AND
-                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
+      ELSE 0 END)                         AS recent_tumblr_only_count,
+  sum(CASE WHEN anagram_matches.interesting_factor > $1::float
     THEN 1
-      ELSE 0 END) AS recent_tumblr_only_count,
-  sum(CASE WHEN anagram_matches.interesting_factor > $1::float 
-    THEN 1
-      ELSE 0 END) AS interesting_factor_count,
-  sum(CASE WHEN anagram_matches.interesting_factor > $1::float AND
-                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
-    THEN 1
-      ELSE 0 END) AS recent_interesting_factor_count,
+      ELSE 0 END)                         AS recent_interesting_factor_count,
   sum(CASE WHEN anagram_matches.date_unretweeted IS NOT NULL AND
                 (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL)
     THEN 1
-      ELSE 0 END) AS unretweeted_count,
-  sum(CASE WHEN anagram_matches.date_unretweeted IS NOT NULL AND
-                (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL) AND
-                date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY
-    THEN 1
-      ELSE 0 END) AS recent_unretweeted_count
-FROM anagram_matches;
+      ELSE 0 END)                         AS recent_unretweeted_count,
+  avg(anagram_matches.interesting_factor) AS recent_average_interesting_factor
+FROM anagram_matches
+WHERE date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY;
 `;
-    return pools.anagramPool.query(simpleCountsQuery, [interestingFactorCutoff]).then(x => {
+    return pools.anagramPool.query(recentCountsQuery, [interestingFactorCutoff]).then(x => {
         const row = x.rows[0];
         for (const prop in row) {
             if (row.hasOwnProperty(prop)) {
