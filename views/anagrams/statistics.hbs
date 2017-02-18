@@ -82,7 +82,8 @@
     <h3>For all time...</h3>
 
     <div class="row">
-        <strong>{{formatNumber stats.allTimeCounts.total_count}}</strong> matches have been created from approximately
+        <strong>{{formatNumber stats.allTimeCounts.total_count}}</strong> matches have been created from
+        <span id="approximately">approximately</span>
         <a href="#/"
            id="exact-tweet-popover"
            data-html="true"
@@ -91,8 +92,8 @@
            data-trigger="focus"
            title="Exact number of tweets"
            data-content="<span id='exact-tweet-number'><img src='/images/loader.gif'></img></span>">
-            <strong>{{formatNumber stats.approximateCountOfTweets}}</strong></a> tweets, for
-        <strong>{{formatNumber stats.allTimeTweetsPerMatch maximumFractionDigits="0"}}</strong> tweets per match.
+            <strong><span id="exact-number-of-tweets">{{formatNumber stats.approximateCountOfTweets}}</span></strong></a> tweets, for
+        <strong><span id="all-time-tweets-per-match">{{formatNumber stats.allTimeTweetsPerMatch maximumFractionDigits="0"}}</span></strong> tweets per match.
     </div>
     <div class="row">
         <strong>{{formatNumber stats.allTimeCounts.interesting_factor_count}}</strong> matches have been created with an interesting factor
@@ -1474,7 +1475,16 @@
         $exactTweetPopover.on('show.bs.popover', function () {
             $.getJSON(`/anagrams/exacttweetcount`).done(data => {
                 if (data.count) {
-                    $("#exact-tweet-number").text(Number(data.count).toLocaleString());
+                    const totalMatches = Number({{stats.allTimeCounts.total_count}});
+                    const exactTweetCount = Number(data.count);
+                    const formattedExactTweetCount = exactTweetCount.toLocaleString();
+                    $("#exact-tweet-number").text(formattedExactTweetCount);
+                    $("#approximately").text("");
+                    $("#exact-number-of-tweets").text(formattedExactTweetCount);
+
+                    const updatedAllTimeTweetsPerMatch = exactTweetCount / totalMatches;
+                    const formattedUpdatedAllTimeTweetsPerMatch = Math.round(updatedAllTimeTweetsPerMatch).toLocaleString();
+                    $("#all-time-tweets-per-match").text(formattedUpdatedAllTimeTweetsPerMatch);
                 } else if (data.error) {
                     $.growl.error({message: data.error});
                 } else {
@@ -1496,8 +1506,8 @@
                     $("#exact-tweet-for-past-number-of-days-content").text(formattedExactRecentTweetCount);
                     const recentMatchCount = Number({{stats.recentCounts.recent_total_count}});
                     const recentTweetsPerMatch = exactRecentTweetCount / recentMatchCount;
-                    const formattedrecentTweetsPerMatch = Number(recentTweetsPerMatch.toFixed(1)).toLocaleString()
-                    $("#recent-tweets-per-match").html(`, for <strong>${formattedrecentTweetsPerMatch}</strong> tweets per match.`);
+                    const formattedRecentTweetsPerMatch = Math.round(recentTweetsPerMatch).toLocaleString()
+                    $("#recent-tweets-per-match").html(`, for <strong>${formattedRecentTweetsPerMatch}</strong> tweets per match.`);
                 } else if (data.error) {
                     $.growl.error({message: data.error});
                 } else {
