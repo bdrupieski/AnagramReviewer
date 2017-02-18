@@ -187,7 +187,7 @@
            data-trigger="focus"
            title="Oldest unchecked tweet"
            data-content="<span id='oldest-existence-not-checked'><img class='loader-gif'></img></span>">
-            <strong>is... 🤔</strong></a>
+            <strong><span id="oldest-existence-not-checked-content">is... 🤔</span></strong></a>.
     </div>
 
     <h1>Charts</h1>
@@ -1523,7 +1523,9 @@
         $oldestExistenceNotChecked.on('show.bs.popover', function () {
             $.getJSON(`/anagrams/dateofoldesttweetwhoseexistencehasnotbeenchecked`).done(data => {
                 if (data.date) {
-                    $("#oldest-existence-not-checked").text(new Date(data.date).toLocaleString());
+                    const formattedOldestDateExistenceNotChecked = new Date(data.date).toLocaleString();
+                    $("#oldest-existence-not-checked").text(formattedOldestDateExistenceNotChecked);
+                    $("#oldest-existence-not-checked-content").text(formattedOldestDateExistenceNotChecked);
                 } else if (data.error) {
                     $.growl.error({message: data.error});
                 } else {
