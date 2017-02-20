@@ -179,16 +179,8 @@
         <strong>\{{formatTime dateLastMatchCreated day="numeric" month="long" year="numeric" }}.</strong>
     </script>
     <div class="row">
-        The date of the oldest tweet whose existence has not been checked
-        <a href="#/"
-           id="oldest-existence-not-checked-popover"
-           data-html="true"
-           data-placement="top"
-           data-toggle="popover"
-           data-trigger="focus"
-           title="Oldest unchecked tweet"
-           data-content="<span id='oldest-existence-not-checked'><img class='loader-gif'></img></span>">
-            <strong><span id="oldest-existence-not-checked-content">is... 🤔</span></strong></a>.
+        The date of the oldest tweet whose existence has not been checked is
+        <strong><span id="oldest-existence-not-checked-content"><img class='loader-gif'/></span></strong>.
     </div>
 
     <h1>Charts</h1>
@@ -1519,14 +1511,14 @@
             });
         });
 
-        const $oldestExistenceNotChecked = $("#oldest-existence-not-checked-popover");
-        $oldestExistenceNotChecked.popover();
-        $oldestExistenceNotChecked.on('show.bs.popover', function () {
+        function getDateOfOldestExistenceCheckedTweet() {
             $.getJSON(`/anagrams/dateofoldesttweetwhoseexistencehasnotbeenchecked`).done(data => {
+                console.log(`polled /anagrams/dateofoldesttweetwhoseexistencehasnotbeenchecked, got ${JSON.stringify(data)}`);
                 if (data.date) {
                     const formattedOldestDateExistenceNotChecked = new Date(data.date).toLocaleString();
                     $("#oldest-existence-not-checked").text(formattedOldestDateExistenceNotChecked);
                     $("#oldest-existence-not-checked-content").text(formattedOldestDateExistenceNotChecked);
+                    pollDateOfOldestExistenceCheckedTweet();
                 } else if (data.error) {
                     $.growl.error({message: data.error});
                 } else {
@@ -1535,7 +1527,15 @@
             }).fail((jqxhr, textStatus, error) => {
                 $.growl.error({message: error});
             });
-        });
+        }
+
+        function pollDateOfOldestExistenceCheckedTweet() {
+            setTimeout(() => {
+                getDateOfOldestExistenceCheckedTweet();
+            }, 1000 * 60);
+        };
+
+        getDateOfOldestExistenceCheckedTweet();
 
         function getDateLastMatchCreated() {
             $.getJSON(`/anagrams/dateoflastmatchcreated`).done(data => {
@@ -1557,7 +1557,7 @@
         function pollDateLastMatchCreated() {
             setTimeout(() => {
                 getDateLastMatchCreated();
-            }, 5000);
+            }, 15000);
         };
 
         function renderDateLastMatchCreated(date) {
