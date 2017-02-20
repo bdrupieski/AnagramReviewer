@@ -218,6 +218,15 @@ router.get('/dateofoldesttweetwhoseexistencehasnotbeenchecked', function(req, re
     });
 });
 
+router.get('/dateoflastmatchcreated', function(req, res) {
+    anagramsDb.getDateLastMatchCreated().then(date => {
+        res.json({date: date});
+    }).catch(error => {
+        logger.error(error.toString());
+        res.json({error: error});
+    });
+});
+
 router.get('/nwaymatches', function(req, res) {
 
     const minMatchesPerGroup = Number(req.query.minmatchespergroup) || 5;

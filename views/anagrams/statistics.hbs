@@ -172,11 +172,12 @@
 
     <h3>Most recently...</h3>
 
-    <div class="row">
-        The most recent match was created <strong>{{formatRelative stats.dateLastMatchCreated}}</strong> at
-        <strong>{{formatTime stats.dateLastMatchCreated hour="numeric" minute="numeric"}}</strong> on
-        <strong>{{formatTime stats.dateLastMatchCreated day="numeric" month="long" year="numeric" }}</strong>.
-    </div>
+    <div class="row" id="date-most-recent-match-created-content"></div>
+    <script id="date-most-recent-match-created-template" type="text/x-handlebars-template">
+        The most recent match was created <strong>\{{formatRelative dateLastMatchCreated}}</strong> at
+        <strong>\{{formatTime dateLastMatchCreated hour="numeric" minute="numeric"}}</strong> on
+        <strong>\{{formatTime dateLastMatchCreated day="numeric" month="long" year="numeric" }}.</strong>
+    </script>
     <div class="row">
         The date of the oldest tweet whose existence has not been checked
         <a href="#/"
@@ -1479,7 +1480,7 @@
                     const exactTweetCount = Number(data.count);
                     const formattedExactTweetCount = exactTweetCount.toLocaleString();
                     $("#exact-tweet-number").text(formattedExactTweetCount);
-                    $("#approximately").text("");
+                    $("#approximately").text("exactly");
                     $("#exact-number-of-tweets").text(formattedExactTweetCount);
 
                     const updatedAllTimeTweetsPerMatch = exactTweetCount / totalMatches;
@@ -1535,6 +1536,40 @@
                 $.growl.error({message: error});
             });
         });
+
+        function getDateLastMatchCreated() {
+            $.getJSON(`/anagrams/dateoflastmatchcreated`).done(data => {
+                console.log(`polled /anagrams/dateoflastmatchcreated, got ${JSON.stringify(data)}`);
+                if (data.date) {
+                    const dateLastMatchCreated = new Date(data.date);
+                    renderDateLastMatchCreated(dateLastMatchCreated);
+                } else if (data.error) {
+                    $.growl.error({message: data.error});
+                } else {
+                    $.growl.error({message: "something went wrong"});
+                }
+                pollDateLastMatchCreated();
+            }).fail((jqxhr, textStatus, error) => {
+                $.growl.error({message: error});
+            });
+        }
+
+        function pollDateLastMatchCreated() {
+            setTimeout(() => {
+                getDateLastMatchCreated();
+            }, 5000);
+        };
+
+        function renderDateLastMatchCreated(date) {
+            const $template = $("#date-most-recent-match-created-template");
+            const $target = $("#date-most-recent-match-created-content");
+            const template = Handlebars.compile($template.html());
+            const html = template({dateLastMatchCreated: date});
+            $target.html(html);
+        }
+        const dateLastMatchCreatedFromServer = new Date("{{stats.dateLastMatchCreated}}");
+        renderDateLastMatchCreated(dateLastMatchCreatedFromServer);
+        pollDateLastMatchCreated();
 
         $(".js-color-based-on-number-value").each((index, element) => {
             $el = $(element);
