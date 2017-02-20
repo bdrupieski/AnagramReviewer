@@ -154,9 +154,10 @@ exports.rejectMatch = function (matchId, isAutoRejected = false) {
     const rejectMatchQuery = `
 UPDATE anagram_matches
 SET 
-  rejected      = TRUE,
-  date_rejected = current_timestamp,
-  auto_rejected = $2::boolean
+  rejected           = TRUE,
+  date_rejected      = current_timestamp,
+  auto_rejected      = $2::boolean,
+  attempted_approval = FALSE
 WHERE anagram_matches.id = $1::int;
 `;
 
