@@ -117,6 +117,7 @@ router.get('/statistics', function(req, res) {
         anagramsDb.getStatsByTimeOfDayMatchCreated(minuteInterval, numberOfPastDays),
         anagramsDb.averageScoreSurplusForApprovedMatches(interestingFactorCutoff, numberOfPastDays),
         anagramsDb.averageScoreSurplusForApprovedMatchesByInterestingFactorScoreBucket(numberOfPastDays),
+        anagramsDb.getDaysSinceFirstMatch(),
     ]).then(stats => {
         const formattedStats = {
             allTimeCounts: stats[0],
@@ -132,6 +133,7 @@ router.get('/statistics', function(req, res) {
             statsByTimeOfDayMatchCreated: stats[10],
             scoreSurplusForApprovedMatches: stats[11],
             scoreSurplusForApprovedMatchesByInterestingFactorBucket: stats[12],
+            daysSinceFirstMatch: stats[13],
         };
 
         formattedStats.interestingFactorCutoff = interestingFactorCutoff;

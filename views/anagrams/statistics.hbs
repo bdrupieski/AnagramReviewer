@@ -116,6 +116,9 @@
         <strong>{{formatNumber stats.allTimeAverageRetweetedMatchesPerDay maximumFractionDigits="1"}}</strong> matches/day
         retweeted over <strong>{{formatNumber stats.countOfDaysMatchesHaveBeenRetweeted}}</strong> total (non-contiguous) days matches have been retweeted.
     </div>
+    <div class="row">
+        The first match was created on <strong>{{formatTime stats.daysSinceFirstMatch.firstMatchCreated}}</strong>, <strong>{{formatNumber stats.daysSinceFirstMatch.days}}</strong> days ago.
+    </div>
 
     <h3>In the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days...</h3>
 

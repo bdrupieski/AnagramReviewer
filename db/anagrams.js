@@ -506,6 +506,24 @@ ORDER BY day DESC;
     });
 };
 
+exports.getDaysSinceFirstMatch = function() {
+    const daysSinceFirstMatchQuery = `
+SELECT
+  current_date - date(anagram_matches.date_created) AS days,
+  anagram_matches.date_created                      AS first_match_created
+FROM anagram_matches
+ORDER BY anagram_matches.date_created
+LIMIT 1;
+`;
+    return pools.anagramPool.query(daysSinceFirstMatchQuery).then(x => {
+        const row = x.rows[0];
+        return {
+            days: Number(row.days),
+            firstMatchCreated: new Date(row.first_match_created),
+        }
+    });
+};
+
 exports.getApproximateCountOfTweets = function () {
     const approximateTweetCountQuery = `
 SELECT reltuples AS approximate_row_count FROM pg_class WHERE relname = 'tweets' LIMIT 1;
