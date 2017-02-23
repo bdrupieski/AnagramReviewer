@@ -737,7 +737,8 @@ exports.getTweetsToPostToTumblr = function(limit) {
 SELECT
   anagram_matches.id,
   t1.status_id AS t1_status_id,
-  t2.status_id AS t2_status_id
+  t2.status_id AS t2_status_id,
+  anagram_matches.posted_in_order
 FROM anagram_matches
   INNER JOIN tweets t1 ON anagram_matches.tweet1_id = t1.id
   INNER JOIN tweets t2 ON anagram_matches.tweet2_id = t2.id

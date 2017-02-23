@@ -492,13 +492,14 @@ router.post('/queue/markerrorok/:id', function(req, res) {
 });
 
 router.post('/bulkpostmissingtumblrposts', function (req, res) {
-    anagramsDb.getTweetsToPostToTumblr(25).then(matches => {
+    const numberToCatchUp = 10;
+    anagramsDb.getTweetsToPostToTumblr(numberToCatchUp).then(matches => {
         if (matches.length == 0) {
             req.flash('info', "No missing tumblr posts.");
             res.redirect('/anagrams/list');
         } else {
-            return Promise.all(matches.map(x => postMatchToTumblr(x.id, x.t1_status_id, x.t2_status_id, true))).then(x => {
-                req.flash('info', `posted ${x.length} to tumblr`);
+            return Promise.all(matches.map(x => anagramManagement.postToTumblr(x.id, x.posted_in_order))).then(x => {
+                req.flash('info', `posted ${x.length} attempted to tumblr`);
                 res.redirect('/anagrams/list');
             });
         }
