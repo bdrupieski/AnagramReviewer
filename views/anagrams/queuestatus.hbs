@@ -32,6 +32,7 @@
                     <tr>
                         <th>Time Queued</th>
                         <th>Match</th>
+                        <th>Tweets also in</th>
                         <th>IF</th>
                         <th>In order</th>
                         <th>T1</th>
@@ -44,6 +45,11 @@
                         <tr data-pending-id="{{id}}">
                             <td>{{formatTime date_queued day="numeric" month="numeric" year="numeric" hour="numeric" minute="numeric" second="numeric"}}</td>
                             <td><a href="/anagrams/info/{{match_id}}">{{match_id}}</a></td>
+                            <td>
+                                {{#if other_retweeted_match_id}}
+                                    <a href="/anagrams/info/{{other_retweeted_match_id}}">{{other_retweeted_match_id}}</a>
+                                {{/if}}
+                            </td>
                             <td><a href="#/" data-match data-match-id="{{match_id}}">{{formatNumber interesting minimumFractionDigits="2" maximumFractionDigits="2"}}</a></td>
                             <td><strong style="font-size: 150%">{{inOrderArrows order_as_shown}}</strong></td>
                             <td>

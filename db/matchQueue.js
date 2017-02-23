@@ -191,7 +191,53 @@ exports.getErrorQueuedMatches = function() {
 };
 
 exports.getPendingQueuedMatches = function() {
-    return getQueuedMatchesWithStatus(queuedMatchPendingStatus);
+    const pendingQueuedMatchQuery = `
+WITH pendingMatches AS (SELECT
+                          match_queue.id,
+                          match_queue.date_queued,
+                          match_queue.date_error,
+                          match_queue.message,
+                          match_queue.order_as_shown,
+                          anagram_matches.id                 AS match_id,
+                          anagram_matches.interesting_factor AS interesting,
+                          tweet1.id                          AS t1_id,
+                          tweet2.id                          AS t2_id,
+                          tweet1.original_text               AS t1_originalText,
+                          tweet2.original_text               AS t2_originalText,
+                          tweet1.user_name                   AS t1_username,
+                          tweet1.status_id                   AS t1_statusId,
+                          tweet2.user_name                   AS t2_username,
+                          tweet2.status_id                   AS t2_statusId
+                        FROM
+                          match_queue
+                          INNER JOIN anagram_matches ON anagram_matches.id = match_queue.match_id
+                          INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+                          INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+                        WHERE match_queue.status = '${queuedMatchPendingStatus}'
+                        ORDER BY match_queue.date_queued),
+    retweetedMatchesContainingTweetsInQueue AS (SELECT
+                                                  otherRetweetedMatchesContainingSameTweet.id AS other_retweeted_match_id,
+                                                  pendingMatches.id                           AS match_queue_id
+                                                FROM anagram_matches otherRetweetedMatchesContainingSameTweet, pendingMatches
+                                                  RIGHT JOIN anagram_matches matchInQuestion ON matchInQuestion.id = pendingMatches.match_id
+                                                WHERE
+                                                  (otherRetweetedMatchesContainingSameTweet.tweet1_id = matchInQuestion.tweet1_id OR
+                                                   otherRetweetedMatchesContainingSameTweet.tweet1_id = matchInQuestion.tweet2_id OR
+                                                   otherRetweetedMatchesContainingSameTweet.tweet2_id = matchInQuestion.tweet1_id OR
+                                                   otherRetweetedMatchesContainingSameTweet.tweet2_id = matchInQuestion.tweet2_id)
+                                                  AND otherRetweetedMatchesContainingSameTweet.date_retweeted IS NOT NULL
+                                                  AND otherRetweetedMatchesContainingSameTweet.date_unretweeted IS NULL
+                                                  AND otherRetweetedMatchesContainingSameTweet.id != pendingMatches.match_id)
+SELECT
+  pendingMatches.*,
+  retweetedMatchesContainingTweetsInQueue.other_retweeted_match_id
+FROM pendingMatches
+  LEFT JOIN retweetedMatchesContainingTweetsInQueue
+    ON pendingMatches.id = retweetedMatchesContainingTweetsInQueue.match_queue_id;
+`;
+    return pools.anagramPool.query(pendingQueuedMatchQuery).then(x => {
+        return x.rows;
+    });
 };
 
 exports.getAllMatchesInQueueForMatch = function(matchId) {
