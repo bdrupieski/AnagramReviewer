@@ -12,4 +12,3 @@ const client = tumblr.createClient({
 });
 
 exports.client = client;
-

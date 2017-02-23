@@ -1172,6 +1172,18 @@ WHERE
     });
 };
 
+exports.getTumblrPostIds = function() {
+    const tumblrPostIdsQuery = `
+SELECT tumblr_post_id
+FROM anagram_matches
+WHERE tumblr_post_id IS NOT NULL
+ORDER BY date_posted_tumblr;
+`;
+    return pools.anagramPool.query(tumblrPostIdsQuery).then(x => {
+        return x.rows.map(x => x.tumblr_post_id);
+    });
+};
+
 function clamp(x, a, b) {
     return Math.max(a, Math.min(x, b));
 }

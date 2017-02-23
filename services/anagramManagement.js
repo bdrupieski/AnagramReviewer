@@ -74,7 +74,7 @@ function postMatchToTumblr(matchId, t1StatusId, t2StatusId, postedInOrder) {
         const t2 = oembeds[1];
 
         const title = `${t1.author_name} vs. ${t2.author_name}`;
-        const content = `<div> ${t1.html} <br><br> ${t2.html} </div>`;
+        const content = `<div> ${t1.html} ${t2.html} </div>`;
 
         return tumblr.client.createTextPost("anagrammatweest", { title: title, body: content });
     }).then(tumblrResponse => {

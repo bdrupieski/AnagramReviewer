@@ -1,4 +1,4 @@
-const userManagement = require('./services/userManagement');
+const userManagement = require('./../services/userManagement');
 
 const username = process.argv[2];
 const email = process.argv[3];
