@@ -4,6 +4,12 @@ const logger = require('./logger');
 const tumblr = require("../services/tumblr");
 const _ = require("lodash");
 
+exports.errorContainsKnownErrors = function(error, knownErrors) {
+    const errorCodes = error.map(x => x.code);
+    const knownErrorCodes = knownErrors.map(x => x.code);
+    return _.intersection(errorCodes, knownErrorCodes).length > 0
+};
+
 exports.autoRejectFromTwitterError = function(matchId, error) {
     const codes = error.map(x => x.code);
     const approvalErrorMessages = error.map(x => x.message).join();

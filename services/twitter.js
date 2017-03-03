@@ -10,13 +10,15 @@ const client = new Twitter({
     access_token_secret: twitterConfig.accesstokensecret
 });
 
+const noStatusFoundWithThatId = {code: 144, message: 'No status found with that ID.'};
 exports.autoRejectableErrors = [
     {code: 34, message: 'Sorry, that page does not exist.'},
     {code: 63, message: 'User has been suspended.'},
     {code: 136, message: 'You have been blocked from the author of this tweet.'},
-    {code: 144, message: 'No status found with that ID.'},
+    noStatusFoundWithThatId,
     {code: 179, message: 'Sorry, you are not authorized to see this status.'},
 ];
+exports.noStatusFoundWithThatId = noStatusFoundWithThatId;
 exports.rateLimitExceeded = {code: 88, message: 'Rate limit exceeded'};
 
 exports.getTweet = function(id) {
@@ -100,10 +102,8 @@ exports.destroyTweet = function (id) {
                     if (error.length) {
                         const combinedErrors = error.map(x => x.message).join(" ");
                         logger.error(`error while destroying ${id}: ${combinedErrors}`);
-                        return reject(combinedErrors);
-                    } else {
-                        return reject(error);
                     }
+                    return reject(error);
                 } else if (tweet && tweet.id_str) {
                     return resolve(tweet);
                 } else {

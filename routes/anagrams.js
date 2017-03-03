@@ -296,9 +296,18 @@ router.post('/unretweetmanually/:id', function(req, res) {
 
             const deletePromises = [];
 
+            function destroyTweet(matchId) {
+                return twitter.destroyTweet(matchId).catch(err => {
+                    const noStatusFoundWithThatId = anagramManagement.errorContainsKnownErrors(err, [twitter.noStatusFoundWithThatId])
+                    if (!noStatusFoundWithThatId) {
+                        throw err;
+                    }
+                });
+            }
+
             if (unretweet && match.tweet1_retweet_id && match.tweet2_retweet_id) {
-                deletePromises.push(twitter.destroyTweet(match.tweet1_retweet_id));
-                deletePromises.push(twitter.destroyTweet(match.tweet2_retweet_id));
+                deletePromises.push(destroyTweet(match.tweet1_retweet_id));
+                deletePromises.push(destroyTweet(match.tweet2_retweet_id));
             }
 
             if (deleteFromTumblr && match.tumblr_post_id) {
@@ -323,8 +332,14 @@ router.post('/unretweetmanually/:id', function(req, res) {
             req.flash('info', `${combinedActions} match ${matchId}`);
             res.redirect('/anagrams/list');
         }).catch(err => {
-            logger.error(err.toString());
-            req.flash('error', err.toString());
+            let errorText;
+            if (err.length) {
+                errorText = err.map(x => x.message).join(" ");
+            } else {
+                errorText = err.toString();
+            }
+            logger.error(errorText);
+            req.flash('error', errorText);
             res.redirect('/anagrams/list');
         });
     }

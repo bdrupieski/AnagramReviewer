@@ -179,7 +179,12 @@ function logDeletion(deletion) {
 
 function logTweetDestruction(deletion) {
     if (deletion.error) {
-        logger.cleanUp.info(`error when deleting: ${deletion.result}`);
+        if (deletion.result.length) {
+            const combinedErrors = deletion.result.map(x => x.message).join(" ");
+            logger.cleanUp.info(`error when deleting: ${combinedErrors}`);
+        } else {
+            logger.cleanUp.info(`error when deleting: ${deletion.result}`);
+        }
     } else {
         logger.cleanUp.info(`Deleted ${deletion.id_str} created on ${deletion.created_at} ("${deletion.retweeted_status.text}", original status id ${deletion.retweeted_status.id_str})`);
     }
