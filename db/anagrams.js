@@ -151,7 +151,7 @@ LIMIT $1::int;
 
 exports.rejectMatch = function (matchId, isAutoRejected = false) {
 
-    const rejectMatchQuery = `
+    const explicitlyRejectQuery = `
 UPDATE anagram_matches
 SET 
   rejected           = TRUE,
@@ -161,7 +161,17 @@ SET
 WHERE anagram_matches.id = $1::int;
 `;
 
-    return pools.anagramPool.query(rejectMatchQuery, [matchId, isAutoRejected]).then(x => {
+    const autoRejectQuery = `
+UPDATE anagram_matches
+SET 
+  rejected           = TRUE,
+  date_rejected      = current_timestamp,
+  auto_rejected      = $2::boolean
+WHERE anagram_matches.id = $1::int;
+`;
+    const query = isAutoRejected ? autoRejectQuery : explicitlyRejectQuery;
+
+    return pools.anagramPool.query(query, [matchId, isAutoRejected]).then(x => {
         if (x.rowCount != 1) {
             throw x;
         } else {
