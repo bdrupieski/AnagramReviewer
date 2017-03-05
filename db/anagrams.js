@@ -853,6 +853,7 @@ SELECT
   anagram_matches.date_posted_tumblr,
   anagram_matches.unretweeted_from_cleanup,
   anagram_matches.unretweeted_manually,
+  anagram_matches.date_unretweeted,
   anagram_matches.posted_in_order,
   tweet1.id                                 AS t1_id,
   tweet2.id                                 AS t2_id,

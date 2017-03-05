@@ -31,16 +31,31 @@
             </td>
             <td class="col-md-3">
                 <div class="row">
-                    <label class="col-sm-4 control-label">Retweeted:</label>
                     {{#if date_retweeted}}
+                        <label class="col-sm-4 control-label">Retweeted:</label>
                         <span>{{nullDateFormat date_retweeted day="numeric" month="numeric" year="numeric"
                                                hour="numeric" minute="numeric" second="numeric"}}</span>
                     {{else}}
                         {{#if unretweeted_manually}}
-                            <strong class="text-danger">Unretweeted manually</strong>
+                            <span class="col-sm-12"><strong class="text-danger">Unretweeted manually
+                                {{nullDateFormat date_unretweeted
+                                                 day="numeric"
+                                                 month="numeric"
+                                                 year="numeric"
+                                                 hour="numeric"
+                                                 minute="numeric"
+                                                 second="numeric"}}</strong></span>
                         {{/if}}
                         {{#if unretweeted_from_cleanup}}
-                            <strong class="text-warning">Unretweeted from cleanup</strong>
+                            <span class="col-sm-12"><strong class="text-warning">Cleaned up
+                                {{nullDateFormat
+                                        date_unretweeted
+                                        day="numeric"
+                                        month="numeric"
+                                        year="numeric"
+                                        hour="numeric"
+                                        minute="numeric"
+                                        second="numeric"}}</strong></span>
                         {{/if}}
                     {{/if}}
                 </div>
