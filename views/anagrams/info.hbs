@@ -241,7 +241,7 @@
                     {{#each queueItems}}
                         <tr>
                             <td>{{id}}</td>
-                            <td>{{order_as_shown}}</td>
+                            <td>{{boolAsYesNo order_as_shown}} (<strong>{{inOrderArrows order_as_shown}}</strong>)</td>
                             <td>{{nullDateFormat date_queued day="numeric" month="numeric" year="numeric" hour="numeric"
                                                  minute="numeric" second="numeric"}}</td>
                             <td>{{nullDateFormat date_posted day="numeric" month="numeric" year="numeric" hour="numeric"
