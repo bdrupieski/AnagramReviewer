@@ -765,7 +765,7 @@ LIMIT $1::int;
     });
 };
 
-exports.setUnpostedAndClearIds = function(matchId, unretweet, clearTumblrPostId) {
+exports.setUnpostedAndClearIds = function(matchId, unretweet, clearTumblrPostId, keepApproval) {
     const unretweetQuery = `
 UPDATE anagram_matches
 SET 
@@ -774,7 +774,7 @@ SET
   tweet1_retweet_id    = NULL,
   tweet2_retweet_id    = NULL,
   unretweeted_manually = true,
-  attempted_approval   = false
+  attempted_approval   = ${keepApproval}
 WHERE id = $1::int;
 `;
 
@@ -790,7 +790,7 @@ SET
   date_posted_tumblr       = NULL,
   date_unposted_tumblr     = current_timestamp,
   unposted_tumblr_manually = true,
-  attempted_approval       = false
+  attempted_approval       = ${keepApproval}
 WHERE id = $1::int;
 `;
 
@@ -801,7 +801,7 @@ SET
   date_posted_tumblr       = NULL,
   date_unposted_tumblr     = current_timestamp,
   unposted_tumblr_manually = true,
-  attempted_approval       = false
+  attempted_approval       = ${keepApproval}
 WHERE id = $1::int;
 `;
 

@@ -287,6 +287,7 @@ router.post('/unretweetmanually/:id', function(req, res) {
     const matchId = req.params.id;
     const unretweet = req.query.unretweet === "true";
     const deleteFromTumblr = req.query.deletetumblrpost === "true";
+    const keepApproval = req.query.keepattemptedapproval === "true";
 
     if (!unretweet && !deleteFromTumblr) {
         req.flash('error', "Neither 'unretweet' or 'deletetumblrpost' were set");
@@ -317,7 +318,7 @@ router.post('/unretweetmanually/:id', function(req, res) {
 
             return Promise.all(deletePromises);
         }).then(x => {
-            return anagramsDb.setUnpostedAndClearIds(matchId, unretweet, deleteFromTumblr);
+            return anagramsDb.setUnpostedAndClearIds(matchId, unretweet, deleteFromTumblr, keepApproval);
         }).then(x => {
 
             const actions = [];

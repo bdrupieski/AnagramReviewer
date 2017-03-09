@@ -193,10 +193,17 @@
             <h3 class="panel-title">Actions</h3>
         </div>
         <div class="panel-body">
+            <div class="col-sm-4">
+                {{#if match.date_retweeted}}
+                    <form action='/anagrams/unretweetmanually/{{match.id}}?unretweet=true&keepattemptedapproval=true' method="post">
+                        <button type="submit" class="btn btn-lg btn-primary">Unretweet and keep approved</button>
+                    </form>
+                {{/if}}
+            </div>
             <div class="col-sm-2">
                 {{#if match.date_retweeted}}
                     <form action='/anagrams/unretweetmanually/{{match.id}}?unretweet=true' method="post">
-                        <button type="submit" class="btn btn-lg btn-primary">Unretweet</button>
+                        <button type="submit" class="btn btn-lg btn-muted">Unretweet</button>
                     </form>
                 {{/if}}
             </div>
