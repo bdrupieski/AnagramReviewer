@@ -1370,10 +1370,11 @@
         }
 
         const $jsCollapseButtons = $(".js-collapse-button");
-        $jsCollapseButtons.text("➖");
+        const heavyMinus = "\u2796";
+        const heavyPlus = "\u2795";
         $jsCollapseButtons.click(function() {
             $(this).text(function (i, previous) {
-                return previous == '➕' ? '➖' : '➕';
+                return previous == heavyPlus ? heavyMinus : heavyPlus;
             });
         });
 
@@ -1381,6 +1382,9 @@
         if (Number(numDays) > 30) {
             $("#retweets-and-tumblr-posts-by-day-table").removeClass("in");
             $("#stats-by-date-created-table").removeClass("in");
+            $jsCollapseButtons.text(heavyPlus);
+        } else {
+            $jsCollapseButtons.text(heavyMinus);
         }
 
         function renderTable($template, $target, data) {
