@@ -192,25 +192,25 @@
         <div class="panel-heading">
             <h3 class="panel-title">Actions</h3>
         </div>
-        <div class="panel-body">
+        <div class="panel-body container-fluid">
             <div class="col-sm-4">
                 {{#if match.date_retweeted}}
                     <form action='/anagrams/unretweetmanually/{{match.id}}?unretweet=true&keepattemptedapproval=true' method="post">
-                        <button type="submit" class="btn btn-lg btn-primary">Unretweet and keep approved</button>
+                        <button type="submit" class="btn btn-primary">Unretweet, keep approved</button>
                     </form>
                 {{/if}}
             </div>
             <div class="col-sm-2">
                 {{#if match.date_retweeted}}
                     <form action='/anagrams/unretweetmanually/{{match.id}}?unretweet=true' method="post">
-                        <button type="submit" class="btn btn-lg btn-muted">Unretweet</button>
+                        <button type="submit" class="btn btn-muted">Unretweet</button>
                     </form>
                 {{/if}}
             </div>
             <div class="col-sm-2">
                 {{#if match.date_posted_tumblr}}
                     <form action='/anagrams/unretweetmanually/{{match.id}}?deletetumblrpost=true' method="post">
-                        <button type="submit" class="btn btn-lg btn-warning">Untumblr</button>
+                        <button type="submit" class="btn btn-warning">Untumblr</button>
                     </form>
                 {{/if}}
             </div>
@@ -218,11 +218,19 @@
                 {{#if match.date_posted_tumblr}}
                     {{#if match.date_retweeted}}
                         <form action='/anagrams/unretweetmanually{{match.id}}?unretweet=true&deletetumblrpost=true' method="post">
-                            <button type="submit" class="btn btn-lg btn-info">Unretweet & Untumblr</button>
+                            <button type="submit" class="btn btn-info">Unretweet & Untumblr</button>
                         </form>
                     {{/if}}
                 {{/if}}
             </div>
+            <div class="col-sm-2">
+                {{#if match.rejected}}
+                    <form action='/anagrams/unrejectmanually/{{match.id}}' method="post">
+                        <button type="submit" class="btn btn-danger">Unreject</button>
+                    </form>
+                {{/if}}
+            </div>
+
         </div>
     </div>
 
