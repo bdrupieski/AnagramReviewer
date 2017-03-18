@@ -1093,17 +1093,17 @@
 
         function buildChartDayMatchCreatedAverageInterestingFactor(scoreStats, cssSelector) {
             const data = [{
-                values: scoreStats.averageInterestingFactor,
-                key: 'All',
+                values: scoreStats.unreviewedAverageInterestingFactor,
+                key: 'Unreviewed'
             }, {
                 values: scoreStats.attemptedApprovalAverageInterestingFactor,
                 key: 'Attempted Approval'
             }, {
+                values: scoreStats.averageInterestingFactor,
+                key: 'All',
+            }, {
                 values: scoreStats.rejectedAverageInterestingFactor,
                 key: "Rejected",
-            }, {
-                values: scoreStats.unreviewedAverageInterestingFactor,
-                key: 'Unreviewed'
             }];
 
             nv.addGraph(() => {
@@ -1144,11 +1144,11 @@
 
         function buildChartScoreBucketRetweetedAndUnreviewed(scoreStats, cssSelector) {
             const data = [{
-                values: scoreStats.percentRetweeted,
-                key: 'Retweeted'
-            }, {
                 values: scoreStats.percentUnreviewed,
                 key: "Unreviewed",
+            }, {
+                values: scoreStats.percentRetweeted,
+                key: 'Retweeted'
             }];
 
             nv.addGraph(() => {
@@ -1181,11 +1181,11 @@
 
         function buildChartScoreBucketCounts(scoreStats, cssSelector) {
             const data = [{
-                values: scoreStats.retweeted,
-                key: "Retweeted",
-            }, {
                 values: scoreStats.unreviewed,
                 key: "Unreviewed",
+            }, {
+                values: scoreStats.retweeted,
+                key: "Retweeted",
             }, {
                 values: scoreStats.matchesCreated,
                 key: 'Created'
