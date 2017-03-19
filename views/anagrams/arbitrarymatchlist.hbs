@@ -1,0 +1,38 @@
+<h2>{{name}}</h2>
+<table class="table table-hover table-condensed">
+    <thead>
+    <tr>
+        <th>match</th>
+        <th>score</th>
+        <th>tweets</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#each matches}}
+        <tr>
+            <td class="col-md-1">
+                <a href="/anagrams/info/{{id}}">{{id}}</a>
+            </td>
+            <td class="col-md-1">
+                <a href="#/" data-match data-match-id="{{id}}">{{formatNumber interesting minimumFractionDigits="2"
+                                                                              maximumFractionDigits="2"}}</a>
+            </td>
+            <td class="col-md-7">
+                <a href="/tweets/info/{{t1_id}}">{{t1_originaltext}}</a>
+                <br>
+                <br>
+                <a href="/tweets/info/{{t2_id}}">{{t2_originaltext}}</a>
+            </td>
+        </tr>
+    {{/each}}
+    </tbody>
+</table>
+
+<script>
+    $(() => {
+        $("[data-match]").click(e => {
+            const id = $(e.target).data("match-id");
+            anagrams.showScorePopUp(id);
+        });
+    });
+</script>

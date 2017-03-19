@@ -21,19 +21,19 @@ exports.findMatches = function (topMatchQueryType, limit = maxMatchLimit, intere
     interestingFactorCutoff = clamp(interestingFactorCutoff, 0.0, 1.0);
 
     if (topMatchQueryType == topMatchesQueryType) {
-        return findTopMatches(limit);
+        return findUnreviewedTopMatches(limit);
     } else if (topMatchQueryType == oldestTopMatchesQueryType) {
-        return findOldestTopMatches(limit, interestingFactorCutoff);
+        return findOldestUnreviewedTopMatches(limit, interestingFactorCutoff);
     } else if (topMatchQueryType == mostRecentMatches) {
-        return findMostRecentMatches(limit);
+        return findMostRecentUnreviewedMatches(limit);
     } else {
         throw `${topMatchQueryType} is invalid in a really weird way`;
     }
 };
 
-function findTopMatches(limit) {
+function findUnreviewedTopMatches(limit) {
 
-    const topMatchesQuery = `
+    const topUnreviewedMatchesQuery = `
 SELECT
   anagram_matches.id,
   anagram_matches.interesting_factor AS interesting,
@@ -61,7 +61,7 @@ ORDER BY
 limit $1::int;
 `;
 
-    return pools.anagramPool.query(topMatchesQuery, [limit]).then(x => {
+    return pools.anagramPool.query(topUnreviewedMatchesQuery, [limit]).then(x => {
         if (!x.rows) {
             throw x;
         } else {
@@ -70,9 +70,9 @@ limit $1::int;
     });
 }
 
-function findOldestTopMatches (limit, interestingFactorCutoff = defaultInterestingFactor) {
+function findOldestUnreviewedTopMatches(limit, interestingFactorCutoff = defaultInterestingFactor) {
 
-    const oldestTopMatchQuery = `
+    const oldestUnreviewedTopMatchQuery = `
 SELECT
   anagram_matches.id,
   anagram_matches.interesting_factor AS interesting,
@@ -101,7 +101,7 @@ ORDER BY
 LIMIT $1::int;
 `;
 
-    return pools.anagramPool.query(oldestTopMatchQuery, [limit, interestingFactorCutoff]).then(x => {
+    return pools.anagramPool.query(oldestUnreviewedTopMatchQuery, [limit, interestingFactorCutoff]).then(x => {
         if (!x.rows) {
             throw x;
         } else {
@@ -110,9 +110,9 @@ LIMIT $1::int;
     });
 }
 
-function findMostRecentMatches(limit) {
+function findMostRecentUnreviewedMatches(limit) {
 
-    const topMatchesQuery = `
+    const mostRecentUnreviewedMatchQuery = `
 SELECT
   anagram_matches.id,
   anagram_matches.interesting_factor AS interesting,
@@ -140,7 +140,7 @@ ORDER BY
 LIMIT $1::int;
 `;
 
-    return pools.anagramPool.query(topMatchesQuery, [limit]).then(x => {
+    return pools.anagramPool.query(mostRecentUnreviewedMatchQuery, [limit]).then(x => {
         if (!x.rows) {
             throw x;
         } else {
@@ -1193,6 +1193,97 @@ ORDER BY date_posted_tumblr;
 `;
     return pools.anagramPool.query(tumblrPostIdsQuery).then(x => {
         return x.rows.map(x => x.tumblr_post_id);
+    });
+};
+
+exports.findTopScoringMatches = function(limit) {
+    const topScoringMatchesQuery = `
+SELECT
+  anagram_matches.id,
+  anagram_matches.interesting_factor AS interesting,
+  tweet1.original_text               AS t1_originalText,
+  tweet2.original_text               AS t2_originalText,
+  tweet1.id                          AS t1_id,
+  tweet2.id                          AS t2_id
+FROM
+  anagram_matches
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+ORDER BY
+  anagram_matches.interesting_factor DESC
+LIMIT $1::int;
+`;
+    return pools.anagramPool.query(topScoringMatchesQuery, [limit]).then(x => {
+        return x.rows;
+    });
+};
+
+exports.findLongestMatches = function(limit) {
+    const longestMatchesQuery = `
+SELECT
+  anagram_matches.id,
+  anagram_matches.interesting_factor AS interesting,
+  tweet1.original_text               AS t1_originalText,
+  tweet2.original_text               AS t2_originalText,
+  tweet1.id                          AS t1_id,
+  tweet2.id                          AS t2_id
+FROM
+  anagram_matches
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+ORDER BY
+  anagram_matches.total_length_to_highest_length_captured_ratio desc
+LIMIT $1::int;
+`;
+    return pools.anagramPool.query(longestMatchesQuery, [limit]).then(x => {
+        return x.rows;
+    });
+};
+
+exports.findHighestScoringExplicitlyRejectedMatches = function(limit) {
+    const highestScoringExplicitlyRejectedMatchesQuery = `
+SELECT
+  anagram_matches.id,
+  anagram_matches.interesting_factor AS interesting,
+  tweet1.original_text               AS t1_originalText,
+  tweet2.original_text               AS t2_originalText,
+  tweet1.id                          AS t1_id,
+  tweet2.id                          AS t2_id
+FROM
+  anagram_matches
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+WHERE anagram_matches.rejected IS TRUE
+      AND anagram_matches.auto_rejected IS FALSE
+ORDER BY
+  anagram_matches.interesting_factor DESC
+LIMIT $1::int;
+`;
+    return pools.anagramPool.query(highestScoringExplicitlyRejectedMatchesQuery, [limit]).then(x => {
+        return x.rows;
+    });
+};
+
+exports.findHighestScoringApprovedMatches = function(limit) {
+    const HighestScoringApprovedMatchesQuery = `
+SELECT
+  anagram_matches.id,
+  anagram_matches.interesting_factor AS interesting,
+  tweet1.original_text               AS t1_originalText,
+  tweet2.original_text               AS t2_originalText,
+  tweet1.id                          AS t1_id,
+  tweet2.id                          AS t2_id
+FROM
+  anagram_matches
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+WHERE anagram_matches.attempted_approval IS TRUE
+ORDER BY
+  anagram_matches.interesting_factor DESC
+LIMIT $1::int;
+`;
+    return pools.anagramPool.query(HighestScoringApprovedMatchesQuery, [limit]).then(x => {
+        return x.rows;
     });
 };
 

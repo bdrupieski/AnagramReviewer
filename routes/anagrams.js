@@ -526,4 +526,34 @@ router.post('/bulkpostmissingtumblrposts', function (req, res) {
     });
 });
 
+router.get('/topmatches', function(req, res) {
+    return renderArbitraryMatchList(req, res, anagramsDb.findTopScoringMatches, "Highest scoring matches, approved or not");
+});
+
+router.get('/longestmatches', function(req, res) {
+    return renderArbitraryMatchList(req, res, anagramsDb.findLongestMatches, "Longest matches, approved or not");
+});
+
+router.get('/highestscoringexplicitlyrejectedmatches', function(req, res) {
+    return renderArbitraryMatchList(req, res, anagramsDb.findHighestScoringExplicitlyRejectedMatches, "Highest scoring explicitly rejected matches");
+});
+
+router.get('/highestscoringapprovedmatches', function(req, res) {
+    return renderArbitraryMatchList(req, res, anagramsDb.findHighestScoringApprovedMatches, "Highest scoring approved matches");
+});
+
+function renderArbitraryMatchList(req, res, getMatchesFunc, name) {
+    const limit = req.query.limit || 1000;
+    return getMatchesFunc(limit).then(matches => {
+        res.render('anagrams/arbitrarymatchlist', {
+            name: name,
+            matches: matches
+        });
+    }).catch(err => {
+        logger.error(err.toString());
+        req.flash('error', err.toString());
+        res.redirect('/anagrams/list');
+    });
+}
+
 module.exports = router;
