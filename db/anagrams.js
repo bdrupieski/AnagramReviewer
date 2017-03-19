@@ -1265,7 +1265,7 @@ LIMIT $1::int;
 };
 
 exports.findHighestScoringApprovedMatches = function(limit) {
-    const HighestScoringApprovedMatchesQuery = `
+    const highestScoringApprovedMatchesQuery = `
 SELECT
   anagram_matches.id,
   anagram_matches.interesting_factor AS interesting,
@@ -1282,7 +1282,33 @@ ORDER BY
   anagram_matches.interesting_factor DESC
 LIMIT $1::int;
 `;
-    return pools.anagramPool.query(HighestScoringApprovedMatchesQuery, [limit]).then(x => {
+    return pools.anagramPool.query(highestScoringApprovedMatchesQuery, [limit]).then(x => {
+        return x.rows;
+    });
+};
+
+exports.findLongAndHighInEnglishWordsExplicitlyRejectedMatches = function(limit) {
+    const longAndHighInEnglishWordsExplicitlyRejectedMatchesQuery = `
+SELECT
+  anagram_matches.id,
+  anagram_matches.interesting_factor AS interesting,
+  tweet1.original_text               AS t1_originalText,
+  tweet2.original_text               AS t2_originalText,
+  tweet1.id                          AS t1_id,
+  tweet2.id                          AS t2_id
+FROM
+  anagram_matches
+  INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
+  INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
+WHERE anagram_matches.rejected IS TRUE
+      AND anagram_matches.auto_rejected IS FALSE
+      AND anagram_matches.english_words_to_total_word_count_ratio > 0.6
+  AND anagram_matches.total_length_to_highest_length_captured_ratio > 0.5
+ORDER BY
+  anagram_matches.interesting_factor DESC
+LIMIT $1::int;
+`;
+    return pools.anagramPool.query(longAndHighInEnglishWordsExplicitlyRejectedMatchesQuery, [limit]).then(x => {
         return x.rows;
     });
 };
