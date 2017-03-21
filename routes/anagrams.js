@@ -546,8 +546,8 @@ router.get('/longandhighinenglishwordsexplicitlyrejectedmatches', function(req, 
     return renderArbitraryMatchList(req, res, anagramsDb.findLongAndHighInEnglishWordsExplicitlyRejectedMatches, "Long and high in english words explicitly rejected matches");
 });
 
-router.get('/mostrecentlyunretweetedmatches', function(req, res) {
-    return renderArbitraryMatchList(req, res, anagramsDb.findMostRecentlyUnretweetedMatches, "Most recently unretweeted matches");
+router.get('/mostrecentmanuallyunretweetedmatches', function(req, res) {
+    return renderArbitraryMatchList(req, res, anagramsDb.findMostRecentManuallyUnretweetedMatches, "Most recent manually unretweeted matches");
 });
 
 function renderArbitraryMatchList(req, res, getMatchesFunc, name) {

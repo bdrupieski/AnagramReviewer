@@ -1313,8 +1313,8 @@ LIMIT $1::int;
     });
 };
 
-exports.findMostRecentlyUnretweetedMatches = function(limit) {
-    const mostRecentlyUnretweetedMatches = `
+exports.findMostRecentManuallyUnretweetedMatches = function(limit) {
+    const mostRecentManuallyUnretweetedMatches = `
 SELECT
   anagram_matches.id,
   anagram_matches.interesting_factor AS interesting,
@@ -1326,12 +1326,12 @@ FROM
   anagram_matches
   INNER JOIN tweets tweet1 ON anagram_matches.tweet1_id = tweet1.id
   INNER JOIN tweets tweet2 ON anagram_matches.tweet2_id = tweet2.id
-WHERE anagram_matches.date_unretweeted is not null
+WHERE anagram_matches.date_unretweeted IS NOT NULL AND anagram_matches.unretweeted_manually
 ORDER BY
   anagram_matches.date_unretweeted DESC
 LIMIT $1::int;
 `;
-    return pools.anagramPool.query(mostRecentlyUnretweetedMatches, [limit]).then(x => {
+    return pools.anagramPool.query(mostRecentManuallyUnretweetedMatches, [limit]).then(x => {
         return x.rows;
     });
 };
