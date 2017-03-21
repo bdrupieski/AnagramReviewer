@@ -550,6 +550,10 @@ router.get('/mostrecentmanuallyunretweetedmatches', function(req, res) {
     return renderArbitraryMatchList(req, res, anagramsDb.findMostRecentManuallyUnretweetedMatches, "Most recent manually unretweeted matches");
 });
 
+router.get('/mostrecentcleanedupunretweetedmatches', function(req, res) {
+    return renderArbitraryMatchList(req, res, anagramsDb.findMostRecentCleanedUpUnretweetedMatches, "Most recent cleaned up unretweeted matches");
+});
+
 function renderArbitraryMatchList(req, res, getMatchesFunc, name) {
     const limit = req.query.limit || 1000;
     return getMatchesFunc(limit).then(matches => {
