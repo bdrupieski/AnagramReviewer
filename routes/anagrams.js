@@ -546,6 +546,10 @@ router.get('/longandhighinenglishwordsexplicitlyrejectedmatches', function(req, 
     return renderArbitraryMatchList(req, res, anagramsDb.findLongAndHighInEnglishWordsExplicitlyRejectedMatches, "Long and high in english words explicitly rejected matches");
 });
 
+router.get('/mostrecentlyunretweetedmatches', function(req, res) {
+    return renderArbitraryMatchList(req, res, anagramsDb.findMostRecentlyUnretweetedMatches, "Most recently unretweeted matches");
+});
+
 function renderArbitraryMatchList(req, res, getMatchesFunc, name) {
     const limit = req.query.limit || 1000;
     return getMatchesFunc(limit).then(matches => {
