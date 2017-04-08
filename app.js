@@ -42,8 +42,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-const passportConfig = require("./services/passport");
-passportConfig.configure();
+const passportService = require("./services/passport");
+passportService.configure();
 
 // every minute
 schedule.scheduleJob("*/1 * * * *", function () {

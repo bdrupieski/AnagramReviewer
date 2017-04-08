@@ -77,7 +77,7 @@ function determineIfTweetExists(statusId) {
 exports.retweetOnePendingMatch = function() {
     return matchQueueDb.getNextPendingQueuedMatchToDequeue().then(queuedMatches => {
         if (queuedMatches.length === 0) {
-            console.log("no pending matches to dequeue");
+            logger.info("no pending matches to dequeue");
         } else {
             const queuedMatch = queuedMatches[0];
             const queuedMatchId = queuedMatch.match_queue_id;
@@ -104,7 +104,7 @@ exports.retweetOnePendingMatch = function() {
                 logger.info(`successfully dequeued and posted ${queuedMatchId} for match ${matchId}`);
             }).catch(error => {
                 if (isRateLimited(error)) {
-                    console.log(`rate limited when dequeuing ${queuedMatchId} for match ${matchId}`);
+                    logger.info(`rate limited when dequeuing ${queuedMatchId} for match ${matchId}`);
                 } else {
                     logger.error(error);
                     return matchQueueDb.updateQueuedMatchAsError(queuedMatchId, error).then(x => {
@@ -140,14 +140,13 @@ exports.cleanUpAnyBrokenPairsInRecentRetweets = function(numberOfPastTimelineTwe
         twitter.getPastTweetsUpTo3200(numberOfPastTimelineTweetsToCheck),
         anagramsDb.getMostRecentRetweetedStatusIds(numberOfRecentRetweetedMatchesToRetrieve),
     ]).then(([timelineTweets, mostRecentRetweets]) => {
-        console.log(`retrieved ${timelineTweets.length} timeline tweets`);
+        logger.cleanUp.info(`Retrieved ${timelineTweets.length} timeline tweets and ${mostRecentRetweets.length} most recent retweeted matches.`);
         let statusIdsOfRetweetsOnTimeline = new Set(timelineTweets.map(x => x.retweeted_status.id_str));
         return findStatusIdsWithMissingCorrespondingStatusId(statusIdsOfRetweetsOnTimeline, mostRecentRetweets);
     }).then(matchesWithMissingPair => {
         if (matchesWithMissingPair.length > 0) {
-            console.log(matchesWithMissingPair);
             const matchIds = matchesWithMissingPair.map(x => `[${x.id}]`).join(", ");
-            logger.cleanUp.info(`deleting matches: ${matchIds}`);
+            logger.cleanUp.info(`Deleting matches: ${matchIds}`);
         }
         return Promise.all(matchesWithMissingPair.map(x => {
             return Promise.all([
@@ -169,7 +168,7 @@ exports.cleanUpAnyBrokenPairsInRecentRetweets = function(numberOfPastTimelineTwe
             }
         }
     }).catch(err => {
-        logger.cleanUp.error("unhandled error when cleaning up timeline");
+        logger.cleanUp.error("Unhandled error when cleaning up timeline.");
         logger.cleanUp.error(err);
     });
 };

@@ -299,6 +299,7 @@ router.post('/unretweetmanually/:id', function(req, res) {
 
             function destroyTweet(matchId) {
                 return twitter.destroyTweet(matchId).catch(err => {
+                    logger.info(JSON.stringify(err));
                     const isKnownError = anagramManagement.errorContainsKnownErrors(err, twitter.autoRejectableErrors);
                     if (!isKnownError) {
                         throw err;

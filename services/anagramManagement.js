@@ -35,7 +35,7 @@ exports.checkExistenceAndAutoRejectIfTweetsDontExist = function(matchId) {
         return true;
     }).catch(error => {
         const approvalError = error.message || error;
-        console.log(error);
+        logger.error(error);
 
         if (Array.isArray(error)) {
             return exports.autoRejectFromTwitterError(matchId, error);
@@ -134,7 +134,7 @@ exports.retweetAndPostToTumblr = function(matchId, orderAsShown) {
     }).catch(error => {
 
         const approvalError = error.message || error;
-        console.log(error);
+        logger.error(error);
 
         if (Array.isArray(error)) {
             return exports.autoRejectFromTwitterError(matchId, error);
