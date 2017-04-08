@@ -57,7 +57,7 @@ schedule.scheduleJob("*/30 * * * *", function () {
 
 // 15 minutes past the hour every 6 hours
 schedule.scheduleJob("15 */6 * * *", function () {
-    tasks.cleanUpAnyBrokenPairsInRecentRetweets();
+    tasks.cleanUpAnyBrokenPairsInRecentRetweets(2000);
 });
 
 app.use(function(req, res, next){

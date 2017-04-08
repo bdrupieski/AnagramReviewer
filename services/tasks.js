@@ -76,7 +76,7 @@ function determineIfTweetExists(statusId) {
 
 exports.retweetOnePendingMatch = function() {
     return matchQueueDb.getNextPendingQueuedMatchToDequeue().then(queuedMatches => {
-        if (queuedMatches.length == 0) {
+        if (queuedMatches.length === 0) {
             console.log("no pending matches to dequeue");
         } else {
             const queuedMatch = queuedMatches[0];
@@ -128,13 +128,17 @@ function isRateLimited(error) {
     }
 }
 
-exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
+exports.cleanUpAnyBrokenPairsInRecentRetweets = function(numberOfPastTimelineTweetsToCheck) {
     logger.cleanUp.info("Starting cleanup of broken pairs.");
+
+    numberOfPastTimelineTweetsToCheck = Math.max(numberOfPastTimelineTweetsToCheck, 3200);
+    const numberOfRecentRetweetedMatchesToRetrieve = Math.trunc(numberOfPastTimelineTweetsToCheck / 2.3);
+
     return Promise.all([
         // always get more tweets than the number of matches*2
         // so the retrieved timeline doesn't break on a dangling pair
-        twitter.getPastTweetsUpTo3200(1000),
-        anagramsDb.getMostRecentRetweetedStatusIds(400),
+        twitter.getPastTweetsUpTo3200(numberOfPastTimelineTweetsToCheck),
+        anagramsDb.getMostRecentRetweetedStatusIds(numberOfRecentRetweetedMatchesToRetrieve),
     ]).then(([timelineTweets, mostRecentRetweets]) => {
         console.log(`retrieved ${timelineTweets.length} timeline tweets`);
         let statusIdsOfRetweetsOnTimeline = new Set(timelineTweets.map(x => x.retweeted_status.id_str));
@@ -157,7 +161,7 @@ exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
             });
         }));
     }).then(allDeletions => {
-        if (allDeletions.length == 0) {
+        if (allDeletions.length === 0) {
             logger.cleanUp.info("No tweets to clean up.");
         } else {
             for (let deletion of allDeletions) {
