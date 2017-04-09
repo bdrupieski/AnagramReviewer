@@ -47,7 +47,6 @@ exports.getTweets = function(id1, id2) {
 
 exports.retweet = function(id) {
     logger.info(`retweeting ${id}`);
-    //throw [exports.autoRejectableErrors[0]];
     return new Promise((resolve, reject) => {
         client.post(`statuses/retweet/${id}`, {trim_user: true},
             function (error, tweet, response) {
@@ -200,6 +199,7 @@ exports.getPastTweetsUpTo3200 = function(atLeastNumberOfTweets = 3200) {
         const closedMaxId = maxId;
         return getTimelineTweetsGreaterThanMaxId(maxId).then(tweets => {
 
+            logger.info(`Retrieved ${tweets.length} tweets in batch ${recurseCount} when getting timeline tweets in batches.`);
             recurseCount++;
             if (recurseCount > 20) {
                 throw `recursed too many times on ${closedMaxId}`;
@@ -207,7 +207,7 @@ exports.getPastTweetsUpTo3200 = function(atLeastNumberOfTweets = 3200) {
 
             allTweets.push.apply(allTweets, tweets);
 
-            if (tweets.length == 1 || allTweets.length == 3200 || allTweets.length >= atLeastNumberOfTweets) {
+            if (tweets.length === 1 || allTweets.length === 3200 || allTweets.length >= atLeastNumberOfTweets) {
                 return true;
             } else {
                 const maxId = tweets[tweets.length - 1].id_str;

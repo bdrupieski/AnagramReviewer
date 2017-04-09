@@ -128,19 +128,28 @@ function isRateLimited(error) {
     }
 }
 
-exports.cleanUpAnyBrokenPairsInRecentRetweets = function(numberOfPastTimelineTweetsToCheck) {
+exports.cleanUpAnyBrokenPairsInRecentRetweets = function() {
     logger.cleanUp.info("Starting cleanup of broken pairs.");
 
-    numberOfPastTimelineTweetsToCheck = Math.max(numberOfPastTimelineTweetsToCheck, 3200);
+    // always get more tweets than the number of matches*2
+    // so the retrieved timeline doesn't break on a dangling pair
+    const numberOfPastTimelineTweetsToCheck = 3200;
     const numberOfRecentRetweetedMatchesToRetrieve = Math.trunc(numberOfPastTimelineTweetsToCheck / 2.3);
 
     return Promise.all([
-        // always get more tweets than the number of matches*2
-        // so the retrieved timeline doesn't break on a dangling pair
         twitter.getPastTweetsUpTo3200(numberOfPastTimelineTweetsToCheck),
         anagramsDb.getMostRecentRetweetedStatusIds(numberOfRecentRetweetedMatchesToRetrieve),
     ]).then(([timelineTweets, mostRecentRetweets]) => {
-        logger.cleanUp.info(`Retrieved ${timelineTweets.length} timeline tweets and ${mostRecentRetweets.length} most recent retweeted matches.`);
+        const countOfTimelineTweets = timelineTweets.length;
+        const countOfRecentRetweetedMatches = mostRecentRetweets.length;
+        const countOfRecentRetweets = mostRecentRetweets.length * 2;
+        logger.cleanUp.info(`Retrieved ${countOfTimelineTweets} timeline tweets and ${countOfRecentRetweets} most recent retweets from ${countOfRecentRetweetedMatches} recent retweeted matches.`);
+
+        if (countOfTimelineTweets <= countOfRecentRetweets) {
+            logger.cleanUp.error("Much fewer timeline tweets obtained than expected.");
+            logger.cleanUp.error(`Expected ${numberOfPastTimelineTweetsToCheck} and got ${countOfTimelineTweets} to compare with ${countOfRecentRetweets} recorded retweets.`);
+            throw "Fewer timeline tweets than expected";
+        }
         let statusIdsOfRetweetsOnTimeline = new Set(timelineTweets.map(x => x.retweeted_status.id_str));
         return findStatusIdsWithMissingCorrespondingStatusId(statusIdsOfRetweetsOnTimeline, mostRecentRetweets);
     }).then(matchesWithMissingPair => {
