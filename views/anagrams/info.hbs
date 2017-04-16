@@ -10,11 +10,17 @@
             <div class="col-md-6">
                 <div class="row">
                     <label class="col-md-4 control-label">Tweet 1:</label>
-                    <span><a href="/tweets/info/{{match.t1_id}}">{{match.t1_original_text}}</a></span>
+                    <span>
+                        <a href="http://www.twitter.com/{{match.t1_user_name}}/status/{{match.t1_status_id}}">[link]</a>
+                        <a href="/tweets/info/{{match.t1_id}}">{{match.t1_original_text}}</a>
+                    </span>
                 </div>
                 <div class="row">
                     <label class="col-md-4 control-label">Tweet 2:</label>
-                    <span><a href="/tweets/info/{{match.t2_id}}">{{match.t2_original_text}}</a></span>
+                    <span>
+                        <a href="http://www.twitter.com/{{match.t2_user_name}}/status/{{match.t2_status_id}}">[link]</a>
+                        <a href="/tweets/info/{{match.t2_id}}">{{match.t2_original_text}}</a>
+                    </span>
                 </div>
                 <div class="row">
                     <label class="col-md-4 control-label">Stripped sorted text:</label>
