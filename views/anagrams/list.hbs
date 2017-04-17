@@ -92,7 +92,9 @@
                 <td class="col-md-1">
                     <a data-bind="attr: { href : t1Link }">[link]</a>
                     <a data-bind="attr: { href : t1InfoLink }">[info]</a>
-                    <br><br>
+                    <br>
+                    <a data-bind="text: '[' + id + ']', attr: { href : matchLink }"></a>
+                    <br>
                     <a data-bind="attr: { href : t2Link }">[link]</a>
                     <a data-bind="attr: { href : t2InfoLink }">[info]</a>
                 </td>
@@ -138,19 +140,20 @@
 
         let AnagramViewModel = function () {
 
-            let AnagramMatch = function (tweetRow) {
-                this.id = tweetRow.id;
-                this.interestingFactor = tweetRow.interesting.toFixed(2);
-                this.t1OriginalText = tweetRow.t1_originaltext;
-                this.t1StatusId = tweetRow.t1_statusid;
-                this.t1Username = tweetRow.t1_username;
-                this.t2OriginalText = tweetRow.t2_originaltext;
-                this.t2StatusId = tweetRow.t2_statusid;
-                this.t2Username = tweetRow.t2_username;
+            let AnagramMatch = function (matchRow) {
+                this.id = matchRow.id;
+                this.interestingFactor = matchRow.interesting.toFixed(2);
+                this.t1OriginalText = matchRow.t1_originaltext;
+                this.t1StatusId = matchRow.t1_statusid;
+                this.t1Username = matchRow.t1_username;
+                this.t2OriginalText = matchRow.t2_originaltext;
+                this.t2StatusId = matchRow.t2_statusid;
+                this.t2Username = matchRow.t2_username;
                 this.t1Link = `http://twitter.com/${this.t1Username}/status/${this.t1StatusId}`;
                 this.t2Link = `http://twitter.com/${this.t2Username}/status/${this.t2StatusId}`;
-                this.t1InfoLink = `/tweets/info/${tweetRow.t1_id}`;
-                this.t2InfoLink = `/tweets/info/${tweetRow.t2_id}`;
+                this.t1InfoLink = `/tweets/info/${matchRow.t1_id}`;
+                this.t2InfoLink = `/tweets/info/${matchRow.t2_id}`;
+                this.matchLink = `/anagrams/info/${matchRow.id}`;
                 return this;
             };
 
