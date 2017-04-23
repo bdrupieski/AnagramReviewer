@@ -154,7 +154,6 @@ router.get('/statistics', function(req, res) {
         formattedStats.recentCountOfRetweetsWhereMatchRetweetedRecently = formattedStats.recentCountOfRetweetedMatchesWhereMatchRetweetedRecently * 2;
 
         // For retweets where _match_ was created in past X days.
-        formattedStats.recentAverageRetweetedMatchesPerDayWhereMatchCreatedRecently = formattedStats.recentCounts.recent_retweet_count / formattedStats.numberOfPastDays;
         formattedStats.recentCountOfRetweetsWhereMatchWasCreatedRecently = formattedStats.recentCounts.recent_retweet_count * 2;
 
         formattedStats.retweetsAndTumblrByDayJson = JSON.stringify(formattedStats.retweetsAndTumblrByDay);

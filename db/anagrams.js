@@ -632,30 +632,39 @@ exports.getRecentCounts = function(interestingFactorCutoff, numberOfPastDays) {
 
     const recentCountsQuery = `
 SELECT
-  count(1)                                   recent_total_count,
-  sum(CASE WHEN anagram_matches.attempted_approval IS TRUE
-    THEN 1
-      ELSE 0 END)                         AS recent_attempted_approval_count,
-  sum(CASE WHEN anagram_matches.rejected IS TRUE
-    THEN 1
-      ELSE 0 END)                         AS recent_rejected_count,
-  sum(CASE WHEN anagram_matches.date_retweeted IS NOT NULL AND anagram_matches.date_unretweeted IS NULL
-    THEN 1
-      ELSE 0 END)                         AS recent_retweet_count,
-  sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL AND
-                (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL)
-    THEN 1
-      ELSE 0 END)                         AS recent_tumblr_only_count,
-  sum(CASE WHEN anagram_matches.interesting_factor > $1::float
-    THEN 1
-      ELSE 0 END)                         AS recent_interesting_factor_count,
-  sum(CASE WHEN anagram_matches.date_unretweeted IS NOT NULL AND
-                (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL)
-    THEN 1
-      ELSE 0 END)                         AS recent_unretweeted_count,
-  avg(anagram_matches.interesting_factor) AS recent_average_interesting_factor
-FROM anagram_matches
-WHERE date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY;
+  recent_counts.*,
+  recent_total_created_count / cast(${numberOfPastDays} AS DOUBLE PRECISION)      AS recent_total_created_average_per_day,
+  recent_attempted_approval_count / cast(${numberOfPastDays} AS DOUBLE PRECISION) AS recent_attempted_approval_average_per_day,
+  recent_rejected_count / cast(${numberOfPastDays} AS DOUBLE PRECISION)           AS recent_rejected_average_per_day,
+  recent_retweet_count / cast(${numberOfPastDays} AS DOUBLE PRECISION)            AS recent_retweet_average_per_day,
+  recent_tumblr_only_count / cast(${numberOfPastDays} AS DOUBLE PRECISION)        AS recent_tumblr_only_average_per_day,
+  recent_unretweeted_count / cast(${numberOfPastDays} AS DOUBLE PRECISION)        AS recent_unretweeted_count_average_per_day
+FROM (
+       SELECT
+         count(1)                                   recent_total_created_count,
+         sum(CASE WHEN anagram_matches.attempted_approval IS TRUE
+           THEN 1
+             ELSE 0 END)                         AS recent_attempted_approval_count,
+         sum(CASE WHEN anagram_matches.rejected IS TRUE
+           THEN 1
+             ELSE 0 END)                         AS recent_rejected_count,
+         sum(CASE WHEN anagram_matches.date_retweeted IS NOT NULL AND anagram_matches.date_unretweeted IS NULL
+           THEN 1
+             ELSE 0 END)                         AS recent_retweet_count,
+         sum(CASE WHEN anagram_matches.date_posted_tumblr IS NOT NULL AND
+                       (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL)
+           THEN 1
+             ELSE 0 END)                         AS recent_tumblr_only_count,
+         sum(CASE WHEN anagram_matches.interesting_factor > $1::float
+           THEN 1
+             ELSE 0 END)                         AS recent_meet_interesting_factor_filter_count,
+         sum(CASE WHEN anagram_matches.date_unretweeted IS NOT NULL AND
+                       (anagram_matches.date_retweeted IS NULL OR anagram_matches.date_unretweeted IS NOT NULL)
+           THEN 1
+             ELSE 0 END)                         AS recent_unretweeted_count,
+         avg(anagram_matches.interesting_factor) AS recent_average_interesting_factor
+       FROM anagram_matches
+       WHERE date(anagram_matches.date_created) > current_date - INTERVAL '${numberOfPastDays}' DAY) recent_counts;
 `;
     return pools.anagramPool.query(recentCountsQuery, [interestingFactorCutoff]).then(x => {
         const row = x.rows[0];

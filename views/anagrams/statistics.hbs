@@ -123,7 +123,7 @@
     <h3>In the past <strong>{{formatNumber stats.numberOfPastDays}}</strong> days...</h3>
 
     <div class="row">
-        <strong>{{formatNumber stats.recentCounts.recent_total_count}}</strong> matches have been created from
+        <strong>{{formatNumber stats.recentCounts.recent_total_created_count}}</strong> matches have been created from
         <a href="#/"
            id="exact-tweet-for-past-number-of-days-popover"
            data-html="true"
@@ -132,10 +132,13 @@
            data-trigger="focus"
            title="Exact number of tweets for the past {{formatNumber stats.numberOfPastDays}} days"
            data-content="<span id='exact-tweet-number-for-past-number-of-days'><img class='loader-gif'></img></span>">
-            <strong><span id="exact-tweet-for-past-number-of-days-content">... 🤔</span></strong></a> tweets<span id="recent-tweets-per-match">.</span>
+            <strong><span id="exact-tweet-for-past-number-of-days-content">... 🤔</span></strong></a> tweets<span id="recent-tweets-per-match"></span>.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.recentCounts.recent_interesting_factor_count}}</strong> matches have been created with an interesting factor
+        <strong>{{formatNumber stats.recentCounts.recent_total_created_average_per_day}}</strong> matches were created per day on average.
+    </div>
+    <div class="row">
+        <strong>{{formatNumber stats.recentCounts.recent_meet_interesting_factor_filter_count}}</strong> matches have been created with an interesting factor
         above
         <strong>{{formatNumber stats.interestingFactorCutoff minimumFractionDigits="2" maximumFractionDigits="2"}}</strong>.
         The average interesting factor is <strong>{{formatNumber stats.recentCounts.recent_average_interesting_factor
@@ -146,21 +149,27 @@
     <h4>For matches <em>created</em> in the past {{formatNumber stats.numberOfPastDays}} days...</h4>
 
     <div class="row">
-        Approval has been attempted for <strong>{{formatNumber stats.recentCounts.recent_attempted_approval_count}}</strong> matches.
+        Approval has been attempted for <strong>{{formatNumber stats.recentCounts.recent_attempted_approval_count}}</strong> matches
+        (<strong>{{formatNumber stats.recentCounts.recent_attempted_approval_average_per_day maximumFractionDigits="1"}}</strong> per day).
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.recentCounts.recent_rejected_count}}</strong> matches have been rejected.
+        <strong>{{formatNumber stats.recentCounts.recent_rejected_count}}</strong> matches have been rejected
+        (<strong>{{formatNumber stats.recentCounts.recent_rejected_average_per_day maximumFractionDigits="1"}}</strong> per day).
     </div>
     <div class="row">
         <strong>{{formatNumber stats.recentCounts.recent_retweet_count}}</strong> matches have been retweeted
         (for <strong>{{formatNumber stats.recentCountOfRetweetsWhereMatchWasCreatedRecently}}</strong> total retweets)
         for an average of
-        <strong>{{formatNumber stats.recentAverageRetweetedMatchesPerDayWhereMatchCreatedRecently
-                               maximumFractionDigits="1"}}</strong> matches/day
+        <strong>{{formatNumber stats.recentCounts.recent_retweet_average_per_day maximumFractionDigits="1"}}</strong> matches/day
         retweeted.
     </div>
     <div class="row">
-        <strong>{{formatNumber stats.recentCounts.recent_tumblr_only_count}}</strong> matches were posted only to tumblr.
+        <strong>{{formatNumber stats.recentCounts.recent_unretweeted_count}}</strong> matches were unretweeted
+        (<strong>{{formatNumber stats.recentCounts.recent_unretweeted_count_average_per_day maximumFractionDigits="1"}}</strong> per day).
+    </div>
+    <div class="row">
+        <strong>{{formatNumber stats.recentCounts.recent_tumblr_only_count}}</strong> matches were posted only to tumblr
+        (<strong>{{formatNumber stats.recentCounts.recent_tumblr_only_average_per_day maximumFractionDigits="1"}}</strong> per day).
     </div>
 
     <h4>For matches <em>acted upon</em> in the past {{formatNumber stats.numberOfPastDays}} days...</h4>
@@ -1387,7 +1396,7 @@
         const heavyPlus = "\u2795";
         $jsCollapseButtons.click(function() {
             $(this).text(function (i, previous) {
-                return previous == heavyPlus ? heavyMinus : heavyPlus;
+                return previous === heavyPlus ? heavyMinus : heavyPlus;
             });
         });
 
@@ -1517,10 +1526,10 @@
                     const formattedExactRecentTweetCount = Number(data.count).toLocaleString();
                     $("#exact-tweet-number-for-past-number-of-days").text(formattedExactRecentTweetCount);
                     $("#exact-tweet-for-past-number-of-days-content").text(formattedExactRecentTweetCount);
-                    const recentMatchCount = Number({{stats.recentCounts.recent_total_count}});
+                    const recentMatchCount = Number({{stats.recentCounts.recent_total_created_count}});
                     const recentTweetsPerMatch = exactRecentTweetCount / recentMatchCount;
                     const formattedRecentTweetsPerMatch = Math.round(recentTweetsPerMatch).toLocaleString()
-                    $("#recent-tweets-per-match").html(`, for <strong>${formattedRecentTweetsPerMatch}</strong> tweets per match.`);
+                    $("#recent-tweets-per-match").html(`, for <strong>${formattedRecentTweetsPerMatch}</strong> tweets per match`);
                 } else if (data.error) {
                     $.growl.error({message: data.error});
                 } else {
