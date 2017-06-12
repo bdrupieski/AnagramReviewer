@@ -97,6 +97,21 @@ function formatRateLimit(rateLimitCategory, key) {
     }
 }
 
+router.get('/processedcounts', function(req, res) {
+    const numberOfPastDays = Number(req.query.days) || 15;
+
+    anagramsDb.getProcessedCounts(numberOfPastDays).then(processedCounts => {
+        res.render('anagrams/processedcounts', {
+            processedCounts: JSON.stringify(processedCounts),
+            numberOfPastDays: numberOfPastDays,
+        });
+    }).catch(err => {
+        logger.error(err.toString());
+        req.flash('error', err.toString());
+        res.redirect('/anagrams/list');
+    });
+});
+
 router.get('/statistics', function(req, res) {
 
     const interestingFactorCutoff = Number(req.query.interestingfactor) || anagramsDb.defaultInterestingFactor;

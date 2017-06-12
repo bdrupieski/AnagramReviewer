@@ -1368,6 +1368,29 @@ LIMIT $1::int;
     });
 };
 
+exports.getProcessedCounts = function(numberOfPastDays) {
+    numberOfPastDays = clamp(numberOfPastDays, 1, 100000);
+    const processedCountsQuery = `
+SELECT
+  round(cast(processed_counts.received_status_count_since_previous_reset / processed_counts.seconds_since_previous_reset AS NUMERIC), 1)                 AS statuses_received_per_second,
+  round(cast(processed_counts.status_met_filter_count_since_previous_reset / processed_counts.seconds_since_previous_reset AS NUMERIC), 2)               AS statuses_met_filter_per_second,
+  round(cast(processed_counts.tweet_met_filter_count_since_previous_reset / processed_counts.seconds_since_previous_reset AS NUMERIC), 2)                AS tweets_met_filter_per_second,
+  round(cast(processed_counts.saved_tweet_count_since_previous_reset / processed_counts.seconds_since_previous_reset AS NUMERIC), 3)                     AS saved_tweets_per_second,
+  round(cast(processed_counts.saved_anagram_count_since_previous_reset / processed_counts.seconds_since_previous_reset AS NUMERIC), 4)                   AS saved_anagrams_per_second,
+  round(cast(processed_counts.saved_anagram_count_since_previous_reset / (processed_counts.seconds_since_previous_reset / 3600) AS NUMERIC), 1)          AS saved_anagrams_per_hour,
+  round(cast(processed_counts.seconds_since_previous_reset / processed_counts.saved_tweet_count_since_previous_reset AS NUMERIC), 1)                     AS seconds_per_saved_tweet,
+  round(cast(processed_counts.seconds_since_previous_reset / nullif(processed_counts.saved_anagram_count_since_previous_reset, 0) AS NUMERIC), 1)        AS seconds_per_saved_anagram,
+  round(cast((processed_counts.seconds_since_previous_reset / 60) / nullif(processed_counts.saved_anagram_count_since_previous_reset, 0) AS NUMERIC), 1) AS minutes_per_saved_anagram,
+  processed_counts.now                                                                                                                                   AS counts_recorded_timestamp
+FROM processed_counts
+WHERE processed_counts.now > current_date - INTERVAL '${numberOfPastDays}' DAY
+ORDER BY counts_recorded_timestamp DESC
+`;
+    return pools.anagramPool.query(processedCountsQuery).then(x => {
+        return x.rows;
+    });
+};
+
 function clamp(x, a, b) {
     return Math.max(a, Math.min(x, b));
 }

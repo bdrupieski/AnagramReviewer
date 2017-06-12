@@ -1,0 +1,136 @@
+<div class="container-fluid">
+
+    <h1>Processed Counts:</h1>
+
+    <h3>Events per second over the past <strong>{{numberOfPastDays}}</strong> days:</h3>
+    <div class="row">
+        <svg id="events-per-second-chart" height="400"></svg>
+    </div>
+
+    <h3>Seconds per event over the past <strong>{{numberOfPastDays}}</strong> days:</h3>
+    <div class="row">
+        <svg id="seconds-per-event-chart" height="400"></svg>
+    </div>
+
+</div>
+<script>
+    $(() => {
+
+        class ProcessedCountSeriesCollection {
+            constructor(processedCounts) {
+                this.statusesReceivedPerSecond = ProcessedCountSeriesCollection.dateSeriesByProperty(processedCounts, x => x.statusesReceivedPerSecond);
+                this.statusesMetFilterPerSecond = ProcessedCountSeriesCollection.dateSeriesByProperty(processedCounts, x => x.statusesMetFilterPerSecond);
+                this.tweetsMetFilterPerSecond = ProcessedCountSeriesCollection.dateSeriesByProperty(processedCounts, x => x.tweetsMetFilterPerSecond);
+                this.savedTweetsPerSecond = ProcessedCountSeriesCollection.dateSeriesByProperty(processedCounts, x => x.savedTweetsPerSecond);
+                this.savedAnagramsPerSecond = ProcessedCountSeriesCollection.dateSeriesByProperty(processedCounts, x => x.savedAnagramsPerSecond);
+                this.savedAnagramsPerHour = ProcessedCountSeriesCollection.dateSeriesByProperty(processedCounts, x => x.savedAnagramsPerHour);
+                this.secondsPerSavedTweet = ProcessedCountSeriesCollection.dateSeriesByProperty(processedCounts, x => x.secondsPerSavedTweet);
+                this.secondsPerSavedAnagram = ProcessedCountSeriesCollection.dateSeriesByProperty(processedCounts, x => x.secondsPerSavedAnagram);
+                this.minutesPerSavedAnagram = ProcessedCountSeriesCollection.dateSeriesByProperty(processedCounts, x => x.minutesPerSavedAnagram);
+            }
+
+            static dateSeriesByProperty(data, ySelector) {
+                return data.map(row => {
+                    return {x: row.countsRecordedTimestamp, y: ySelector(row)}
+                });
+            }
+        }
+
+        class ProcessedCount {
+            constructor(processedCountRow) {
+                this.statusesReceivedPerSecond = ProcessedCount.toNumber(processedCountRow.statuses_received_per_second);
+                this.statusesMetFilterPerSecond = ProcessedCount.toNumber(processedCountRow.statuses_met_filter_per_second);
+                this.tweetsMetFilterPerSecond = ProcessedCount.toNumber(processedCountRow.tweets_met_filter_per_second);
+                this.savedTweetsPerSecond = ProcessedCount.toNumber(processedCountRow.saved_tweets_per_second);
+                this.savedAnagramsPerSecond = ProcessedCount.toNumber(processedCountRow.saved_anagrams_per_second);
+                this.savedAnagramsPerHour = ProcessedCount.toNumber(processedCountRow.saved_anagrams_per_hour);
+                this.secondsPerSavedTweet = ProcessedCount.toNumber(processedCountRow.seconds_per_saved_tweet);
+                this.secondsPerSavedAnagram = ProcessedCount.toNumber(processedCountRow.seconds_per_saved_anagram);
+                this.minutesPerSavedAnagram = ProcessedCount.toNumber(processedCountRow.minutes_per_saved_anagram);
+                this.countsRecordedTimestamp = new Date(processedCountRow.counts_recorded_timestamp);
+            }
+
+            static toNumber(num) {
+                return num ? Number(num) : null;
+            }
+        }
+
+        function buildProcessedCountCollection() {
+            const processedCounts = JSON.parse('{{{processedCounts}}}').map(x => new ProcessedCount(x));
+            return new ProcessedCountSeriesCollection(processedCounts);
+        }
+
+        function buildEventsPerSecondChart(processedCounts, cssSelector) {
+            const data = [{
+                values: processedCounts.statusesReceivedPerSecond,
+                key: 'Statuses Received per Second',
+            }, {
+                values: processedCounts.statusesMetFilterPerSecond,
+                key: 'Statuses Met Filter per Second'
+            }, {
+                values: processedCounts.tweetsMetFilterPerSecond,
+                key: 'Tweets Met Filter per Second'
+            }, {
+                values: processedCounts.savedTweetsPerSecond,
+                key: 'Tweets Saved per Second'
+            }, {
+                values: processedCounts.savedAnagramsPerSecond,
+                key: 'Anagrams Saved per Second'
+            }];
+            nv.addGraph(() => {
+                const chart = nv.models.scatterChart()
+                        .showDistY(true)
+                        .options({
+                            duration: 300,
+                            forceY: [0]
+                        })
+                        .color(d3.scale.category10().range());
+
+                chart.xAxis.axisLabel("Date")
+                        .tickFormat((d) => {
+                            return d3.time.format('%c')(new Date(d));
+                        });
+                chart.yAxis.axisLabel('Count').tickFormat(d3.format('i'));
+                console.log(data);
+                d3.select(cssSelector).datum(data).call(chart);
+                nv.utils.windowResize(chart.update);
+                return chart;
+            });
+        }
+
+        function buildSecondsPerEventChart(processedCounts, cssSelector) {
+            const data = [{
+                values: processedCounts.secondsPerSavedTweet,
+                key: 'Seconds per Tweet Saved',
+            }, {
+                values: processedCounts.secondsPerSavedAnagram,
+                key: 'Seconds per Anagram Saved'
+            }];
+            nv.addGraph(() => {
+                const chart = nv.models.scatterChart()
+                        .showDistY(true)
+                        .options({
+                            duration: 300,
+                            forceY: [0]
+                        })
+                        .color(d3.scale.category10().range());
+
+                chart.xAxis.axisLabel("Date")
+                        .tickFormat((d) => {
+                            return d3.time.format('%c')(new Date(d));
+                        });
+                chart.yAxis.axisLabel('Count').tickFormat(d3.format('i'));
+                console.log(data);
+                d3.select(cssSelector).datum(data).call(chart);
+                nv.utils.windowResize(chart.update);
+                return chart;
+            });
+        }
+
+        const processedCounts = buildProcessedCountCollection();
+
+        buildEventsPerSecondChart(processedCounts, '#events-per-second-chart');
+        buildSecondsPerEventChart(processedCounts, '#seconds-per-event-chart');
+
+    });
+</script>
