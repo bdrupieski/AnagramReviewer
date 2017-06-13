@@ -88,10 +88,13 @@
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
-                            return d3.time.format('%c')(new Date(d));
-                        });
-                chart.yAxis.axisLabel('Count').tickFormat(d3.format('i'));
-                console.log(data);
+                            return d3.time.format('%a %b %d %Y %I:%M:%S %p')(new Date(d));
+                        })
+                        .rotateLabels(-10);
+
+                chart.yAxis.axisLabel('Count')
+                        .tickFormat(d3.format('i'));
+
                 d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
                 return chart;
@@ -117,10 +120,12 @@
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
-                            return d3.time.format('%c')(new Date(d));
-                        });
+                            return d3.time.format('%a %b %d %Y %I:%M:%S %p')(new Date(d));
+                        })
+                        .rotateLabels(-10);
+
                 chart.yAxis.axisLabel('Count').tickFormat(d3.format('i'));
-                console.log(data);
+
                 d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
                 return chart;
