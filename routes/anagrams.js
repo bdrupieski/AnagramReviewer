@@ -112,6 +112,11 @@ router.get('/processedcounts', function(req, res) {
     });
 });
 
+router.post('/processedcounts', function(req, res) {
+    const days = req.body.days;
+    res.redirect(`/anagrams/processedcounts?&days=${days}`);
+});
+
 router.get('/statistics', function(req, res) {
 
     const interestingFactorCutoff = Number(req.query.interestingfactor) || anagramsDb.defaultInterestingFactor;

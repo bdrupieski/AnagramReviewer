@@ -1,5 +1,21 @@
 <div class="container-fluid">
 
+    <h4>Parameters:</h4>
+
+    <div class="row">
+        <form action="processedcounts" method="post">
+            <div class="col-sm-1">
+                <button type="submit" class="btn btn-primary btn-sm">Reload</button>
+            </div>
+            <div class="col-sm-3">
+                <div class="input-group input-group-sm">
+                    <label for="numberOfPastDays" class="input-group-addon">Days</label>
+                    <input id="numberOfPastDays" type="number" class="form-control" min="1" max="10000" name="days" value="{{numberOfPastDays}}">
+                </div>
+            </div>
+        </form>
+    </div>
+
     <h1>Processed Counts:</h1>
 
     <h3>Events per second over the past <strong>{{numberOfPastDays}}</strong> days:</h3>
