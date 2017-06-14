@@ -1547,8 +1547,9 @@
             $.getJSON(`/anagrams/dateofoldesttweetwhoseexistencehasnotbeenchecked`).done(data => {
                 console.log(`polled /anagrams/dateofoldesttweetwhoseexistencehasnotbeenchecked, got ${JSON.stringify(data)}`);
                 if (data.date) {
-                    const formattedOldestDateExistenceNotChecked = new Date(data.date).toLocaleString();
-                    $("#oldest-existence-not-checked").text(formattedOldestDateExistenceNotChecked);
+                    const dateLastChecked = new Date(data.date);
+                    const diffInDays = moment().diff(moment(dateLastChecked), 'days');
+                    const formattedOldestDateExistenceNotChecked = `${dateLastChecked.toLocaleString()} (${diffInDays} days ago)`;
                     const $oldestChecked = $("#oldest-existence-not-checked-content");
                     $oldestChecked.text(formattedOldestDateExistenceNotChecked);
                     flash($oldestChecked);
