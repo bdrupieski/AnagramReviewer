@@ -6,7 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "bcrypt": "^0.8.7",
+    "bcrypt": "^1.0.2",
     "body-parser": "~1.15.1",
     "connect-flash": "^0.1.1",
     "cookie-parser": "~1.4.3",
@@ -20,6 +20,7 @@
     "lodash": "^4.16.4",
     "mailgun-js": "^0.8.0",
     "morgan": "~1.7.0",
+    "node-gyp": "^3.6.2",
     "node-schedule": "^1.2.0",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
