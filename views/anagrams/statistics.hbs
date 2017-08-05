@@ -1266,7 +1266,8 @@
                         .tickFormat((d) => {
                             return d3.time.format('%I:%M %p')(new Date(d))
                         })
-                        .tickValues(_.range(0, 24, 2).map(x => new Date(0).setHours(x)));
+                        .tickValues(_.range(0, 24, 2).map(x => new Date(0).setHours(x)))
+                        .rotateLabels(-18);
                 chart.yAxis.axisLabel('Count').tickFormat(d3.format('i'));
 
                 d3.select(cssSelector).datum(data).call(chart);
@@ -1304,7 +1305,8 @@
                         .tickFormat((d) => {
                             return d3.time.format('%I:%M %p')(new Date(d))
                         })
-                        .tickValues(_.range(0, 24, 2).map(x => new Date(0).setHours(x)));
+                        .tickValues(_.range(0, 24, 2).map(x => new Date(0).setHours(x)))
+                        .rotateLabels(-18);
                 chart.yAxis.axisLabel("Interesting Factor")
                         .tickFormat((d) => {
                             if (d == null) {
