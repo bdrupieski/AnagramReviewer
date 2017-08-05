@@ -1378,7 +1378,8 @@
                             useInteractiveGuideline : true,
                             duration: 300,
                         })
-                        .color(d3.scale.category10().range());
+                        .color(d3.scale.category10().range())
+                        .xDomain([0.5, 1.0]);
 
                 chart.xAxis.axisLabel("Interesting Factor")
                         .tickFormat(d3.format('.2f'));
