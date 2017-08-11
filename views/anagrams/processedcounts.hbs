@@ -105,7 +105,7 @@
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
-                            return d3.time.format('%a %b %d %Y %I:%M:%S %p')(new Date(d));
+                            return d3.time.format('%a %m/%d/%Y %I:%M:%S %p')(new Date(d));
                         })
                         .rotateLabels(-10);
 
@@ -138,7 +138,7 @@
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
-                            return d3.time.format('%a %b %d %Y %I:%M:%S %p')(new Date(d));
+                            return d3.time.format('%a %m/%d/%Y %I:%M:%S %p')(new Date(d));
                         })
                         .rotateLabels(-10);
 
