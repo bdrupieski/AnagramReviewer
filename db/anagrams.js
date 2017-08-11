@@ -1378,7 +1378,7 @@ SELECT
   round(cast(processed_counts.saved_tweet_count_since_previous_reset / processed_counts.seconds_since_previous_reset AS NUMERIC), 3)                     AS saved_tweets_per_second,
   round(cast(processed_counts.saved_anagram_count_since_previous_reset / processed_counts.seconds_since_previous_reset AS NUMERIC), 4)                   AS saved_anagrams_per_second,
   round(cast(processed_counts.saved_anagram_count_since_previous_reset / (processed_counts.seconds_since_previous_reset / 3600) AS NUMERIC), 1)          AS saved_anagrams_per_hour,
-  round(cast(processed_counts.seconds_since_previous_reset / processed_counts.saved_tweet_count_since_previous_reset AS NUMERIC), 1)                     AS seconds_per_saved_tweet,
+  round(cast(processed_counts.seconds_since_previous_reset / nullif(processed_counts.saved_tweet_count_since_previous_reset, 0) AS NUMERIC), 1)          AS seconds_per_saved_tweet,
   round(cast(processed_counts.seconds_since_previous_reset / nullif(processed_counts.saved_anagram_count_since_previous_reset, 0) AS NUMERIC), 1)        AS seconds_per_saved_anagram,
   round(cast((processed_counts.seconds_since_previous_reset / 60) / nullif(processed_counts.saved_anagram_count_since_previous_reset, 0) AS NUMERIC), 1) AS minutes_per_saved_anagram,
   processed_counts.now                                                                                                                                   AS counts_recorded_timestamp
