@@ -450,14 +450,9 @@ of debugging some webpack issue!
         </table>
     </script>
 
-    <h3>Totals by time of day match created for the past <strong>{{stats.numberOfPastDays}}</strong> days:</h3>
+    <h3>Totals and score by time of day match created for the past <strong>{{stats.numberOfPastDays}}</strong> days:</h3>
     <div class="row">
         <svg id="totals-by-time-of-day-match-created-chart" height="400"></svg>
-    </div>
-
-    <h3>Average interesting factor by time of day match created for the past <strong>{{stats.numberOfPastDays}}</strong> days:</h3>
-    <div class="row">
-        <svg id="average-interesting-factor-by-time-of-day-match-created-chart" height="400"></svg>
     </div>
 
     <div class="modal fade" id="interesting-factors-for-day-chart-modal" tabindex="-1" role="dialog">
@@ -1193,43 +1188,6 @@ of debugging some webpack issue!
             });
         }
 
-        function buildChartScoreBucketRetweetedAndUnreviewed(scoreStats, cssSelector) {
-            const data = [{
-                values: scoreStats.percentUnreviewed,
-                key: "Unreviewed",
-            }, {
-                values: scoreStats.percentRetweeted,
-                key: 'Retweeted'
-            }];
-
-            nv.addGraph(() => {
-                const chart = nv.models.lineChart()
-                                .options({
-                                    useInteractiveGuideline : true,
-                                    duration: 300,
-                                    forceY: [0, 1],
-                                    forceX: [0.4, 1]
-                                })
-                                .color(d3.scale.category10().range());
-
-                chart.xAxis.axisLabel("Interesting Factor")
-                        .tickFormat(d3.format('.2f'))
-                        .ticks(10);
-                chart.yAxis.axisLabel('Percent')
-                        .tickFormat((d) => {
-                            if (d == null) {
-                                return 'N/A';
-                            }
-                            return d3.format('.2%')(d);
-                        })
-                        .ticks(4);
-
-                d3.select(cssSelector).datum(data).call(chart);
-                nv.utils.windowResize(chart.update);
-                return chart;
-            });
-        }
-
         function buildChartScoreBucketCounts(scoreStats, cssSelector) {
             const data = [{
                 values: scoreStats.unreviewed,
@@ -1273,7 +1231,7 @@ of debugging some webpack issue!
                         .options({
                             duration: 300,
                         })
-                        .margin({right: 80, bottom: 70})
+                        .margin({left: 70, right: 80, bottom: 70})
                         .color(d3.scale.category10().range());
 
                 chart.xAxis.axisLabel("Interesting Factor")
@@ -1302,63 +1260,60 @@ of debugging some webpack issue!
             const data = [{
                 values: timeOfDayStats.unreviewed,
                 key: 'Unreviewed',
+                type: 'bar',
+                yAxis: 1,
+                disabled: true,
             }, {
                 values: timeOfDayStats.retweeted,
-                key: 'Retweeted'
+                key: 'Retweeted',
+                type: 'bar',
+                yAxis: 1,
             }, {
                 values: timeOfDayStats.matchesCreated,
                 key: "Created",
+                type: 'bar',
+                yAxis: 1,
             }, {
                 values: timeOfDayStats.adjustedFailedAttemptedApprovals,
-                key: 'Failed Attempted Approvals'
-            }];
-            nv.addGraph(() => {
-                const chart = nv.models.multiBarChart()
-                        .options({
-                            duration: 300
-                        })
-                        .stacked(true)
-                        .color(d3.scale.category10().range())
-                        .reduceXTicks(false);
-
-                chart.xAxis.axisLabel("Time")
-                        .tickFormat((d) => {
-                            return d3.time.format('%I:%M %p')(new Date(d))
-                        })
-                        .tickValues(_.range(0, 24, 2).map(x => new Date(0).setHours(x)))
-                        .rotateLabels(-18);
-                chart.yAxis.axisLabel('Count').tickFormat(d3.format('i'));
-
-                d3.select(cssSelector).datum(data).call(chart);
-                nv.utils.windowResize(chart.update);
-                return chart;
-            });
-        }
-
-        function buildChartTimeOfDayMatchCreatedAverageInterestingFactor(timeOfDayStats, cssSelector) {
-            const data = [{
+                key: 'Failed Attempted Approvals',
+                type: 'bar',
+                yAxis: 1,
+                disabled: true,
+            }, {
                 values: timeOfDayStats.averageInterestingFactor,
                 key: 'All',
+                type: 'line',
+                yAxis: 2,
+                disabled: true,
+                color: '#16d60d',
             }, {
                 values: timeOfDayStats.attemptedApprovalAverageInterestingFactor,
-                key: 'Attempted Approval'
+                key: 'Attempted Approval',
+                type: 'line',
+                yAxis: 2,
+                color: '#ffb941',
             }, {
                 values: timeOfDayStats.rejectedAverageInterestingFactor,
                 key: "Rejected",
+                type: 'line',
+                yAxis: 2,
+                color: '#ff260f',
             }, {
                 values: timeOfDayStats.unreviewedAverageInterestingFactor,
-                key: 'Unreviewed'
+                key: 'Unreviewed',
+                type: 'line',
+                yAxis: 2,
+                disabled: true,
+                color: '#107aff',
             }];
-
             nv.addGraph(() => {
-                const chart = nv.models.lineChart()
-                                .options({
-                                    useInteractiveGuideline : true,
-                                    duration: 300,
-                                    forceY: [0, 1],
-                                })
-                                .margin({right: 50})
-                                .color(d3.scale.category10().range());
+                const chart = nv.models.multiChart()
+                        .options({
+                            duration: 300,
+                            yDomain2: [0, 1],
+                        })
+                        .color(d3.scale.category10().range())
+                        .margin({right: 80, bottom: 70});
 
                 chart.xAxis.axisLabel("Time")
                         .tickFormat((d) => {
@@ -1366,13 +1321,15 @@ of debugging some webpack issue!
                         })
                         .tickValues(_.range(0, 24, 2).map(x => new Date(0).setHours(x)))
                         .rotateLabels(-18);
-                chart.yAxis.axisLabel("Interesting Factor")
+                chart.yAxis1.axisLabel('Count').tickFormat(d3.format('i'));
+                chart.yAxis2.axisLabel("Interesting Factor")
                         .tickFormat((d) => {
                             if (d == null) {
                                 return 'N/A';
                             }
                             return d3.format('.2f')(d);
                         });
+
                 d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
                 return chart;
@@ -1496,7 +1453,6 @@ of debugging some webpack issue!
 
         const byTimeOfDayMatchCreated = buildStatsByTimeOfDayMatchCreated();
         buildChartTimeOfDayMatchCreatedCounts(byTimeOfDayMatchCreated.series, '#totals-by-time-of-day-match-created-chart');
-        buildChartTimeOfDayMatchCreatedAverageInterestingFactor(byTimeOfDayMatchCreated.series, '#average-interesting-factor-by-time-of-day-match-created-chart');
 
         const scoreSurplusByBucket = buildScoreSurplusByBucket();
         buildChartScoreSurplusByBucket(scoreSurplusByBucket.series, '#score-surplus-by-bucket-chart');
