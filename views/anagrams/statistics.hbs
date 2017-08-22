@@ -564,6 +564,23 @@ of debugging some webpack issue!
 <script>
     $(() => {
 
+        const darkBlue = "#1F77B4";
+        const lightBlue = "#13b0ff";
+
+        const darkOrange = "#FF7F0E";
+        const lightOrange = "#ff9d00";
+
+        const darkGreen = "#2CA02C";
+        const lightGreen = "#40ef40";
+
+        const darkRed = "#D62728";
+        const lightRed = "#FF0000";
+
+        const darkPurple = "#d30dd6";
+        const lightPurple = "#fc0eff";
+
+        const black = "#000000";
+
         function safeFormatNumber(num, format, options) {
             if (num === null || num === undefined) {
                 return new Handlebars.SafeString("");
@@ -740,13 +757,17 @@ of debugging some webpack issue!
                 this.unreviewed = dateSeriesByProperty(stats, x => x.unreviewed);
                 this.adjustedFailedAttemptedApprovals = dateSeriesByProperty(stats, x => x.adjustedFailedAttemptedApprovals);
                 this.averageInterestingFactor = dateSeriesByProperty(stats, x => x.averageInterestingFactor);
+                this.averageInterestingFactorMovingAverage = buildByDayMovingAverageSeries(stats, 14, x => x.averageInterestingFactor);
                 this.attemptedApprovalAverageInterestingFactor = dateSeriesByProperty(stats, x => x.attemptedApprovalAverageInterestingFactor);
+                this.attemptedApprovalAverageInterestingFactorMovingAverage = buildByDayMovingAverageSeries(stats, 14, x => x.attemptedApprovalAverageInterestingFactor);
                 this.rejectedAverageInterestingFactor = dateSeriesByProperty(stats, x => x.rejectedAverageInterestingFactor);
+                this.rejectedAverageInterestingFactorMovingAverage = buildByDayMovingAverageSeries(stats, 14, x => x.rejectedAverageInterestingFactor);
                 this.unreviewedAverageInterestingFactor = dateSeriesByProperty(stats, x => x.unreviewedAverageInterestingFactor);
 
                 this.percentUnreviewed = dateSeriesByProperty(stats, x => x.percentUnreviewed);
                 this.percentRetweeted = dateSeriesByProperty(stats, x => x.percentRetweeted);
                 this.percentApprovalFailure = dateSeriesByProperty(stats, x => x.percentApprovalFailure);
+                this.percentApprovalFailureMovingAverage = buildByDayMovingAverageSeries(stats, 14, x => x.percentApprovalFailure);
             }
         }
 
@@ -823,6 +844,7 @@ of debugging some webpack issue!
 
                 this.percentUnreviewed = (this.unreviewed / this.matchesCreated) || 0;
                 this.percentRetweeted = (this.retweeted / this.matchesCreated) || 0;
+                this.percentAttemptedApproval = (this.attemptedApproval / this.matchesCreated) || 0;
             }
         }
 
@@ -842,6 +864,7 @@ of debugging some webpack issue!
 
                 this.percentUnreviewed = scoreSeriesByProperty(stats, x => x.percentUnreviewed);
                 this.percentRetweeted = scoreSeriesByProperty(stats, x => x.percentRetweeted);
+                this.percentAttemptedApproval = scoreSeriesByProperty(stats, x => x.percentAttemptedApproval);
             }
         }
 
@@ -865,6 +888,18 @@ of debugging some webpack issue!
                 this.unreviewed = scoreSeriesByProperty(scores, x => x.unreviewed);
                 this.reviewed = scoreSeriesByProperty(scores, x => x.reviewed);
             }
+        }
+
+        function buildByDayMovingAverageSeries(stats, numberOfDaysToAverage, valueSelector) {
+            return buildMovingAverageSeries(stats, numberOfDaysToAverage, x => x.day, valueSelector);
+        }
+
+        function buildMovingAverageSeries(stats, numberOfDaysToAverage, keySelector, valueSelector) {
+            const days = stats.map(x => keySelector(x));
+            const averagedValues = movingAverage(numberOfDaysToAverage, stats.map(x => valueSelector(x)));
+            return _.zipWith(days, averagedValues, (day, avg) => {
+                return { x: day, y: avg };
+            });
         }
 
         function buildStatsByDateMatchPosted() {
@@ -952,21 +987,25 @@ of debugging some webpack issue!
                 key: 'Tumblr',
                 type: 'bar',
                 yAxis: 1,
+                color: darkBlue,
             }, {
                 values: dayStats.retweeted,
                 key: 'Retweeted',
                 type: 'bar',
                 yAxis: 1,
-            }, {
-                values: dayStats.retweetedAverageInterestingFactor,
-                key: "Retweeted IF",
-                type: 'line',
-                yAxis: 2,
+                color: darkOrange,
             }, {
                 values: dayStats.postedToTumblrAverageInterestingFactor,
                 key: "Tumblr IF",
                 type: 'line',
                 yAxis: 2,
+                color: darkBlue,
+            }, {
+                values: dayStats.retweetedAverageInterestingFactor,
+                key: "Retweeted IF",
+                type: 'line',
+                yAxis: 2,
+                color: darkOrange,
             }];
 
             const highestYAxis1Value = Math.max(
@@ -982,6 +1021,8 @@ of debugging some webpack issue!
                         .margin({right: 80, bottom: 70})
                         .color(d3.scale.category10().range())
                         .yDomain1([0, highestYAxis1Value + 1]);
+
+                chart.legend.maxKeyLength(40);
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
@@ -1007,7 +1048,11 @@ of debugging some webpack issue!
             const data = [{
                 values: dayStats.percentApprovalFailure,
                 key: 'Approval Failure',
-                color: '#FF0000'
+                color: lightRed,
+            }, {
+                values: dayStats.percentApprovalFailureMovingAverage,
+                key: '14 day MA',
+                color: black,
             }];
 
             nv.addGraph(() => {
@@ -1019,6 +1064,8 @@ of debugging some webpack issue!
                                 })
                                 .margin({bottom: 50, right: 70})
                                 .yDomain([0, 1]);
+
+                chart.legend.maxKeyLength(40);
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
@@ -1054,9 +1101,11 @@ of debugging some webpack issue!
             const data = [{
                 values: dayStats.percentUnreviewed,
                 key: "Unreviewed",
+                color: darkBlue,
             }, {
                 values: dayStats.percentRetweeted,
                 key: 'Retweeted',
+                color: darkOrange,
             }];
 
             nv.addGraph(() => {
@@ -1068,6 +1117,8 @@ of debugging some webpack issue!
                                 })
                                 .color(d3.scale.category10().range())
                                 .margin({bottom: 50, right: 70});
+
+                chart.legend.maxKeyLength(40);
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
@@ -1102,15 +1153,19 @@ of debugging some webpack issue!
             const data = [{
                 values: dayStats.unreviewed,
                 key: 'Unreviewed',
+                color: darkBlue,
             }, {
                 values: dayStats.retweeted,
-                key: 'Retweeted'
+                key: 'Retweeted',
+                color: darkOrange,
             }, {
                 values: dayStats.matchesCreated,
                 key: "Created",
+                color: darkGreen,
             }, {
                 values: dayStats.adjustedFailedAttemptedApprovals,
-                key: 'Failed Attempted Approvals'
+                key: 'Failed Attempted Approvals',
+                color: darkRed,
             }];
 
             nv.addGraph(() => {
@@ -1121,6 +1176,8 @@ of debugging some webpack issue!
                         .stacked(true)
                         .margin({right: 50, bottom: 70})
                         .color(d3.scale.category10().range());
+
+                chart.legend.maxKeyLength(40);
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
@@ -1140,16 +1197,33 @@ of debugging some webpack issue!
         function buildChartDayMatchCreatedAverageInterestingFactor(scoreStats, cssSelector) {
             const data = [{
                 values: scoreStats.unreviewedAverageInterestingFactor,
-                key: 'Unreviewed'
+                key: 'Unreviewed',
+                color: darkBlue,
+                disabled: true,
             }, {
                 values: scoreStats.attemptedApprovalAverageInterestingFactor,
-                key: 'Attempted Approval'
+                key: 'Attempted Approval',
+                color: darkPurple,
+            }, {
+                values: scoreStats.attemptedApprovalAverageInterestingFactorMovingAverage,
+                key: 'Attempted Approval 14MA',
+                color: lightPurple,
             }, {
                 values: scoreStats.averageInterestingFactor,
                 key: 'All',
+                color: darkGreen,
+            }, {
+                values: scoreStats.averageInterestingFactorMovingAverage,
+                key: 'All 14MA',
+                color: lightGreen,
             }, {
                 values: scoreStats.rejectedAverageInterestingFactor,
                 key: "Rejected",
+                color: darkRed,
+            }, {
+                values: scoreStats.rejectedAverageInterestingFactorMovingAverage,
+                key: "Rejected 14MA",
+                color: lightRed,
             }];
 
             nv.addGraph(() => {
@@ -1160,6 +1234,8 @@ of debugging some webpack issue!
                                 })
                                 .color(d3.scale.category10().range())
                                 .margin({bottom: 50, right: 70});
+
+                chart.legend.maxKeyLength(40);
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
@@ -1195,35 +1271,45 @@ of debugging some webpack issue!
                 type: 'bar',
                 yAxis: 1,
                 disabled: true,
+                color: darkBlue,
+            }, {
+                values: scoreStats.percentUnreviewed,
+                key: "Unreviewed",
+                type: 'line',
+                yAxis: 2,
+                disabled: true,
+                color: lightBlue,
             }, {
                 values: scoreStats.retweeted,
                 key: "Retweeted",
                 type: 'bar',
                 yAxis: 1,
+                color: darkOrange,
+            }, {
+                values: scoreStats.percentRetweeted,
+                key: 'Retweeted',
+                type: 'line',
+                yAxis: 2,
+                color: lightOrange,
+            }, {
+                values: scoreStats.percentAttemptedApproval,
+                key: 'AttemptedApproval',
+                type: 'line',
+                yAxis: 2,
+                color: lightPurple,
             }, {
                 values: scoreStats.matchesCreated,
-                key: 'Created',
+                key: 'All',
                 type: 'bar',
                 yAxis: 1,
+                color: darkGreen,
             }, {
                 values: scoreStats.autoRejected,
                 key: "Auto-Rejected",
                 type: 'bar',
                 yAxis: 1,
                 disabled: true,
-            }, {
-                values: scoreStats.percentUnreviewed,
-                key: "Unreviewed",
-                type: 'line',
-                yAxis: 2,
-                color: '#107aff',
-                disabled: true,
-            }, {
-                values: scoreStats.percentRetweeted,
-                key: 'Retweeted',
-                type: 'line',
-                yAxis: 2,
-                color: '#ffb941',
+                color: darkRed,
             }];
 
             nv.addGraph(() => {
@@ -1233,6 +1319,8 @@ of debugging some webpack issue!
                         })
                         .margin({left: 70, right: 80, bottom: 70})
                         .color(d3.scale.category10().range());
+
+                chart.legend.maxKeyLength(40);
 
                 chart.xAxis.axisLabel("Interesting Factor")
                         .tickFormat(d3.format('.2f'))
@@ -1263,48 +1351,52 @@ of debugging some webpack issue!
                 type: 'bar',
                 yAxis: 1,
                 disabled: true,
+                color: darkBlue,
             }, {
                 values: timeOfDayStats.retweeted,
                 key: 'Retweeted',
                 type: 'bar',
                 yAxis: 1,
+                color: darkOrange,
             }, {
                 values: timeOfDayStats.matchesCreated,
-                key: "Created",
+                key: "All",
                 type: 'bar',
                 yAxis: 1,
+                color: darkGreen,
             }, {
                 values: timeOfDayStats.adjustedFailedAttemptedApprovals,
                 key: 'Failed Attempted Approvals',
                 type: 'bar',
                 yAxis: 1,
                 disabled: true,
+                color: darkRed,
             }, {
                 values: timeOfDayStats.averageInterestingFactor,
                 key: 'All',
                 type: 'line',
                 yAxis: 2,
                 disabled: true,
-                color: '#16d60d',
+                color: lightGreen,
             }, {
                 values: timeOfDayStats.attemptedApprovalAverageInterestingFactor,
                 key: 'Attempted Approval',
                 type: 'line',
                 yAxis: 2,
-                color: '#ffb941',
+                color: lightPurple,
             }, {
                 values: timeOfDayStats.rejectedAverageInterestingFactor,
                 key: "Rejected",
                 type: 'line',
                 yAxis: 2,
-                color: '#ff260f',
+                color: lightRed,
             }, {
                 values: timeOfDayStats.unreviewedAverageInterestingFactor,
                 key: 'Unreviewed',
                 type: 'line',
                 yAxis: 2,
                 disabled: true,
-                color: '#107aff',
+                color: lightBlue,
             }];
             nv.addGraph(() => {
                 const chart = nv.models.multiChart()
@@ -1314,6 +1406,8 @@ of debugging some webpack issue!
                         })
                         .color(d3.scale.category10().range())
                         .margin({right: 80, bottom: 70});
+
+                chart.legend.maxKeyLength(40);
 
                 chart.xAxis.axisLabel("Time")
                         .tickFormat((d) => {
@@ -1339,18 +1433,22 @@ of debugging some webpack issue!
         function buildChartInterestingFactorDistributionForDay(scoreDistributionStats, cssSelector) {
             const data = [{
                 values: scoreDistributionStats.total,
-                key: 'Total',
+                key: 'All',
                 disabled: true,
+                color: darkGreen
             }, {
                 values: scoreDistributionStats.unreviewed,
                 key: "Unreviewed",
                 disabled: true,
+                color: darkBlue,
             }, {
                 values: scoreDistributionStats.reviewed,
                 key: 'Reviewed',
+                color: darkOrange,
             }, {
                 values: scoreDistributionStats.rejected,
                 key: 'Rejected',
+                color: darkRed,
             }];
 
             nv.addGraph(() => {
@@ -1373,19 +1471,19 @@ of debugging some webpack issue!
         function buildChartScoreSurplusByBucket(scoreSurplusByBucket, cssSelector) {
             const data = [{
                 values: scoreSurplusByBucket.lcsApprovedSurplus,
-                key: 'longest common substring',
+                key: 'Longest Common Substring',
             }, {
                 values: scoreSurplusByBucket.wcApprovedSurplus,
-                key: "word count",
+                key: "Word Count",
             }, {
                 values: scoreSurplusByBucket.edApprovedSurplus,
-                key: 'edit distance',
+                key: 'Edit Distance',
             }, {
                 values: scoreSurplusByBucket.ewcApprovedSurplus,
-                key: 'English words',
+                key: 'English Words',
             }, {
                 values: scoreSurplusByBucket.tlApprovedSurplus,
-                key: 'total length',
+                key: 'Total Length',
             }];
 
             nv.addGraph(() => {
@@ -1396,6 +1494,8 @@ of debugging some webpack issue!
                         })
                         .color(d3.scale.category10().range())
                         .xDomain([0.5, 1.0]);
+
+                chart.legend.maxKeyLength(40);
 
                 chart.xAxis.axisLabel("Interesting Factor")
                         .tickFormat(d3.format('.2f'));
@@ -1639,6 +1739,34 @@ of debugging some webpack issue!
             setTimeout(() => {
                 $el.removeClass("flash");
             }, 5000)
+        }
+
+        function makeWindow(sizeOfWindow) {
+            return function (_number, index, array) {
+                const windowStart = Math.max(0, index - sizeOfWindow);
+                const windowEnd = Math.min(array.length, index + 1);
+                return _.slice(array, windowStart, windowEnd);
+            }
+        }
+
+        function sum(numbers) {
+            return _.reduce(numbers, (a, b) => a + b, 0);
+        }
+
+        function average(numbers) {
+            if (numbers.some(x => x == null)) {
+                return null;
+            } else {
+                return sum(numbers) / (numbers.length || 1);
+            }
+        }
+
+        // https://purelyfunctional.tv/article/moving-average/
+        function movingAverage(windowSize, numbers) {
+            return _.chain(numbers)
+                    .map(makeWindow(windowSize))
+                    .map(average)
+                    .value();
         }
     });
 
