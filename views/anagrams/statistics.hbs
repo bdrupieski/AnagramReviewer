@@ -390,11 +390,7 @@ of debugging some webpack issue!
         </table>
     </script>
 
-    <h3>Percent retweeted and unreviewed by interesting factor bucket for the past <strong>{{stats.numberOfPastDays}}</strong> days:</h3>
-    <div class="row">
-        <svg id="reviewed-unreviewed-by-score-bucket-chart" height="400"></svg>
-    </div>
-    <h3>Totals by interesting factor bucket for the past <strong>{{stats.numberOfPastDays}}</strong> days:</h3>
+    <h3>Totals and percentages by score for the past <strong>{{stats.numberOfPastDays}}</strong> days:</h3>
     <div class="row">
         <svg id="totals-by-score-bucket-chart" height="400"></svg>
     </div>
@@ -1238,31 +1234,64 @@ of debugging some webpack issue!
             const data = [{
                 values: scoreStats.unreviewed,
                 key: "Unreviewed",
+                type: 'bar',
+                yAxis: 1,
+                disabled: true,
             }, {
                 values: scoreStats.retweeted,
                 key: "Retweeted",
+                type: 'bar',
+                yAxis: 1,
             }, {
                 values: scoreStats.matchesCreated,
-                key: 'Created'
+                key: 'Created',
+                type: 'bar',
+                yAxis: 1,
             }, {
                 values: scoreStats.autoRejected,
-                key: "Auto-Rejected"
+                key: "Auto-Rejected",
+                type: 'bar',
+                yAxis: 1,
+                disabled: true,
+            }, {
+                values: scoreStats.percentUnreviewed,
+                key: "Unreviewed",
+                type: 'line',
+                yAxis: 2,
+                color: '#107aff',
+                disabled: true,
+            }, {
+                values: scoreStats.percentRetweeted,
+                key: 'Retweeted',
+                type: 'line',
+                yAxis: 2,
+                color: '#ffb941',
             }];
 
             nv.addGraph(() => {
-                const chart = nv.models.multiBarChart()
+                const chart = nv.models.multiChart()
                         .options({
                             duration: 300,
                         })
-                        .stacked(true)
-                        .color(d3.scale.category10().range())
-                        .reduceXTicks(false);
+                        .margin({right: 80, bottom: 70})
+                        .color(d3.scale.category10().range());
 
                 chart.xAxis.axisLabel("Interesting Factor")
                         .tickFormat(d3.format('.2f'))
                         .tickValues(_.range(0.4, 1.05, 0.05).map(x => Math.round(x * 100) / 100));
-                chart.yAxis.axisLabel("Count")
+
+                chart.yAxis1.axisLabel("Count")
                         .tickFormat(d3.format('i'));
+
+                chart.yAxis2.axisLabel('Percent')
+                        .tickFormat((d) => {
+                            if (d == null) {
+                                return 'N/A';
+                            }
+                            return d3.format('.2%')(d);
+                        })
+                        .ticks(4);
+
                 d3.select(cssSelector).datum(data).call(chart);
                 nv.utils.windowResize(chart.update);
                 return chart;
@@ -1463,7 +1492,6 @@ of debugging some webpack issue!
         buildChartDayMatchCreatedAverageInterestingFactor(byDayMatchCreated.series, '#average-interesting-factor-by-action-taken-chart');
 
         const byScoreBucket = buildStatsByScoreBucket();
-        buildChartScoreBucketRetweetedAndUnreviewed(byScoreBucket.series, '#reviewed-unreviewed-by-score-bucket-chart');
         buildChartScoreBucketCounts(byScoreBucket.series, '#totals-by-score-bucket-chart');
 
         const byTimeOfDayMatchCreated = buildStatsByTimeOfDayMatchCreated();
