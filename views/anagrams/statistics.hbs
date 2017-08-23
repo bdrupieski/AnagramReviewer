@@ -1023,6 +1023,7 @@ of debugging some webpack issue!
                         .yDomain1([0, highestYAxis1Value + 1]);
 
                 chart.legend.maxKeyLength(40);
+                chart.legend.align(false);
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
@@ -1321,6 +1322,7 @@ of debugging some webpack issue!
                         .color(d3.scale.category10().range());
 
                 chart.legend.maxKeyLength(40);
+                chart.legend.align(false);
 
                 chart.xAxis.axisLabel("Interesting Factor")
                         .tickFormat(d3.format('.2f'))
@@ -1408,6 +1410,7 @@ of debugging some webpack issue!
                         .margin({right: 80, bottom: 70});
 
                 chart.legend.maxKeyLength(40);
+                chart.legend.align(false);
 
                 chart.xAxis.axisLabel("Time")
                         .tickFormat((d) => {
