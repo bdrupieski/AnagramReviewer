@@ -103,6 +103,9 @@
                         .color(d3.scale.category10().range())
                         .margin({left: 160, bottom: 60});
 
+                chart.legend.maxKeyLength(40);
+                chart.legend.align(false);
+
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
                             return d3.time.format('%a %m/%d/%Y %I:%M:%S %p')(new Date(d));
@@ -135,6 +138,9 @@
                         })
                         .color(d3.scale.category10().range())
                         .margin({left: 160, bottom: 60});
+
+                chart.legend.maxKeyLength(40);
+                chart.legend.align(false);
 
                 chart.xAxis.axisLabel("Date")
                         .tickFormat((d) => {
