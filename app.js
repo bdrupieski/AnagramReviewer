@@ -51,7 +51,7 @@ schedule.scheduleJob("*/1 * * * *", function () {
 });
 
 // every 30 minutes
-schedule.scheduleJob("*/30 * * * *", function () {
+schedule.scheduleJob("*/73 * * * *", function () {
     tasks.retweetOnePendingMatch();
 });
 
